@@ -1,0 +1,203 @@
+{
+  "id": "brainKbIngest001",
+  "name": "05 — KB ingest",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c3000000-0000-4000-8000-000000000001",
+      "name": "Click to run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/docs-pack/*.md",
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000002",
+      "name": "Read the documents",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -340,
+        0
+      ],
+      "notes": "Copy your documents in first:\ndocker compose cp ./docs-pack n8n:/home/node/docs-pack",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "destinationKey": "data",
+        "options": {
+          "keepSource": "both"
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000003",
+      "name": "To text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Cut the document into overlapping windows of WORDS.\n//\n// 180 words with 30 of overlap - the same numbers the rehearsal script used against\n// the real stack, so what you get here matches what you see there: the four practice\n// documents are each shorter than 180 words, so each becomes exactly one chunk.\n//\n// Words, not characters. A character cut lands mid-word and mid-number; \"$7,700\"\n// becomes \"$7,\" in one chunk and \"700\" in the next, and neither matches a question\n// about the deposit. Words cannot split a figure in half.\n//\n// The overlap is not decoration: a sentence that straddles a boundary would\n// otherwise be split across two chunks and match neither of them well.\nconst CHUNK_WORDS = 180;\nconst OVERLAP_WORDS = 30;\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const text = (item.json.data || item.json.content || '').toString();\n\n  // The filename, not the full path - this is what gets shown as the citation.\n  // Read File leaves it on the binary rather than the json, so check both.\n  const full = item.json.fileName || item.json.filePath ||\n               (item.binary && item.binary.data && item.binary.data.fileName);\n\n  // Deliberately no fallback name. Give several documents the same source and they\n  // all collapse onto one row through UNIQUE (source, chunk_index) - four documents\n  // in, one row out, every node green. A citation you cannot trace is worth stopping\n  // for.\n  if (!full) {\n    throw new Error(\n      'No filename on this item, so there is nothing to cite. Read File puts it on ' +\n      'the binary as $binary.data.fileName - if you are feeding this node from ' +\n      'somewhere else, set fileName on the item first.'\n    );\n  }\n\n  const source = full.split('/').pop().split('\\\\').pop();\n\n  if (!text.trim()) {\n    throw new Error(`${source} read as empty. Can the n8n container see the file?`);\n  }\n\n  const words = text.split(/\\s+/).filter(Boolean);\n  const step = CHUNK_WORDS - OVERLAP_WORDS;\n\n  let idx = 0;\n  for (let i = 0; i < words.length; i += step) {\n    const window = words.slice(i, i + CHUNK_WORDS);\n    if (!window.length) continue;\n    out.push({ json: {\n      source,\n      chunk_index: idx++,\n      content: window.join(' ')\n    }});\n\n    // Stop the moment a window reaches the end. Without this, a document\n    // shorter than two steps emits a last chunk that is already contained in\n    // the one before it - a scrap that costs an embedding call and can take one\n    // of the five slots retrieved for a question. Every practice document in\n    // the pack is short enough to hit it.\n    if (i + CHUNK_WORDS >= words.length) break;\n  }\n}\n\nreturn out;\n"
+      },
+      "id": "c3000000-0000-4000-8000-000000000004",
+      "name": "Chunk it",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"openai/text-embedding-3-small\", input: $json.content }) }}",
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000005",
+      "name": "Embed the chunk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        280,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "openRouter000001",
+          "name": "OpenRouter"
+        }
+      },
+      "notes": "Header Auth credential. The key never appears in this node, which is why this file is safe to share.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Pull the vector out and prove it is the right size BEFORE we try to insert it.\n//\n// The kb table has a CHECK constraint on 1536 dimensions. Without this node a bad\n// embedding still fails - but it fails in Postgres, and the error points at the\n// database instead of at the model that actually caused it.\nconst emb = $json.data?.[0]?.embedding;\n\nif (!Array.isArray(emb)) {\n  throw new Error(\n    'No embedding in the response. Check the OpenRouter credential and that the ' +\n    'key has a balance - an unfunded key does not say so in plain language.'\n  );\n}\nif (emb.length !== 1536) {\n  throw new Error(\n    `Embedding came back with ${emb.length} dimensions, expected 1536. ` +\n    'A different model returns a different size, and mixing sizes silently ' +\n    'ruins every search in the table.'\n  );\n}\n\n// Carry the chunk fields through from the chunker.\nconst src = $('Chunk it').all()[$itemIndex].json;\n\nreturn { json: { ...src, embedding: emb } };\n"
+      },
+      "id": "c3000000-0000-4000-8000-000000000006",
+      "name": "Check 1536",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO kb (source, chunk_index, content, embedding)\nVALUES (\n  $1,\n  $2::int,\n  $3,\n  -- The embedding arrives as a JSON array of numbers and is cast here. Passing\n  -- it as a JSON string rather than a raw array keeps it a bound parameter.\n  (SELECT array_agg(x::float8) FROM json_array_elements_text($4::json) AS x)\n)\nON CONFLICT (source, chunk_index) DO UPDATE\n  SET content    = EXCLUDED.content,\n      embedding  = EXCLUDED.embedding,\n      created_at = now();",
+        "options": {
+          "queryReplacement": "={{ $json.source }},{{ $json.chunk_index }},{{ $json.content }},{{ JSON.stringify($json.embedding) }}"
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000007",
+      "name": "Store it",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        720,
+        0
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "brainPg0000000001",
+          "name": "Brain Postgres"
+        }
+      },
+      "notes": "Database must be `brain`, not `n8n`.",
+      "notesInFlow": true
+    }
+  ],
+  "connections": {
+    "Click to run": {
+      "main": [
+        [
+          {
+            "node": "Read the documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read the documents": {
+      "main": [
+        [
+          {
+            "node": "To text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "To text": {
+      "main": [
+        [
+          {
+            "node": "Chunk it",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk it": {
+      "main": [
+        [
+          {
+            "node": "Embed the chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed the chunk": {
+      "main": [
+        [
+          {
+            "node": "Check 1536",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check 1536": {
+      "main": [
+        [
+          {
+            "node": "Store it",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Class 8 — Make It a Project | Show Notes</title>
+<meta name="description" content="Seven weeks of work stops being a pile of files. Follow-along notes for Class 8 of The Brain That Runs a Company: git, versions, and a README a stranger could follow." />
+<style>
+  :root{
+    --charcoal:#0F172A; --panel:#16223b; --panel-2:#1b2946; --border:#2a3a5c;
+    --blue:#2B6CB0; --blue-2:#3B82F6; --gold:#D4A843; --green:#16A34A; --red:#DC2626;
+    --accent:#7dd3fc;
+    --text:#F8FAFC; --body:#c3cfe0; --muted:#94A3B8;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--charcoal);color:var(--text);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+
+  .hero{background:linear-gradient(140deg,#0b1120 0%,var(--panel-2) 100%);border-bottom:3px solid var(--accent);padding:52px 24px 40px;text-align:center}
+  .series{font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+  .hero h1{font-size:clamp(27px,5.2vw,44px);font-weight:800;line-height:1.15;max-width:760px;margin:0 auto 14px;letter-spacing:-.02em}
+  .hero h1 span{color:var(--accent)}
+  .hero-sub{font-size:16px;color:var(--muted);max-width:620px;margin:0 auto 26px}
+  .meta-row{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;max-width:820px;margin:0 auto}
+  .meta-item{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:999px;padding:7px 15px;font-size:13px;color:var(--muted);white-space:nowrap}
+  .meta-item strong{color:var(--text);font-weight:600}
+  .free{display:inline-block;margin-top:18px;background:rgba(22,163,74,.16);border:1px solid var(--green);border-radius:999px;padding:7px 18px;font-family:var(--mono);font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:#8ce8ae;font-weight:700}
+
+  .content{max-width:820px;margin:0 auto;padding:44px 24px 72px}
+  .section{margin-bottom:46px;scroll-margin-top:20px}
+  h2{font-size:21px;font-weight:800;margin-bottom:8px;padding-bottom:10px;border-bottom:1px solid var(--border);letter-spacing:-.01em}
+  h3{font-size:15px;font-weight:700;margin:22px 0 8px;color:var(--text)}
+  p{color:var(--body);font-size:15.5px;margin-bottom:13px}
+  p strong,li strong,td strong{color:var(--text);font-weight:600}
+  a{color:var(--blue-2)}
+  .lead{font-size:17px;color:var(--text)}
+  ul,ol{color:var(--body);font-size:15.5px;margin:0 0 13px 22px}
+  li{margin-bottom:6px}
+
+  .toc{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:40px}
+  .toc-t{font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .toc ul{list-style:none;margin:0;display:flex;flex-wrap:wrap;gap:7px}
+  .toc li{margin:0}
+  .toc a{display:inline-block;background:var(--panel-2);border:1px solid var(--border);border-radius:999px;padding:5px 13px;font-size:13px;text-decoration:none;color:var(--body)}
+  .toc a:hover{border-color:var(--blue-2);color:var(--text)}
+
+  .organs{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:20px 0}
+  .organ{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 8px;text-align:center}
+  .organ.today{border-color:var(--accent);background:linear-gradient(180deg,rgba(125,211,252,.18),transparent)}
+  .organ-ico{font-size:20px;margin-bottom:5px}
+  .organ-name{font-weight:700;font-size:12px;margin-bottom:3px}
+  .tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.8px;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:rgba(148,163,184,.15);color:var(--muted)}
+  .tag.now{background:var(--accent);color:#06283a;font-weight:700}
+  .tag.done{background:rgba(22,163,74,.22);color:#7ee2a8}
+
+  .tw{overflow-x:auto;margin:16px 0;border:1px solid var(--border);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:480px}
+  th{background:var(--panel-2);text-align:left;padding:11px 14px;font-weight:700;font-size:12.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+  td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:16px}
+  .step.core{border-color:var(--accent);background:linear-gradient(160deg,rgba(125,211,252,.10),var(--panel))}
+  .step-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .step-num{flex:none;min-width:30px;height:30px;padding:0 8px;border-radius:8px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;font-family:var(--mono)}
+  .step-num.accent{background:var(--accent);color:#06283a}
+  .step-title{font-size:18px;font-weight:700;letter-spacing:-.01em}
+  .step-time{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+  .code{position:relative;background:#0a1020;border:1px solid var(--border);border-radius:8px;margin:10px 0 14px}
+  .code-label{font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:8px 14px 0}
+  pre{font-family:var(--mono);font-size:13.5px;line-height:1.65;color:#dbe6f5;padding:10px 14px 14px;overflow-x:auto;white-space:pre}
+  pre.wrap{white-space:pre-wrap;word-break:break-all}
+  .cp{position:absolute;top:6px;right:6px;background:var(--panel-2);color:var(--muted);border:1px solid var(--border);border-radius:5px;font-family:var(--mono);font-size:10.5px;padding:4px 9px;cursor:pointer}
+  .cp:hover{color:var(--text);border-color:var(--blue-2)}
+  .cp.ok{color:#7ee2a8;border-color:var(--green)}
+  code{font-family:var(--mono);font-size:.9em;background:rgba(148,163,184,.14);padding:1px 5px;border-radius:4px;color:#e4ecf8}
+
+  .install{background:linear-gradient(150deg,rgba(43,108,176,.2),rgba(15,23,42,.4));border:1px solid var(--blue);border-radius:14px;padding:24px 26px;margin:22px 0}
+  .install h3{margin-top:0;font-size:16px}
+  .osbar{display:flex;gap:8px;margin:14px 0 4px;flex-wrap:wrap}
+  .osbar button{background:var(--panel);border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:7px 17px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer}
+  .osbar button:hover{border-color:var(--blue-2);color:var(--text)}
+  .osbar button.on{background:var(--blue-2);border-color:var(--blue-2);color:#fff}
+  .osonly{display:none} .osonly.show{display:block}
+
+  .note{border-left:3px solid var(--blue-2);background:rgba(59,130,246,.08);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0}
+  .warn{border-left:3px solid var(--gold);background:rgba(212,168,67,.09);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0}
+  .danger{border-left:3px solid var(--red);background:rgba(220,38,38,.10);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0}
+  .does{border-left:3px solid var(--green);background:rgba(22,163,74,.08);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0}
+  .note p:last-child,.warn p:last-child,.danger p:last-child,.does p:last-child,
+  .note ul:last-child,.warn ul:last-child,.danger ul:last-child,.does ul:last-child{margin-bottom:0}
+  .note-t,.warn-t,.danger-t,.does-t{font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:var(--mono)}
+  .note-t{color:var(--blue-2)} .warn-t{color:var(--gold)}
+  .danger-t{color:#ff8080} .does-t{color:#6ee7a0}
+
+  .recap{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:0 12px 12px 0;padding:16px 20px;margin-bottom:10px}
+  .recap.c1{border-left-color:#7c6bd6} .recap.c2{border-left-color:#3b82f6}
+  .recap.c3{border-left-color:#16a34a} .recap.c4{border-left-color:#D4A843}
+  .recap.c5{border-left-color:#e07b53} .recap.c6{border-left-color:#8b7cd6}
+  .recap h3{margin-top:0;font-size:15.5px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .recap h3 .n{font-family:var(--mono);font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .recap p{font-size:14.5px;margin-bottom:6px}
+
+  .quote{background:linear-gradient(135deg,rgba(125,211,252,.16),transparent);border:1px solid var(--accent);border-left:4px solid var(--accent);border-radius:10px;padding:22px 24px;margin:18px 0}
+  .quote p{font-size:17px;font-weight:600;color:var(--text);margin:0;line-height:1.5}
+  .quote .after{font-size:14.5px;font-weight:400;color:var(--muted);margin-top:10px}
+
+  .flow{background:#0a1020;border:1px solid var(--border);border-radius:10px;padding:18px;margin:16px 0;overflow-x:auto}
+  .flow pre{padding:0;font-size:12.5px;color:#a9dcf5}
+  .flow .you{color:#8ce8ae;font-weight:700}
+
+  .check{list-style:none;margin:14px 0 0}
+  .check li{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);margin:0;color:var(--body)}
+  .check li:last-child{border-bottom:0}
+  .check input{margin-top:5px;width:16px;height:16px;accent-color:var(--green);flex:none;cursor:pointer}
+  .check label{cursor:pointer}
+
+  .ms{background:linear-gradient(135deg,rgba(22,163,74,.14),transparent);border:1px solid var(--green);border-radius:10px;padding:14px 18px;margin:14px 0}
+  .ms-t{font-family:var(--mono);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#8ce8ae;font-weight:700;margin-bottom:5px}
+  .ms p:last-child{margin-bottom:0}
+
+  a.big{display:block;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:11px;text-decoration:none;color:var(--text)}
+  a.big:hover{border-color:var(--blue-2)}
+  a.big .t{font-size:15.5px;font-weight:700}
+  a.big .d{color:var(--muted);font-size:13.5px;margin-top:3px}
+  a.big .go{float:right;color:var(--blue-2);font-weight:700;font-size:20px;line-height:1}
+
+  .foot{border-top:1px solid var(--border);margin-top:50px;padding-top:24px;text-align:center;color:var(--muted);font-size:13.5px}
+  .sig{font-size:17px;color:var(--text);font-weight:700;margin-bottom:6px}
+
+  @media (max-width:820px){ .organs{grid-template-columns:repeat(4,1fr)} }
+  @media (max-width:520px){
+    .organs{grid-template-columns:repeat(2,1fr)}
+    .step{padding:18px 16px} .step-time{display:none}
+  }
+  @media print{
+    body{background:#fff;color:#000}
+    .hero{background:#fff;border-bottom:2px solid #000;padding:20px 0}
+    .toc,.osbar,.cp{display:none}
+    .osonly{display:block !important}
+    .step,.recap,.code,.install,.quote{break-inside:avoid}
+    p,li,td{color:#111}
+  }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="series">The Brain That Runs a Company · Part 8</div>
+  <h1>Make It a <span>Project</span></h1>
+  <p class="hero-sub">Seven weeks of work stops being a pile of files.</p>
+  <div class="meta-row">
+    <div class="meta-item">📅 <strong>Wed, Sep 30, 2026</strong></div>
+    <div class="meta-item">🕚 <strong>11:00 AM ET</strong></div>
+    <div class="meta-item">⏱ 60 min</div>
+    <div class="meta-item">🎥 Skool live room</div>
+    <div class="meta-item">👥 AI Auto Base</div>
+  </div>
+  <div class="free">Free · nothing to sign up for at all</div>
+</div>
+
+<div class="content">
+
+  <nav class="toc">
+    <div class="toc-t">Follow along</div>
+    <ul>
+      <li><a href="#install">The one command</a></li>
+      <li><a href="#why">Why this class exists</a></li>
+      <li><a href="#notgithub">git is not GitHub</a></li>
+      <li><a href="#recap">Classes 1–7</a></li>
+      <li><a href="#prework">Before the hour</a></li>
+      <li><a href="#p1">P1 · Track it</a></li>
+      <li><a href="#env">The .env beat</a></li>
+      <li><a href="#p2">P2 · Version it</a></li>
+      <li><a href="#traps">The five traps</a></li>
+      <li><a href="#p3">P3 · Document it</a></li>
+      <li><a href="#notbackup">Not backup</a></li>
+      <li><a href="#done">Done?</a></li>
+    </ul>
+  </nav>
+
+  <!-- ─────────────────────────────────────────────────────────── the frame -->
+  <section class="section" id="frame">
+    <h2>The first class that gives your brain nothing</h2>
+
+    <div class="organs">
+      <div class="organ"><div class="organ-ico">🧠</div><div class="organ-name">Brain</div><span class="tag done">1</span></div>
+      <div class="organ"><div class="organ-ico">👃</div><div class="organ-name">Senses</div><span class="tag done">2</span></div>
+      <div class="organ"><div class="organ-ico">💾</div><div class="organ-name">Memory</div><span class="tag done">3</span></div>
+      <div class="organ"><div class="organ-ico">👂</div><div class="organ-name">Ears &amp; voice</div><span class="tag done">4</span></div>
+      <div class="organ"><div class="organ-ico">✋</div><div class="organ-name">Hands</div><span class="tag done">5</span></div>
+      <div class="organ"><div class="organ-ico">🕸</div><div class="organ-name">Graph</div><span class="tag done">6</span></div>
+      <div class="organ"><div class="organ-ico">🕐</div><div class="organ-name">Clock</div><span class="tag done">7</span></div>
+      <div class="organ today"><div class="organ-ico">🗂</div><div class="organ-name">You</div><span class="tag now">8</span></div>
+    </div>
+
+    <div class="quote">
+      <p>You have seven weeks of work on one box, with no history, no versions, and no documentation. Change something, break it, and there is no way back. In three months you will not remember why any of it looks the way it does.</p>
+      <p class="after">That is not a missing organ. It is a missing habit.</p>
+    </div>
+
+    <p>Classes 1 to 7 each added something to the brain. <strong>This one is aimed at
+    you</strong>, and it is the cheapest hour in the series — git is free, local, and on
+    most boxes already.</p>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── install -->
+  <section class="section" id="install">
+    <h2>The one command</h2>
+
+    <p class="lead">Run it on <strong>the machine your brain runs on</strong> — the one with
+    Docker and n8n. Not your laptop, unless they are the same box.</p>
+
+    <div class="install">
+      <h3>Install the Class 8 pack</h3>
+
+      <div class="osbar">
+        <button data-os="mac">macOS</button>
+        <button data-os="linux">Linux / WSL</button>
+        <button data-os="win">Windows</button>
+      </div>
+
+      <div class="osonly" data-os="mac">
+        <div class="code">
+          <button class="cp">copy</button>
+          <div class="code-label">Terminal</div>
+          <pre class="wrap">curl -fsSL -o install.txt https://aiautobase.github.io/Build_With_Me/class-08/install.txt &amp;&amp; claude "Read install.txt in this folder and follow it exactly, from the top."</pre>
+        </div>
+      </div>
+
+      <div class="osonly" data-os="linux">
+        <div class="code">
+          <button class="cp">copy</button>
+          <div class="code-label">bash</div>
+          <pre class="wrap">curl -fsSL -o install.txt https://aiautobase.github.io/Build_With_Me/class-08/install.txt &amp;&amp; claude "Read install.txt in this folder and follow it exactly, from the top."</pre>
+        </div>
+      </div>
+
+      <div class="osonly" data-os="win">
+        <div class="code">
+          <button class="cp">copy</button>
+          <div class="code-label">PowerShell</div>
+          <pre class="wrap">Invoke-WebRequest -Uri "https://aiautobase.github.io/Build_With_Me/class-08/install.txt" -OutFile install.txt; claude "Read install.txt in this folder and follow it exactly, from the top."</pre>
+        </div>
+      </div>
+
+      <p style="margin-bottom:0">It downloads the pack, checks the checksum, and
+      <strong>searches your history for secrets</strong>. Then it stops.</p>
+    </div>
+
+    <div class="does">
+      <div class="does-t">What the installer is forbidden from doing</div>
+      <p><strong>It must not run <code>git init</code>, <code>git add</code>,
+      <code>git commit</code> or <code>git rm</code>.</strong> Reading commands only.</p>
+      <p>An installer that helpfully staged everything would commit your <code>.env</code> —
+      the exact failure this class exists to prevent — and it would take away the only
+      decision the hour is trying to teach. <strong>Choosing what goes into a commit is the
+      skill.</strong></p>
+      <p style="margin-bottom:0">The repo gets built in class, by you, from
+      <code>P1</code>.</p>
+    </div>
+
+    <div class="note">
+      <div class="note-t">Why it downloads a file instead of piping the prompt</div>
+      <p style="margin-bottom:0">The install prompt is <strong>8,286 bytes</strong>.
+      <code>cmd.exe</code> truncates a command line at <strong>8,191 characters</strong> —
+      silently, mid-word. Fetching to a file and pointing Claude at it is not stylistic;
+      it is the only version that survives Windows.</p>
+    </div>
+
+    <h3>The checksum</h3>
+    <div class="code">
+      <button class="cp">copy</button>
+      <div class="code-label">verify what you downloaded</div>
+      <pre>sha256sum class-08-project-pack.zip
+# 783c9032cd8e076163087b2df014113c5b5ec6ac46ab883361def972d4ac2fd3</pre>
+    </div>
+    <p>13 files. The zip pins its timestamps, so the same sources always produce the same
+    hash — <strong>a mismatch means the sources moved, not that the clock did.</strong></p>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── why -->
+  <section class="section" id="why">
+    <h2>Why now, and why before the terminal class</h2>
+
+    <p class="lead"><strong>Class 9 puts a Claude/Codex terminal in your dashboard</strong> —
+    an agent with shell access to everything you have built.</p>
+
+    <div class="quote">
+      <p>You want history before you hand an agent a shell.</p>
+      <p class="after">When it breaks something — and it will — <code>git diff</code> is
+      the way back.</p>
+    </div>
+
+    <p>That is the whole reason the boring-sounding class got scheduled ahead of the
+    exciting one. It is worth saying out loud so it does not feel like filler.</p>
+
+    <h3>The cold open</h3>
+    <p>In the first four minutes I am going to delete a chunk of the dashboard, live, on
+    purpose. Then put it back in ten seconds and explain nothing.</p>
+
+    <div class="code">
+      <div class="code-label">the whole demo</div>
+      <pre>git diff                       # here is exactly what I destroyed
+git checkout -- dashboard.html # and here it is back</pre>
+    </div>
+
+    <div class="danger">
+      <div class="danger-t">That second command is the one that can lose work</div>
+      <p style="margin-bottom:0"><code>git checkout --</code> throws away uncommitted
+      changes with <strong>no confirmation and no undo</strong>. It is the only command in
+      this hour that can cost you something. Read <code>git diff</code> first — that is
+      what you are about to destroy. <code>docs/UNDO.md</code> in the pack covers the four
+      undos and which one bites.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── not github -->
+  <section class="section" id="notgithub">
+    <h2>git is not GitHub</h2>
+
+    <p class="lead">Local repo. No remote. No account. <strong>Nothing published.</strong></p>
+
+    <div class="tw"><table>
+      <tr><th>What you get</th><th>What it costs</th></tr>
+      <tr><td>Full undo, on every file, forever</td><td>Nothing</td></tr>
+      <tr><td>A readable history of why things look like this</td><td>Nothing</td></tr>
+      <tr><td>Diff before you commit</td><td>Nothing</td></tr>
+      <tr><td>Branches, if you ever want them</td><td>Nothing</td></tr>
+      <tr><td>An account somewhere</td><td><strong>Not required. Not used.</strong></td></tr>
+    </table></div>
+
+    <p>Your business documents' filenames never appear on anyone else's server, because
+    <strong>nothing leaves the box</strong>. That is the same portability line the whole
+    series runs on, and this is the cheapest class to hold it.</p>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── recap -->
+  <section class="section" id="recap">
+    <h2>Where we have got to</h2>
+
+    <div class="recap c1">
+      <h3><span class="n">Class 1</span> Install the Brain</h3>
+      <p>Claude Code and Codex on your own machine, with skills. <strong>A brain with no
+      senses, no memory and no hands</strong> — and it stayed that way for a week on
+      purpose.</p>
+    </div>
+
+    <div class="recap c2">
+      <h3><span class="n">Class 2</span> Give It Senses</h3>
+      <p>n8n and Postgres. Mail arrives, gets classified, gets stored.
+      <strong>The lesson that stuck: a green checkmark is not evidence.</strong> A workflow
+      can run perfectly and write nothing.</p>
+    </div>
+
+    <div class="recap c3">
+      <h3><span class="n">Class 3</span> Ask Your Brain</h3>
+      <p>Memory it can search, and the rule that governs everything since:
+      <strong>extracted, never inferred.</strong> If it cannot show you the sentence, it
+      does not ship.</p>
+    </div>
+
+    <div class="recap c4">
+      <h3><span class="n">Class 4</span> Ears and a Voice</h3>
+      <p>Telegram in, spoken answers out. And the first hard lesson about credentials —
+      <strong>one bot token, one listener</strong>, or two pollers fight over every message.</p>
+    </div>
+
+    <div class="recap c5">
+      <h3><span class="n">Class 5</span> Hands and a Clock</h3>
+      <p>The 7am digest, and <strong>draft-don't-send</strong>. The brain writes; you press
+      send. Also where a 7am schedule fired at 2am, because <code>GENERIC_TIMEZONE</code>
+      was unset and n8n was on UTC.</p>
+    </div>
+
+    <div class="recap c6">
+      <h3><span class="n">Class 6</span> The Graph</h3>
+      <p>What connects to what. A structural pass over your own repo in about a second,
+      <strong>using no tokens at all</strong> — the cheapest useful thing in the series.</p>
+    </div>
+
+    <div class="recap c7">
+      <h3><span class="n">Class 7</span> A Clock It Can Read</h3>
+      <p>Your real calendar. It proposes an <code>.ics</code> you click rather than writing
+      to your week — <strong>a calendar you did not agree to is worse than no calendar</strong>.
+      And the lie that looks like success: recurring events stored once, with a rule.</p>
+    </div>
+
+    <div class="ms">
+      <div class="ms-t">The thread through all seven</div>
+      <p style="margin-bottom:0"><strong>A silent failure that produces a plausible
+      artifact.</strong> Every class has had one. Today's five all have that shape too —
+      and this time they are failures from my own workspace, with dates.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── prework -->
+  <section class="section" id="prework">
+    <h2>Before the hour · about five minutes</h2>
+
+    <div class="step">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <div class="step-title">Is git installed, and does it know you?</div>
+      </div>
+      <div class="code">
+        <button class="cp">copy</button>
+        <div class="code-label">both should print something</div>
+        <pre>git --version
+git config user.name
+git config user.email</pre>
+      </div>
+      <p style="margin-bottom:0">Blank name or email and your first commit fails with
+      <em>"Please tell me who you are"</em>. Set them with
+      <code>git config --global</code> — <strong>they go into every commit
+      permanently</strong>, so pick the ones you want on the record.</p>
+    </div>
+
+    <div class="step core">
+      <div class="step-head">
+        <div class="step-num accent">2</div>
+        <div class="step-title">Run the preflight against your brain folder</div>
+      </div>
+      <div class="code">
+        <button class="cp">copy</button>
+        <div class="code-label">reads only — writes nothing</div>
+        <pre>bash verify.sh ~/brain</pre>
+      </div>
+      <p><strong>If your folder is not a repo yet, that is the best possible answer.</strong>
+      No history means nothing can have leaked into it.</p>
+      <p style="margin-bottom:0"><strong>If it already is one</strong>, the script searches
+      its history — and that is the check <code>git status</code> can never make for you.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <div class="step-title">Bring one answer</div>
+      </div>
+      <p style="margin-bottom:0">Not a command. Two minutes of looking at your own folder:
+      <strong>what is in here that I could not rebuild if it vanished tonight?</strong></p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── P1 -->
+  <section class="section" id="p1">
+    <h2>P1 · Track it <span class="step-time">14–26 min</span></h2>
+
+    <p class="lead"><strong>You end with:</strong> one commit containing your work, and
+    <code>.env</code> nowhere in it.</p>
+
+    <div class="tw"><table>
+      <tr><th>Step</th><th>What happens</th></tr>
+      <tr><td><code>git init -b main</code></td><td>The folder becomes a repo. Nothing is tracked yet</td></tr>
+      <tr><td>The <code>.gitignore</code></td><td>Goes in <strong>first</strong>, before anything is staged</td></tr>
+      <tr><td><code>git status</code></td><td><strong>Read it.</strong> This is the moment to notice what you were about to commit</td></tr>
+      <tr><td><code>git add</code> chosen paths</td><td>You choose. Not <code>-A</code></td></tr>
+      <tr><td><code>git commit</code></td><td>The first one</td></tr>
+      <tr><td><code>git ls-files</code></td><td><strong>Check <code>.env</code> is not in the list</strong></td></tr>
+    </table></div>
+
+    <div class="warn">
+      <div class="warn-t">The order matters and it is not obvious</div>
+      <p style="margin-bottom:0"><strong><code>.gitignore</code> does not apply to files
+      git is already tracking.</strong> Ignoring is for untracked files only. Commit
+      <code>.env</code> once and adding it to <code>.gitignore</code> afterwards changes
+      nothing — you have to <code>git rm --cached</code> it, and even then it stays in
+      history.</p>
+    </div>
+
+    <div class="ms">
+      <div class="ms-t">Milestone</div>
+      <p style="margin-bottom:0"><code>git log --oneline</code> shows a commit, and
+      <code>git ls-files | grep .env</code> shows <strong>nothing</strong>.</p>
+    </div>
+
+    <p><strong>P1 alone is worth the hour.</strong> Stop here and you still have history,
+    and you have stopped carrying your credentials around loose in a folder.</p>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── env -->
+  <section class="section" id="env">
+    <h2>The <code>.env</code> beat <span class="step-time">26–34 min</span></h2>
+
+    <div class="quote">
+      <p>Four times across Classes 2, 3 and 4, I told you never to <em>overwrite</em> this
+      file, because it holds the key that decrypts every credential you have saved.</p>
+      <p class="after">I never once told you not to <strong>commit</strong> it.</p>
+    </div>
+
+    <div class="danger">
+      <div class="danger-t">Deleting it does not undo it</div>
+      <p>Commit <code>.env</code> a single time and it is in history permanently. Delete
+      the file, add it to <code>.gitignore</code>, commit again — and you have a
+      <strong>completely clean working tree</strong> while every earlier commit still
+      contains the key. And so does every copy of that repo.</p>
+      <p style="margin-bottom:0"><strong><code>git status</code> will never mention it
+      again.</strong></p>
+    </div>
+
+    <div class="code">
+      <button class="cp">copy</button>
+      <div class="code-label">the question git status cannot answer</div>
+      <pre>git log --all --full-history --oneline -- .env</pre>
+    </div>
+    <p>Any output means it is in there. <code>verify.sh</code> runs this for you, plus a
+    sweep for key-shaped strings across your last 200 commits — which catches the case
+    <code>.env</code> checks miss: a key pasted straight into a workflow export.</p>
+
+    <h3>If it is already in your history</h3>
+
+    <p class="lead"><strong>Rotate what leaked. Do not rewrite history.</strong></p>
+
+    <ul>
+      <li>Rewriting changes every commit hash, so anything referencing them breaks</li>
+      <li><strong>It does not help at all if anyone ever cloned or copied the repo</strong> —
+      and a backup is a copy</li>
+      <li>It is fiddly enough that people get it half-right and believe they are done</li>
+    </ul>
+
+    <div class="warn">
+      <div class="warn-t">And rotating the n8n key is not free</div>
+      <p><code>N8N_ENCRYPTION_KEY</code> decrypts every credential n8n has saved. Change it
+      and n8n <strong>cannot read any of them</strong> — they are still there, and
+      unreadable. So: change the key, then re-enter every credential by hand.
+      <strong>Budget an hour.</strong></p>
+      <p style="margin-bottom:0">Do it anyway if the key is genuinely exposed to people you
+      do not trust. If the repo has never left your machine, the honest risk assessment may
+      be different — <strong>but make that a decision rather than an assumption.</strong></p>
+    </div>
+
+    <h3>The two files that stop it happening again</h3>
+    <div class="tw"><table>
+      <tr><th>File</th><th>What it does</th></tr>
+      <tr><td><code>gitignore-template</code></td><td>Excludes <code>.env</code> <strong>before it excludes anything else</strong>, and un-ignores <code>.env.example</code></td></tr>
+      <tr><td><code>env.example</code></td><td>The names, <strong>none of the values</strong>. This one <em>is</em> committed</td></tr>
+    </table></div>
+
+    <div class="note">
+      <div class="note-t">The rule that outlives the list</div>
+      <p style="margin-bottom:0">Ignore lists go stale. This sentence does not:
+      <strong>if it has a value in it, it does not go in git.</strong></p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── P2 -->
+  <section class="section" id="p2">
+    <h2>P2 · Version it <span class="step-time">34–44 min</span></h2>
+
+    <p class="lead"><strong>You end with:</strong> a <code>feat:</code> commit that takes
+    <code>0.1.0</code> to <code>0.2.0</code>, and a CHANGELOG that says why.</p>
+
+    <p>Suspicious that a version number on a folder only you use is ceremony? Fair. The
+    honest case is three lines:</p>
+
+    <ul>
+      <li>"It broke last Tuesday" is useless. <strong>"It broke in 0.4.2" is a place to look</strong></li>
+      <li>A CHANGELOG answers <em>"why does this look like this?"</em> three months from now</li>
+      <li>It forces <strong>one sentence about intent per change</strong> — which is the
+      actual value. The number is just the index</li>
+    </ul>
+
+    <div class="tw"><table>
+      <tr><th>Prefix</th><th>Means</th><th>Bump</th></tr>
+      <tr><td><code>feat:</code></td><td>A new capability</td><td>minor · 0.1.0 → 0.2.0</td></tr>
+      <tr><td><code>fix:</code></td><td>Something was broken</td><td>patch · 0.1.0 → 0.1.1</td></tr>
+      <tr><td><code>perf:</code> <code>refactor:</code> <code>docs:</code> <code>chore:</code></td><td>Faster / same / documentation / housekeeping</td><td>patch</td></tr>
+      <tr><td><code>feat!:</code></td><td>Breaks something</td><td><strong>MAJOR · 0.1.0 → 1.0.0</strong></td></tr>
+    </table></div>
+
+    <p><strong>The rule that matters more than the table:</strong> the prefix is a promise
+    about what changed. <strong>If you cannot pick one, the commit is probably two
+    commits.</strong></p>
+
+    <div class="code">
+      <button class="cp">copy</button>
+      <div class="code-label">the loop, from here on</div>
+      <pre>git status --short              # what changed
+git add &lt;paths&gt;                 # choose
+./gcommit --dry-run "feat: ..." # what version will this be
+./gcommit "feat: ..."           # do it
+head -20 CHANGELOG.md           # READ IT BACK</pre>
+    </div>
+
+    <div class="warn">
+      <div class="warn-t">Why the dry run exists</div>
+      <p style="margin-bottom:0">If any version string lives <strong>inside</strong> your
+      repo — an app footer, an about screen, <code>APP_VERSION</code> — you must write the
+      <strong>new</strong> number into it. Committing is what creates the new version.
+      Writing the current one makes the footer stale the instant the commit lands, and
+      fixing that produces another commit, which produces another version.
+      <strong>Three releases in one afternoon, 2026-08-04.</strong></p>
+    </div>
+
+    <div class="ms">
+      <div class="ms-t">Milestone</div>
+      <p style="margin-bottom:0"><code>VERSION</code> says <code>0.2.0</code>, and the
+      newest CHANGELOG section is under the title, on its own, with the older entries
+      intact — <strong>because you opened the file and looked.</strong></p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── traps -->
+  <section class="section" id="traps">
+    <h2>The five traps <span class="step-time">44–50 min</span></h2>
+
+    <p class="lead">Every refusal in the shipped <code>gcommit</code> is a real failure from
+    this workspace, <strong>with a date and a cost</strong>. This is the segment that earns
+    the hour.</p>
+
+    <div class="tw"><table>
+      <tr><th>#</th><th>What went wrong</th><th>It now</th></tr>
+      <tr>
+        <td><strong>1</strong></td>
+        <td><code>git add -A</code> swept another session's half-finished work into a commit. Three commits under the wrong message <em>(2026-08-25)</em></td>
+        <td><strong>Never stages.</strong> You stage; it commits. Refuses on an empty index</td>
+      </tr>
+      <tr>
+        <td><strong>2</strong></td>
+        <td>A multi-line message silently lost its prefix — a <code>feat:</code> shipped as a patch, no error <em>(2026-08-10)</em></td>
+        <td><strong>Refuses</strong> a multi-line message</td>
+      </tr>
+      <tr>
+        <td><strong>3</strong></td>
+        <td>Writing the <em>current</em> version into an app footer made it stale instantly <em>(2026-08-04, three releases)</em></td>
+        <td><code>--dry-run</code> prints the version it <strong>will create</strong></td>
+      </tr>
+      <tr>
+        <td><strong>4</strong></td>
+        <td>Docs-only commits bumped SemVer, restarting the treadmill <em>(2026-08-05, two releases)</em></td>
+        <td><strong>Warns</strong>, and points at plain <code>git commit</code></td>
+      </tr>
+      <tr>
+        <td><strong>5</strong></td>
+        <td>A CHANGELOG entry whose prose <em>quoted</em> the insert marker got a whole release section injected <strong>inside a bullet</strong> — two version headings, one buried mid-list <em>(2026-08-18)</em></td>
+        <td>Replaces <strong>only the first</strong> occurrence, and never inserts above the title</td>
+      </tr>
+    </table></div>
+
+    <div class="danger">
+      <div class="danger-t">Trap 5 is the one to sit with</div>
+      <p><strong>A dry run cannot catch it.</strong> It prints the version summary, not the
+      diff — so it has nothing to say about a mangled CHANGELOG. The version number was
+      perfect. The file was wrong.</p>
+      <p style="margin-bottom:0"><strong>Read the file.</strong> A tool that is careful
+      about one thing and blind to the next is normal, not unusual — and that is the most
+      teachable object in the hour.</p>
+    </div>
+
+    <div class="note">
+      <div class="note-t">The same rule applied to the pack itself</div>
+      <p style="margin-bottom:0"><code>build-pack.py</code> refuses to ship a
+      <code>gcommit</code> that has stopped refusing. Testing that guard by breaking
+      <code>gcommit</code> on purpose found <strong>two bugs in the guard</strong>: a
+      substring matched inside a mutated flag, and comments <em>about</em> the refusals
+      satisfied checks meant for the code. <strong>A guard that has never refused anything
+      is just a print statement.</strong></p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── P3 -->
+  <section class="section" id="p3">
+    <h2>P3 · Document it <span class="step-time">50–56 min</span></h2>
+
+    <p class="lead"><strong>You end with:</strong> a README that someone else — or you in
+    six months — could stand your brain up from.</p>
+
+    <div class="quote">
+      <p>Could a competent stranger, given only this repo, get it running without asking you
+      anything?</p>
+      <p class="after">Unlike <em>"is it documented?"</em>, that question has an answer.
+      And it is usually no.</p>
+    </div>
+
+    <div class="tw"><table>
+      <tr><th>#</th><th>The four questions</th></tr>
+      <tr><td>1</td><td><strong>What is this?</strong> Two sentences. What it does, for whom. Not how</td></tr>
+      <tr><td>2</td><td><strong>How do I run it?</strong> Real commands, in order, from a machine that has nothing</td></tr>
+      <tr><td>3</td><td><strong>What do I need first?</strong> Accounts, keys, versions</td></tr>
+      <tr><td>4</td><td><strong>What breaks, and what do I do?</strong> The failures you have actually hit</td></tr>
+    </table></div>
+
+    <p><strong>Section 4 is the one that gets skipped and the only one anyone reads
+    twice.</strong> Your own worst afternoons are the most valuable paragraphs in the
+    document, and they are the first thing you forget. Mine them from your CHANGELOG and
+    from the class TROUBLESHOOT files.</p>
+
+    <div class="warn">
+      <div class="warn-t">Two things that do not go in</div>
+      <p>No keys, tokens, chat ids, secret URLs, LAN addresses or personal paths.
+      <strong>This file is going in git, and git remembers.</strong></p>
+      <p style="margin-bottom:0">And nothing aspirational. If it is not built, it does not
+      go in the README — <em>"the inbox sort is set up but has never run against real
+      mail"</em> is a useful sentence. Silence there is a lie that costs somebody an
+      afternoon, probably yours.</p>
+    </div>
+
+    <div class="note">
+      <div class="note-t">Commit it with plain git</div>
+      <p style="margin-bottom:0"><code>git commit -m "docs: write the README"</code>, not
+      <code>gcommit</code>. Documentation only, so no version bump — that is trap 4.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── not backup -->
+  <section class="section" id="notbackup">
+    <h2>What this class does not do <span class="step-time">56–60 min</span></h2>
+
+    <div class="danger">
+      <div class="danger-t">git is not backup</div>
+      <p style="margin-bottom:0">It gives you history. It does not give you a second copy.
+      <strong>A repo on a box that dies dies with it</strong>, along with every commit in
+      it.</p>
+    </div>
+
+    <p>That is worth being annoyed about, and it is the honest next conversation. It is not
+    solved by pushing to GitHub either — that is a different trade, and it means your
+    filenames live on someone else's server.</p>
+
+    <h3>Next week · Class 9, the cockpit</h3>
+    <p>The dashboard grows a view of your graph and a terminal that talks to Claude and
+    Codex — <strong>an agent with shell access to everything you have built</strong>.</p>
+    <p style="margin-bottom:0">Which is exactly why this class came first.</p>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── done -->
+  <section class="section" id="done">
+    <h2>Are you actually done?</h2>
+
+    <p>Four things. <code>VERIFY.md</code> in the pack has the commands for each.</p>
+
+    <ul class="check">
+      <li><input type="checkbox" id="d1"><label for="d1"><strong>It is a repo with real commits.</strong> <code>git log --oneline</code> shows more than one</label></li>
+      <li><input type="checkbox" id="d2"><label for="d2"><strong><code>.env</code> is not tracked.</strong> <code>git ls-files | grep .env</code> prints nothing</label></li>
+      <li><input type="checkbox" id="d3"><label for="d3"><strong><code>.env</code> is not in history.</strong> <code>git log --all --full-history -- .env</code> prints nothing</label></li>
+      <li><input type="checkbox" id="d4"><label for="d4"><strong>No key-shaped strings anywhere in history</strong></label></li>
+      <li><input type="checkbox" id="d5"><label for="d5"><strong><code>gcommit</code> produced a version bump</strong> — and you <em>opened</em> the CHANGELOG and it is well-formed</label></li>
+      <li><input type="checkbox" id="d6"><label for="d6"><strong>The README answers all four questions</strong>, and says what is <em>not</em> built</label></li>
+      <li><input type="checkbox" id="d7"><label for="d7"><strong>You have run the refusals</strong> — an empty index and a multi-line message both got refused, so you know they are real</label></li>
+    </ul>
+
+    <div class="warn">
+      <div class="warn-t">What passing does not mean</div>
+      <p><strong>Not that your history is clean</strong> — that the checks found nothing.
+      <code>verify.sh</code> looks at 200 commits and four key shapes. A password in a
+      config file walks straight past it.</p>
+      <p style="margin-bottom:0"><strong>Not that the README is good</strong> — that it has
+      four sections. Only the stranger test tells you, and you cannot run that perfectly on
+      yourself.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────── files -->
+  <section class="section" id="files">
+    <h2>Everything in the pack</h2>
+
+    <a class="big" href="pack/README.md"><span class="go">→</span><span class="t">README.md</span><span class="d">What this is, and the order that works</span></a>
+    <a class="big" href="pack/PREWORK.md"><span class="go">→</span><span class="t">PREWORK.md</span><span class="d">Start here — five minutes before the hour</span></a>
+    <a class="big" href="pack/prompts/P1-track.md"><span class="go">→</span><span class="t">prompts/P1-track.md</span><span class="d">git init, the .gitignore, the first commit</span></a>
+    <a class="big" href="pack/prompts/P2-version.md"><span class="go">→</span><span class="t">prompts/P2-version.md</span><span class="d">VERSION, CHANGELOG, conventional commits</span></a>
+    <a class="big" href="pack/prompts/P3-document.md"><span class="go">→</span><span class="t">prompts/P3-document.md</span><span class="d">The README a stranger could follow</span></a>
+    <a class="big" href="pack/gcommit"><span class="go">→</span><span class="t">gcommit</span><span class="d">The versioned-commit wrapper. Plain bash, no dependencies</span></a>
+    <a class="big" href="pack/gitignore-template"><span class="go">→</span><span class="t">gitignore-template</span><span class="d">What not to track, with .env first</span></a>
+    <a class="big" href="pack/env.example"><span class="go">→</span><span class="t">env.example</span><span class="d">The names, none of the values</span></a>
+    <a class="big" href="pack/VERIFY.md"><span class="go">→</span><span class="t">VERIFY.md</span><span class="d">The acceptance test, and what passing does not mean</span></a>
+    <a class="big" href="pack/verify.sh"><span class="go">→</span><span class="t">verify.sh</span><span class="d">Preflight — and it searches your history for secrets</span></a>
+    <a class="big" href="pack/TROUBLESHOOT.md"><span class="go">→</span><span class="t">TROUBLESHOOT.md</span><span class="d">Every error, the silent one first</span></a>
+    <a class="big" href="pack/docs/COMMIT-MESSAGES.md"><span class="go">→</span><span class="t">docs/COMMIT-MESSAGES.md</span><span class="d">Messages worth reading later</span></a>
+    <a class="big" href="pack/docs/UNDO.md"><span class="go">→</span><span class="t">docs/UNDO.md</span><span class="d">The four undos, and which one loses work</span></a>
+    <a class="big" href="downloads/class-08-project-pack.zip"><span class="go">↓</span><span class="t">class-08-project-pack.zip</span><span class="d">All 13 files · sha256 783c9032…</span></a>
+  </section>
+
+  <div class="foot">
+    <div class="sig">Hector Diaz</div>
+    <p>The Brain That Runs a Company · Class 8 · AI Auto Base</p>
+    <p>Orbix Automation Solutions · <a href="https://getorbix.com">getorbix.com</a></p>
+    <p style="margin-top:14px;font-size:12.5px">Pack and prompts released under MIT. Post
+    what broke on your machine — the exact error text is the diagnosis, and
+    <strong>never post a key.</strong></p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var buttons = Array.prototype.slice.call(document.querySelectorAll(".osbar button"));
+  var panels  = Array.prototype.slice.call(document.querySelectorAll(".osonly"));
+
+  function showOS(os){
+    buttons.forEach(function(b){ b.classList.toggle("on", b.dataset.os === os); });
+    panels.forEach(function(p){ p.classList.toggle("show", p.dataset.os === os); });
+    try { localStorage.setItem("bc08-os", os); } catch(e){ /* private mode */ }
+  }
+
+  function detectOS(){
+    try { var s = localStorage.getItem("bc08-os"); if (s) return s; } catch(e){ /* fall through */ }
+    var ua = navigator.userAgent || "";
+    if (/Windows/i.test(ua)) return "win";
+    if (/Mac OS X|Macintosh/i.test(ua)) return "mac";
+    if (/Linux|X11|CrOS/i.test(ua)) return "linux";
+    return "mac";
+  }
+
+  buttons.forEach(function(b){ b.addEventListener("click", function(){ showOS(b.dataset.os); }); });
+  showOS(detectOS());
+
+  /* Clipboard: on file:// Chromium reports isSecureContext true and exposes
+     navigator.clipboard, but writeText() REJECTS while execCommand works. So
+     rejection falls through rather than telling people to select by hand. */
+  function legacyCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function copyText(text, btn){
+    function done(ok){
+      btn.textContent = ok ? "copied" : "select it";
+      btn.classList.toggle("ok", ok);
+      setTimeout(function(){ btn.textContent = "copy"; btn.classList.remove("ok"); }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); },
+                                               function(){ done(legacyCopy(text)); });
+      return;
+    }
+    done(legacyCopy(text));
+  }
+
+  document.querySelectorAll(".cp").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var pre = btn.parentNode.querySelector("pre");
+      if (pre) copyText(pre.textContent, btn);
+    });
+  });
+
+  document.querySelectorAll(".check input[type=checkbox]").forEach(function(box){
+    var key = "bc08-" + box.id;
+    try { if (localStorage.getItem(key) === "1") box.checked = true; } catch(e){ /* blocked */ }
+    box.addEventListener("change", function(){
+      try {
+        if (box.checked) localStorage.setItem(key, "1");
+        else localStorage.removeItem(key);
+      } catch(e){ /* tick still works this session */ }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

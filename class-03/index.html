@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Class 3 — Memory · The Brain That Runs a Company</title>
+<meta name="description" content="Give your system a memory it can search. One command, from a machine with nothing installed." />
+<style>
+  :root{
+    --bg:#0F172A; --panel:#16223b; --panel2:#1b2946; --line:#2a3a5c;
+    --ink:#F8FAFC; --muted:#94A3B8; --blue:#3B82F6; --gold:#D4A843;
+    --green:#16A34A; --red:#DC2626;
+    --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+    --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;
+       padding:30px 20px 60px}
+  .page{max-width:880px;margin:0 auto}
+
+  header{margin-bottom:6px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+          text-transform:uppercase;color:var(--blue)}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.025em;margin-top:6px}
+  .tag{color:var(--muted);font-size:15px;margin-top:8px;max-width:62ch}
+
+  .lede{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+        padding:20px;margin:24px 0;font-size:15px}
+  .lede p+p{margin-top:10px}
+  .lede em{color:#9dc4ee;font-style:normal}
+
+  h2{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:34px 0 6px}
+  h3{font-size:15px;font-weight:700;margin:20px 0 6px}
+  .note{color:var(--muted);font-size:14px;margin-bottom:14px;max-width:70ch}
+  p{font-size:14.5px} p+p{margin-top:10px}
+  ol{margin:12px 0 0 20px} ol li{margin:9px 0;font-size:14.5px}
+  a{color:#9dc4ee}
+
+  /* ── OS switcher ─────────────────────────────────────────────────────── */
+  .osbar{display:flex;gap:8px;margin:18px 0 0;flex-wrap:wrap}
+  .osbar button{background:var(--panel);border:1px solid var(--line);color:var(--muted);
+                border-radius:999px;padding:8px 18px;font-family:var(--sans);
+                font-size:13.5px;font-weight:700;cursor:pointer}
+  .osbar button:hover{border-color:var(--blue);color:var(--ink)}
+  .osbar button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .osonly{display:none}
+  .osonly.show{display:block}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+        padding:20px;margin-top:14px}
+
+  .cmd{border:1px solid var(--blue);border-radius:10px;background:var(--bg);
+       overflow:hidden;margin-top:14px}
+  .cmd .k{display:flex;align-items:center;gap:10px;background:rgba(59,130,246,.15);
+          padding:9px 13px;font-family:var(--mono);font-size:11px;
+          letter-spacing:.12em;text-transform:uppercase;color:#9dc4ee}
+  .cmd button{margin-left:auto;background:var(--blue);color:#fff;border:0;
+              border-radius:6px;padding:6px 14px;font-family:var(--sans);
+              font-size:12px;font-weight:700;cursor:pointer}
+  .cmd button:hover{background:#2f6fd8}
+  .cmd button.ok{background:var(--green)}
+  .cmd button.fail{background:var(--gold);color:#26200c}
+  .cmd textarea{display:block;width:100%;border:0;resize:vertical;background:var(--bg);
+                color:var(--ink);font-family:var(--mono);font-size:12.5px;
+                line-height:1.65;padding:14px;min-height:88px;white-space:pre-wrap;
+                word-break:break-all}
+  .cmd textarea:focus{outline:none}
+
+  pre{font-family:var(--mono);font-size:12.5px;background:var(--bg);
+      border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:10px;
+      overflow-x:auto}
+  code{font-family:var(--mono);font-size:12.5px;background:rgba(0,0,0,.35);
+       padding:2px 6px;border-radius:4px}
+
+  a.big{display:block;background:var(--panel);border:1px solid var(--line);
+        border-radius:12px;padding:18px 20px;margin-top:12px;text-decoration:none;
+        color:var(--ink)}
+  a.big:hover{border-color:var(--blue)}
+  a.big .t{font-size:16px;font-weight:700}
+  a.big .d{color:var(--muted);font-size:13.5px;margin-top:4px}
+  a.big .go{float:right;color:var(--blue);font-weight:700;font-size:20px;line-height:1}
+
+  .warn{margin-top:14px;padding:14px 16px;border-radius:10px;
+        border:1px solid var(--gold);background:rgba(212,168,67,.10);font-size:13.5px}
+  .warn b{color:#f0d08a}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px;
+        border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  th{background:var(--panel2);text-align:left;padding:9px 12px;font-size:11px;
+     letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+  td.h{font-family:var(--mono);font-size:11.5px;color:var(--muted);word-break:break-all}
+
+  footer{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);
+         color:var(--muted);font-size:12px;font-family:var(--mono);
+         text-align:center;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="kicker">The Brain That Runs a Company &middot; Class 3</div>
+  <h1>Give it a memory it can search</h1>
+  <div class="tag">You type a question. Your own machine answers it from your own
+  documents, and tells you which file it read.</div>
+</header>
+
+<div class="lede">
+  <p><em>"How much is the security deposit on the warehouse?"</em> &rarr; <b>$7,700</b>,
+  from <code>warehouse-lease.md</code>.</p>
+  <p><em>"What is my employee health plan copay?"</em> &rarr; <em>"I don't have that in
+  your documents."</em></p>
+  <p>That second one is the whole point. A thing that says <b>I don't know</b> instead of
+  inventing an answer is a memory. A thing that always answers is a chatbot.</p>
+</div>
+
+<h2>Which machine are you on?</h2>
+<div class="note">Everything below changes to match. Pick once — this page remembers.</div>
+<div class="osbar">
+  <button type="button" data-os="win">Windows</button>
+  <button type="button" data-os="mac">Mac</button>
+  <button type="button" data-os="linux">Linux</button>
+</div>
+
+<!-- ── prerequisites ───────────────────────────────────────────────────── -->
+<h2>Step 1 &mdash; Starting from nothing</h2>
+<div class="note">You need two things before the one command: <b>Node</b> and
+<b>Claude Code</b>. That is all — Claude Code installs the rest for you. Skip this if
+<code>node -v</code> prints v22 or higher and <code>claude --version</code> answers.</div>
+
+<div class="osonly" data-os="win">
+  <div class="card">
+    <p><b>Do the work inside WSL, not PowerShell.</b> The installer is a bash script and
+    your stack will live in Linux. Going through PowerShell means bridging into WSL at
+    every step anyway, and that is where people lose an afternoon.</p>
+    <ol>
+      <li><b>Install WSL.</b> In PowerShell, as Administrator:
+        <pre>wsl --install -d Ubuntu</pre>
+        Reboot. Let Ubuntu finish its first-run setup and pick a username and password.</li>
+      <li><b>Install Docker Desktop</b> from
+        <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener noreferrer">docker.com</a>.
+        Leave <b>"Use WSL 2 based engine"</b> ticked, and reboot when it asks. It genuinely
+        needs it.</li>
+      <li><b>Switch on WSL integration.</b> Docker Desktop &rarr; Settings &rarr; Resources
+        &rarr; WSL Integration &rarr; enable your Ubuntu distro. Without this,
+        <code>docker</code> is not found inside WSL and the error will not tell you why.</li>
+      <li><b>Open Ubuntu</b> and install Node:
+        <pre>curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash</pre>
+        Close that window, open a new one, then:
+        <pre>nvm install 24
+npm install -g @anthropic-ai/claude-code</pre></li>
+    </ol>
+    <div class="warn"><b>Run everything from the Ubuntu window from now on.</b> Not
+    PowerShell. If a command in this class does not work, this is the first thing to
+    check.</div>
+  </div>
+</div>
+
+<div class="osonly" data-os="mac">
+  <div class="card">
+    <pre>brew install node
+brew install --cask docker
+npm install -g @anthropic-ai/claude-code</pre>
+    <p style="margin-top:12px">No Homebrew? Take the Node LTS installer from
+    <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a>
+    and the Docker <code>.dmg</code> from
+    <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener noreferrer">docker.com</a>
+    &mdash; <b>take the build for your chip</b>, Apple silicon or Intel.</p>
+    <p>Then launch Docker from Applications and wait for the whale icon to stop
+    animating. <code>docker ps</code> must return a table, even an empty one.</p>
+  </div>
+</div>
+
+<div class="osonly" data-os="linux">
+  <div class="card">
+    <pre>curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash</pre>
+    <p style="margin-top:12px">Close the terminal, open a new one, then:</p>
+    <pre>nvm install 24
+npm install -g @anthropic-ai/claude-code</pre>
+    <p style="margin-top:12px">Docker you do not have to install &mdash; the pack's
+    installer does it for you as part of the run.</p>
+  </div>
+</div>
+
+<div class="card" style="border-color:var(--gold)">
+  <b style="color:#f0d08a">Then close your terminal and open a new one.</b>
+  <p style="margin-top:8px">PATH does not update in a shell that is already running. This
+  is the number one reason the next command "doesn't work". Check both of these answer
+  before you carry on:</p>
+  <pre>node -v          # v22 or higher
+claude --version</pre>
+</div>
+
+<!-- ── the command ─────────────────────────────────────────────────────── -->
+<h2>Step 2 &mdash; The one command</h2>
+<div class="note">Paste it into your terminal. That is the whole install.</div>
+
+<div class="cmd">
+  <div class="k"><span id="cmdlabel">Terminal</span>
+    <button type="button" data-copy="cmd1">Copy</button></div>
+  <textarea id="cmd1" readonly spellcheck="false"></textarea>
+</div>
+
+<div class="card">
+  <p>From there Claude Code downloads the pack, checks it is the real file, unzips it,
+  reads the README, writes an install script for your machine, <b>explains that script to
+  you before it runs anything</b>, and stops at every step that needs a human.</p>
+  <p>It will not run anything without telling you what it does first. If you would rather
+  read the instructions yourself before any of that,
+  <a href="install.txt">here they are in full</a>.</p>
+</div>
+
+<!-- ── the gate ────────────────────────────────────────────────────────── -->
+<h2>Step 3 &mdash; When it stops, it opens this</h2>
+<div class="note">It will stop. Creating your n8n account, getting an OpenRouter key and
+putting a couple of dollars on it, importing workflows and switching them on &mdash; none
+of that can be scripted. It happens in a browser.</div>
+
+<a class="big" href="setup-gate.html">
+  <span class="go">&rarr;</span>
+  <div class="t">The setup page</div>
+  <div class="d">Five steps. Each one has a button that opens in a new tab, the exact
+  values to type, the mistake that costs an hour, and a Copy button for the prompt that
+  tells Claude Code to carry on. It remembers what you have ticked.</div>
+</a>
+
+<p style="margin-top:12px">Open it now if you like. It works on its own, and reading it
+first is never wasted.</p>
+
+<!-- ── addendum ────────────────────────────────────────────────────────── -->
+<h2>When that works, there is a second part</h2>
+<div class="note">Optional. The dashboard becomes three tabs, you drag a PDF onto the page
+instead of copying files into a container, and your mail gets read and sorted.</div>
+
+<div class="cmd">
+  <div class="k"><span id="cmdlabel2">Terminal</span>
+    <button type="button" data-copy="cmd2">Copy</button></div>
+  <textarea id="cmd2" readonly spellcheck="false"></textarea>
+</div>
+
+<a class="big" href="setup-gate-addendum.html">
+  <span class="go">&rarr;</span>
+  <div class="t">The addendum setup page</div>
+  <div class="d">Four steps, mostly in the n8n editor.</div>
+</a>
+
+<div class="warn" style="margin-top:14px">
+  <b>It refuses to install onto a Class 3 that is not working.</b> That is deliberate. A
+  nicer door onto a broken pipeline is still broken.
+</div>
+
+<!-- ── by hand ─────────────────────────────────────────────────────────── -->
+<h2>Rather do it by hand?</h2>
+<div class="note">Good. That is how you learn what the script is doing, and every command
+is written out in order. You do not have to download anything to read them.</div>
+<table>
+  <tr><th>File</th><th>What it is</th></tr>
+  <tr><td class="h"><a href="https://github.com/AIAutoBase/Build_With_Me/tree/main/class-03/blob/main/pack/README.md">pack/README.md</a></td>
+      <td>The whole procedure, start to finish, for Windows, Mac and Linux</td></tr>
+  <tr><td class="h"><a href="https://github.com/AIAutoBase/Build_With_Me/tree/main/class-03/blob/main/pack/VERIFY.md">pack/VERIFY.md</a></td>
+      <td>A checklist to confirm each step actually worked</td></tr>
+  <tr><td class="h"><a href="https://github.com/AIAutoBase/Build_With_Me/tree/main/class-03/blob/main/pack/LOCAL-EMBEDDINGS.md">pack/LOCAL-EMBEDDINGS.md</a></td>
+      <td>Run it all offline with Ollama. Nothing leaves your machine.</td></tr>
+  <tr><td class="h"><a href="https://github.com/AIAutoBase/Build_With_Me/tree/main/class-03/blob/main/addendum/README.md">addendum/README.md</a></td>
+      <td>The same, for the second part</td></tr>
+</table>
+
+<h3>Or just take the zips</h3>
+<table>
+  <tr><th>Download</th><th>SHA-256</th></tr>
+  <tr><td class="h"><a href="downloads/class-03-brain-pack.zip">class-03-brain-pack.zip</a></td>
+      <td class="h">981bd63dbf188cc2f709fcb6401b81764e014d7aeac9bcd6cd9ded60f56ad43c</td></tr>
+  <tr><td class="h"><a href="downloads/class-03-brain-pack-addendum.zip">class-03-brain-pack-addendum.zip</a></td>
+      <td class="h">66c0b9288e26e95898b5270546e25dfead5ee8a1ae7dcaf1d665e8a03d7870bd</td></tr>
+</table>
+<p style="margin-top:10px">Both unpack <b>flat</b> &mdash; there is no folder inside them.
+Give <code>unzip</code> a destination or they scatter into whatever directory you are
+standing in.</p>
+
+<!-- ── read it first ───────────────────────────────────────────────────── -->
+<h2>Read it before you run it</h2>
+<div class="note">That is the habit this series keeps repeating, and it applies to scripts
+from me as much as anyone. You do not have to read them yourself &mdash; you have an
+agent for that.</div>
+<pre>Analyze install.txt before I run it. Tell me exactly what it does, what it
+installs, what it writes to, and whether it contains anything malicious -
+injections, credential theft, or calls out to somewhere I did not ask for.</pre>
+
+<h2>Before you feed it anything personal</h2>
+<div class="card">
+  <p>Your documents are stored on <b>your</b> machine, in <b>your</b> Postgres. Nobody
+  else has them.</p>
+  <p>But the text is sent to OpenRouter to be turned into numbers, and the retrieved
+  pieces are sent again on every question you ask. <b>A third party reads those
+  documents.</b> That is true of every setup like this, including the expensive ones
+  &mdash; most just do not say so.</p>
+  <p><b>Start with business documents.</b> Do not feed it your medical records on day one
+  just because you can.</p>
+  <p>If you want nothing to leave your machine at all,
+  <a href="https://github.com/AIAutoBase/Build_With_Me/tree/main/class-03/blob/main/pack/LOCAL-EMBEDDINGS.md">LOCAL-EMBEDDINGS.md</a>
+  is the full procedure using Ollama. Slower, free, and nothing goes out.</p>
+</div>
+
+<footer>
+  <a href="https://github.com/AIAutoBase/Build_With_Me/tree/main/class-03">github.com/AIAutoBase/Build_With_Me/tree/main/class-03</a>
+  &middot; MIT licensed<br />
+  The Brain That Runs a Company &middot; AI Auto Base<br />
+  Created by Hector Diaz, founder of Orbix Automation Solutions.
+</footer>
+
+</div>
+<script>
+(function () {
+  "use strict";
+  var KEY = "brain-class-03-os";
+  var BASE = "https://aiautobase.github.io/Build_With_Me/class-03/";
+
+  var CMDS = {
+    posix: {
+      label: "Terminal",
+      a: 'curl -fsSL -o install.txt ' + BASE + 'install.txt && claude "Read install.txt in this folder and follow it exactly, from the top."',
+      b: 'curl -fsSL -o addendum-install.txt ' + BASE + 'addendum-install.txt && claude "Read addendum-install.txt in this folder and follow it exactly, from the top."'
+    },
+    win: {
+      label: "Ubuntu (WSL) terminal",
+      a: 'curl -fsSL -o install.txt ' + BASE + 'install.txt && claude "Read install.txt in this folder and follow it exactly, from the top."',
+      b: 'curl -fsSL -o addendum-install.txt ' + BASE + 'addendum-install.txt && claude "Read addendum-install.txt in this folder and follow it exactly, from the top."'
+    }
+  };
+
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  function setOS(os) {
+    document.querySelectorAll('.osbar button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-os') === os);
+    });
+    document.querySelectorAll('.osonly').forEach(function (d) {
+      d.classList.toggle('show', d.getAttribute('data-os') === os);
+    });
+    var c = os === 'win' ? CMDS.win : CMDS.posix;
+    document.getElementById('cmdlabel').textContent = c.label;
+    document.getElementById('cmdlabel2').textContent = c.label;
+    document.getElementById('cmd1').value = c.a;
+    document.getElementById('cmd2').value = c.b;
+    store(KEY, os);
+  }
+
+  // Guess from the user agent so the page is useful before anyone clicks, but the
+  // stored choice always wins - someone on a Mac setting up a Linux box is a real case.
+  function guess() {
+    var p = (navigator.platform || '') + ' ' + (navigator.userAgent || '');
+    if (/Win/i.test(p)) return 'win';
+    if (/Mac/i.test(p)) return 'mac';
+    return 'linux';
+  }
+
+  document.querySelectorAll('.osbar button').forEach(function (b) {
+    b.addEventListener('click', function () { setOS(b.getAttribute('data-os')); });
+  });
+
+  setOS(read(KEY) || guess());
+
+  document.querySelectorAll('button[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var ta = document.getElementById(btn.getAttribute('data-copy'));
+      var flash = function (label, cls) {
+        var old = btn.textContent;
+        btn.textContent = label; btn.className = cls;
+        setTimeout(function () { btn.textContent = old; btn.className = ''; }, 1600);
+      };
+      var manual = function () {
+        ta.focus(); ta.select();
+        try { if (document.execCommand('copy')) { flash('Copied', 'ok'); return; } }
+        catch (e) { /* fall through */ }
+        flash('Press Ctrl+C', 'fail');
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(ta.value).then(function () { flash('Copied', 'ok'); })
+          .catch(manual);
+      } else { manual(); }
+    });
+  });
+})();
+</script>
+</body>
+</html>

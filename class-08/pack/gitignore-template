@@ -1,0 +1,59 @@
+# ---------------------------------------------------------------------------
+# What not to track.
+#
+# The rule to remember is not this list. It is one sentence:
+#
+#     IF IT HAS A VALUE IN IT, IT DOES NOT GO IN GIT.
+#
+# Lists go stale. That sentence does not.
+# ---------------------------------------------------------------------------
+
+# ── Secrets. This is the important part of the file. ────────────────────────
+#
+# .env holds the key that decrypts every credential n8n has saved. Commit it
+# once and it is in history permanently - deleting the file and committing
+# again does NOT remove it, because every earlier commit still has it, and so
+# does every copy of the repo.
+#
+# Track .env.example instead: the names, none of the values.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+secrets/
+
+# ── Data. Yours, and too big, and not source. ───────────────────────────────
+postgres-data/
+pgdata/
+*.sql.gz
+*.dump
+*.sqlite
+*.db
+
+# ── Things a machine can rebuild ────────────────────────────────────────────
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+dist/
+build/
+.cache/
+
+# ── Big binaries. Git is bad at these and they are not source. ──────────────
+videos/
+*.mp4
+*.mov
+*.wav
+*.zip
+
+# ── Machine noise ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.log

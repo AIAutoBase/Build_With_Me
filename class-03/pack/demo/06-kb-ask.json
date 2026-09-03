@@ -1,0 +1,283 @@
+{
+  "id": "brainKbAsk000001",
+  "name": "06 — KB ask",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ask",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000011",
+      "name": "Ask",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        0
+      ],
+      "webhookId": "brain-kb-ask-webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"openai/text-embedding-3-small\", input: $json.body.question }) }}",
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000012",
+      "name": "Embed the question",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -340,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "openRouter000001",
+          "name": "OpenRouter"
+        }
+      },
+      "notes": "Same model as the documents. A different one returns nonsense rankings without erroring.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT source, content, score\nFROM kb_search(\n  (SELECT array_agg(x::float8) FROM json_array_elements_text($1::json) AS x),\n  $2,\n  5\n);",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json.data[0].embedding) }},{{ $('Ask').first().json.body.question }}"
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000013",
+      "name": "Retrieve",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -120,
+        0
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "brainPg0000000001",
+          "name": "Brain Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// The refusal happens HERE, before the model is called.\n//\n// Why not let the model refuse? Because a model handed five irrelevant chunks and\n// asked a question will usually find something in them to build an answer out of -\n// that is the thing it is good at. The similarity score already knows there is\n// nothing relevant before the model gets a chance to be helpful about it.\n//\n// Refusing at retrieval means the refusal does not depend on the model being in the\n// mood to refuse.\n//\n// 0.28 is not a guess. Measured on this document pack:\n//     a question the documents answer  ->  0.35 to 0.59\n//     a question they do not           ->  0.12 to 0.26\n// 0.28 sits in the empty band between them. Watch your own numbers and move it if\n// your documents score differently.\nconst THRESHOLD = 0.28;\n\n// Word-for-word what the model is told to say when the context comes up short, so a\n// refusal reads identically whether it was caught here or by the model downstream.\nconst NO_ANSWER = \"I don't have that in your documents.\";\n\nconst rows = $input.all().map(i => i.json).filter(r => r && r.content);\nconst question = $('Ask').first().json.body?.question ?? '';\nconst best = rows.length ? Math.max(...rows.map(r => Number(r.score) || 0)) : 0;\n\nif (!rows.length || best < THRESHOLD) {\n  return [{ json: {\n    answered: false,\n    answer: NO_ANSWER,\n    sources: [],\n    top_score: best\n  }}];\n}\n\nconst context = rows\n  .map(r => `[${r.source}]\\n${r.content}`)\n  .join('\\n\\n---\\n\\n');\n\nreturn [{ json: {\n  question,\n  context,\n  sources: [...new Set(rows.map(r => r.source))],\n  top_score: best\n}}];\n"
+      },
+      "id": "c3000000-0000-4000-8000-000000000014",
+      "name": "Decide",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "answered-check",
+              "leftValue": "={{ $json.answered }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000015",
+      "name": "Already refused?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        0
+      ],
+      "notes": "true = we refused at retrieval, skip the model entirely",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"anthropic/claude-haiku-4.5\",\n  temperature: 0,\n  messages: [\n    { role: \"system\", content: \"You answer questions about the user's own documents. Use ONLY the numbered context below. Do not use outside knowledge. If the context does not contain the answer, set answer to exactly: I don't have that in your documents. When you do answer, be specific and quote the figure or term. Two sentences or fewer. Reply with a JSON object only: {\\\"answer\\\": \\\"...\\\", \\\"used_sources\\\": [\\\"filename\\\"]}\" },\n    { role: \"user\", content: \"Context:\\n\\n\" + $json.context + \"\\n\\nQuestion: \" + $json.question }\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000016",
+      "name": "Answer from the chunks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        120
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "openRouter000001",
+          "name": "OpenRouter"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Strip the code fence before parsing. Assume it is there.\n//\n// The system prompt says \"JSON object only\". Measured in Class 2: the model returned\n// a ```json fence on 4 of 4 calls anyway. Status 200, content correct, JSON.parse\n// throws - and the error points at THIS node instead of at the model.\n//\n// The lesson is not \"ask for JSON\". It is: never trust a model to respect your\n// output format.\nconst raw = $json.choices?.[0]?.message?.content ?? '';\nconst clean = raw.replace(/^\\s*```(?:json)?/i, '').replace(/```\\s*$/, '').trim();\n\nconst meta = $('Decide').first().json;\n\nlet out;\ntry {\n  out = JSON.parse(clean);\n} catch (e) {\n  // A failed parse must not take the request down. Hand back what it said.\n  out = { answer: clean || 'The model returned nothing readable.', used_sources: [] };\n}\n\nconst answer = String(out.answer ?? '').trim();\n\n// The model can still refuse even when retrieval let it through - the chunks cleared\n// the score bar but did not actually contain the answer. That is a refusal too, and\n// it has to be reported as one, or the dashboard renders \"I don't have that in your\n// documents\" styled as a confident answer with sources attached to it.\nconst refused = /don't have that in your documents/i.test(answer);\n\nreturn [{ json: {\n  answered: !refused,\n  answer,\n  sources: refused ? [] : ((out.used_sources?.length ? out.used_sources : meta.sources) || []),\n  top_score: meta.top_score\n}}];\n"
+      },
+      "id": "c3000000-0000-4000-8000-000000000017",
+      "name": "Parse",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000018",
+      "name": "Respond (with CORS)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        980,
+        0
+      ],
+      "notes": "Opening dashboard.html from disk gives origin 'null'. Without this header the fetch is blocked and the console blames CORS while the data was fine all along.",
+      "notesInFlow": true
+    }
+  ],
+  "connections": {
+    "Ask": {
+      "main": [
+        [
+          {
+            "node": "Embed the question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed the question": {
+      "main": [
+        [
+          {
+            "node": "Retrieve",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve": {
+      "main": [
+        [
+          {
+            "node": "Decide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide": {
+      "main": [
+        [
+          {
+            "node": "Already refused?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already refused?": {
+      "main": [
+        [
+          {
+            "node": "Respond (with CORS)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Answer from the chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer from the chunks": {
+      "main": [
+        [
+          {
+            "node": "Parse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse": {
+      "main": [
+        [
+          {
+            "node": "Respond (with CORS)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

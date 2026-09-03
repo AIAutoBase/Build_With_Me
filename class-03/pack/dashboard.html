@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Brain — Inbox Intelligence</title>
+<style>
+  :root{
+    --bg:#0F172A; --panel:#16223b; --panel2:#1b2946; --line:#2a3a5c;
+    --ink:#F8FAFC; --muted:#94A3B8; --blue:#3B82F6; --gold:#D4A843;
+    --green:#16A34A; --red:#DC2626;
+    --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+    --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:28px;line-height:1.5}
+  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:14px}
+  #status{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+  .dot.ok{background:var(--green)} .dot.err{background:var(--red)}
+
+  /* an error must be impossible to mistake for "no data yet" */
+  #error{display:none;margin:18px 0;padding:16px 18px;border:2px solid var(--red);
+         border-radius:10px;background:rgba(220,38,38,.12);font-size:14px}
+  #error h3{font-size:14px;margin-bottom:6px;color:#ff9d9d;font-family:var(--mono);
+            text-transform:uppercase;letter-spacing:.1em}
+  #error code{font-family:var(--mono);font-size:12.5px;background:rgba(0,0,0,.35);
+              padding:2px 6px;border-radius:4px;display:inline-block;margin-top:6px}
+
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:22px 0}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .tile .k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
+  .tile .v{font-size:44px;font-weight:800;letter-spacing:-.03em;margin-top:4px;font-variant-numeric:tabular-nums}
+  .tile.alert{border-color:var(--gold)} .tile.alert .v{color:var(--gold)} .tile.alert .k{color:var(--gold)}
+
+  /* ── the ask box ──────────────────────────────────────────────────────────
+     Sits directly under the tiles because it is the headline feature now,
+     not an afterthought bolted to the bottom of the page. */
+  .ask{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+       padding:18px;margin:22px 0}
+  .ask .k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+          text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+  .askrow{display:flex;gap:10px;flex-wrap:wrap}
+  #q{flex:1 1 320px;min-width:0;background:var(--bg);color:var(--ink);
+     border:1px solid var(--line);border-radius:8px;padding:12px 14px;
+     font-family:var(--sans);font-size:15px}
+  #q:focus{outline:none;border-color:var(--blue)}
+  #q::placeholder{color:var(--muted)}
+  #askBtn{background:var(--blue);color:#fff;border:0;border-radius:8px;
+          padding:12px 22px;font-family:var(--sans);font-size:14px;font-weight:700;
+          cursor:pointer;white-space:nowrap}
+  #askBtn:hover:not(:disabled){background:#2f6fd8}
+  #askBtn:disabled{background:var(--panel2);color:var(--muted);cursor:default}
+
+  #answer{display:none;margin-top:16px;padding:16px 18px;border-radius:10px;
+          background:var(--panel2);border:1px solid var(--line);font-size:15px}
+  /* A refusal is the system working correctly. It must NOT look like an error -
+     style it as an error and people learn to treat "I don't know" as a bug, then
+     go tune the threshold down until it stops "failing". */
+  #answer.refused{color:var(--muted);font-style:italic;border-style:dashed}
+  #answer.failed{border-color:var(--red);background:rgba(220,38,38,.12)}
+  #answer .srcs{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
+  #answer .src{font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+               padding:3px 9px;border-radius:999px;
+               background:rgba(59,130,246,.18);color:#9dc4ee}
+
+  h2{font-size:15px;font-weight:700;margin:26px 0 10px;text-transform:uppercase;
+     letter-spacing:.08em;color:var(--muted)}
+  .wrap{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{background:var(--panel2);text-align:left;padding:10px 14px;font-size:11px;
+     letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  td{padding:11px 14px;border-top:1px solid var(--line);vertical-align:top}
+  td.mono{font-family:var(--mono);font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .pill{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+        padding:3px 9px;border-radius:999px;background:rgba(59,130,246,.18);color:#9dc4ee}
+  .pill.lead{background:rgba(212,168,67,.2);color:#f0d08a}
+  .pill.client{background:rgba(22,163,74,.2);color:#86efac}
+  .pill.invoice{background:rgba(147,112,219,.2);color:#cbb6f5}
+  .empty{padding:26px 14px;color:var(--muted);text-align:center;font-size:14px}
+  footer{margin-top:26px;color:var(--muted);font-size:12px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>The Brain</h1>
+  <span class="sub">inbox intelligence &middot; last 7 days</span>
+  <span id="status"><span class="dot"></span><span id="statusText">connecting…</span></span>
+</header>
+
+<div id="error">
+  <h3>Can't reach the data</h3>
+  <div id="errorMsg"></div>
+  <code id="errorHint"></code>
+</div>
+
+<div class="tiles" id="tiles"></div>
+
+<div class="ask">
+  <div class="k">ask your documents</div>
+  <div class="askrow">
+    <input id="q" type="text" autocomplete="off"
+           placeholder="How much is the security deposit on the warehouse?" />
+    <button id="askBtn">Ask</button>
+  </div>
+  <div id="answer"></div>
+</div>
+
+<h2>Needs a reply</h2>
+<div class="wrap">
+  <table>
+    <thead><tr><th>From</th><th>Subject</th><th>Why</th><th>When</th></tr></thead>
+    <tbody id="followupBody"><tr><td class="empty" colspan="4">loading…</td></tr></tbody>
+  </table>
+</div>
+
+<h2>Latest</h2>
+<div class="wrap">
+  <table>
+    <thead><tr><th>From</th><th>Subject</th><th>Category</th><th>Account</th><th>When</th></tr></thead>
+    <tbody id="latestBody"><tr><td class="empty" colspan="5">loading…</td></tr></tbody>
+  </table>
+</div>
+
+<footer id="foot">&mdash;</footer>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// POINT THIS AT YOUR n8n WEBHOOKS.
+// The dashboard is a plain file — it cannot talk to Postgres directly, so n8n
+// workflows act as its API.
+//
+//   API      ← workflow "02 — Dashboard API"   (Class 2)
+//   ASK_API  ← workflow "06 — KB ask"          (Class 3)
+//
+// ⚠ CORS: opening this file from disk makes the browser's origin "null", so the
+// Respond to Webhook node in BOTH workflows must send:
+//     Access-Control-Allow-Origin: *
+// Without it the fetch fails and the browser console says "CORS" — the data is
+// fine, the header is missing. This is the #1 thing that breaks this live.
+const API     = "http://localhost:5678/webhook/brain";
+const ASK_API = "http://localhost:5678/webhook/ask";
+const REFRESH_MS = 30000;
+// ─────────────────────────────────────────────────────────────────────────────
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => (
+  {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function when(ts){
+  if(!ts) return "";
+  const d = new Date(ts), mins = Math.round((Date.now()-d)/60000);
+  if (mins < 60) return mins + "m ago";
+  if (mins < 1440) return Math.round(mins/60) + "h ago";
+  return Math.round(mins/1440) + "d ago";
+}
+
+function showError(msg, hint){
+  $("error").style.display = "block";
+  $("errorMsg").textContent = msg;
+  $("errorHint").textContent = hint || "";
+  $("status").firstElementChild.className = "dot err";
+  $("statusText").textContent = "disconnected";
+}
+function clearError(){
+  $("error").style.display = "none";
+  $("status").firstElementChild.className = "dot ok";
+  $("statusText").textContent = "live";
+}
+
+function tiles(counts, followup){
+  const total = counts.reduce((a,c) => a + Number(c.n||0), 0);
+  const by = {};
+  counts.forEach(c => { by[c.category] = (by[c.category]||0) + Number(c.n||0); });
+  const cards = [
+    { k:"messages, 7d",     v: total },
+    { k:"leads",            v: by.lead    || 0 },
+    { k:"clients",          v: by.client  || 0 },
+    { k:"invoices",         v: by.invoice || 0 },
+    { k:"needs a reply",    v: followup.length, alert: true }
+  ];
+  $("tiles").innerHTML = cards.map(c =>
+    `<div class="tile${c.alert ? " alert" : ""}">
+       <div class="k">${esc(c.k)}</div><div class="v">${c.v}</div>
+     </div>`).join("");
+}
+
+function rowsFollowup(rows){
+  if(!rows.length) return `<tr><td class="empty" colspan="4">Nothing waiting. Genuinely.</td></tr>`;
+  return rows.map(r => `<tr>
+      <td>${esc(r.from_name || r.from_email)}</td>
+      <td>${esc(r.subject)}</td>
+      <td>${esc(r.reason)}</td>
+      <td class="mono">${when(r.received_at)}</td>
+    </tr>`).join("");
+}
+
+function rowsLatest(rows){
+  if(!rows.length) return `<tr><td class="empty" colspan="5">No messages yet.</td></tr>`;
+  return rows.map(r => `<tr>
+      <td>${esc(r.from_name || r.from_email)}</td>
+      <td>${esc(r.subject)}</td>
+      <td><span class="pill ${esc(r.category)}">${esc(r.category)}</span></td>
+      <td class="mono">${esc(r.account)}</td>
+      <td class="mono">${when(r.received_at)}</td>
+    </tr>`).join("");
+}
+
+async function load(){
+  try{
+    const res = await fetch(API, { cache: "no-store" });
+    if(!res.ok){
+      showError(`The webhook answered ${res.status} ${res.statusText}.`,
+                `Is the n8n workflow ACTIVE? A saved-but-inactive workflow returns 404.`);
+      return;
+    }
+    const raw = await res.json();
+    // n8n often wraps a single item in an array — accept both shapes.
+    const data = Array.isArray(raw) ? (raw[0] || {}) : raw;
+    const counts   = data.counts   || [];
+    const followup = data.followup || [];
+    const latest   = data.latest   || [];
+
+    clearError();
+    tiles(counts, followup);
+    $("followupBody").innerHTML = rowsFollowup(followup);
+    $("latestBody").innerHTML   = rowsLatest(latest);
+    $("foot").textContent = `updated ${new Date().toLocaleTimeString()} · refreshes every ${REFRESH_MS/1000}s · ${API}`;
+  }catch(err){
+    // A blank dashboard that looks "empty" is worse than one that says why.
+    showError(`Could not reach ${API} — ${err.message}`,
+              `Most likely CORS: the Respond to Webhook node must send Access-Control-Allow-Origin: *`);
+  }
+}
+
+// ── ask ─────────────────────────────────────────────────────────────────────
+// Three outcomes, three looks:
+//   answered      → a real answer, with the documents it came from
+//   not answered  → muted and calm. The system is working; it just doesn't know.
+//   fetch failed  → red. THIS is the broken one.
+function paint(cls, html){
+  const el = $("answer");
+  el.className = cls;                 // "", "refused", "failed"
+  el.innerHTML = html;
+  el.style.display = "block";
+}
+
+async function ask(){
+  const q = $("q").value.trim();
+  if(!q) return;
+
+  $("askBtn").disabled = true;
+  $("askBtn").textContent = "thinking…";
+  paint("refused", "thinking…");
+
+  try{
+    const res = await fetch(ASK_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: q })
+    });
+
+    if(!res.ok){
+      paint("failed",
+        `<strong>The ask webhook answered ${res.status} ${esc(res.statusText)}.</strong>` +
+        `<div class="srcs"><span class="src">is “06 — KB ask” Active?</span></div>`);
+      return;
+    }
+
+    const raw = await res.json();
+    const d = Array.isArray(raw) ? (raw[0] || {}) : raw;
+
+    // Everything below has been round-tripped through a model. Escape it.
+    if(d.answered === false){
+      paint("refused", esc(d.answer || "I don't have that in your documents."));
+      return;
+    }
+
+    const srcs = (d.sources || []).map(s => `<span class="src">${esc(s)}</span>`).join("");
+    paint("", esc(d.answer) + (srcs ? `<div class="srcs">${srcs}</div>` : ""));
+
+  }catch(err){
+    paint("failed",
+      `<strong>Could not reach ${esc(ASK_API)}</strong><div>${esc(err.message)}</div>` +
+      `<div class="srcs"><span class="src">most likely CORS on the ask webhook</span></div>`);
+  }finally{
+    $("askBtn").disabled = false;
+    $("askBtn").textContent = "Ask";
+  }
+}
+
+$("askBtn").addEventListener("click", ask);
+$("q").addEventListener("keydown", e => { if(e.key === "Enter") ask(); });
+
+load();
+setInterval(load, REFRESH_MS);
+</script>
+</body>
+</html>

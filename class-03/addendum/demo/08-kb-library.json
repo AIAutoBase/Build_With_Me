@@ -1,0 +1,193 @@
+{
+  "id": "brainKbLibrary01",
+  "name": "08 — KB library",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "kb-sources",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000051",
+      "name": "List",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        -140
+      ],
+      "webhookId": "brain-kb-sources-webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT coalesce(json_agg(row_to_json(s)), '[]'::json) AS sources\nFROM (SELECT * FROM kb_sources) s;",
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000052",
+      "name": "What is in there",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -340,
+        -140
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "brainPg0000000001",
+          "name": "Brain Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000053",
+      "name": "Respond (list)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -120,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kb-forget",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000054",
+      "name": "Forget",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        140
+      ],
+      "webhookId": "brain-kb-forget-webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM kb WHERE source = $1;",
+        "options": {
+          "queryReplacement": "={{ $json.body.source }}"
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000055",
+      "name": "Remove it",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -340,
+        140
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "brainPg0000000001",
+          "name": "Brain Postgres"
+        }
+      },
+      "notes": "Deletes the chunks and their embeddings. The original file is untouched - this is the memory forgetting, not a file being erased.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, source: $('Forget').first().json.body.source }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000056",
+      "name": "Respond (forgotten)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -120,
+        140
+      ]
+    }
+  ],
+  "connections": {
+    "List": {
+      "main": [
+        [
+          {
+            "node": "What is in there",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "What is in there": {
+      "main": [
+        [
+          {
+            "node": "Respond (list)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Forget": {
+      "main": [
+        [
+          {
+            "node": "Remove it",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove it": {
+      "main": [
+        [
+          {
+            "node": "Respond (forgotten)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -1,0 +1,59 @@
+<!-- Ask · asks 06 — KB ask, which retrieves from your documents and answers only
+     from what it retrieved. Loaded into index.html; not a standalone page. -->
+<div class="card">
+  <div class="k">ask your documents</div>
+  <div class="askrow">
+    <input id="q" type="text" autocomplete="off"
+           placeholder="How much is the security deposit on the warehouse?" />
+    <button class="btn" id="askBtn" type="button">Ask</button>
+  </div>
+  <div class="answer" id="answer"></div>
+</div>
+
+<script>
+(function () {
+  const q = BRAIN.$("q"), btn = BRAIN.$("askBtn"), out = BRAIN.$("answer");
+
+  // Three outcomes, three looks, and the middle one is not a failure:
+  //   answered  → the answer, with the documents it came from
+  //   refused   → muted and calm. The system works; it just doesn't know.
+  //   failed    → red. THIS is the broken one.
+  function paint(cls, html) {
+    out.className = "answer " + cls;
+    out.innerHTML = html;
+    out.style.display = "block";
+  }
+
+  async function ask() {
+    const question = q.value.trim();
+    if (!question) return;
+
+    btn.disabled = true; btn.textContent = "thinking…";
+    paint("refused", "thinking…");
+
+    try {
+      const d = await BRAIN.post("ask", { question: question });
+
+      if (d.answered === false) {
+        paint("refused", BRAIN.esc(d.answer || "I don't have that in your documents."));
+        return;
+      }
+      const srcs = (d.sources || [])
+        .map(s => '<span class="src">' + BRAIN.esc(s) + "</span>").join("");
+      paint("", BRAIN.esc(d.answer) + (srcs ? '<div class="srcs">' + srcs + "</div>" : ""));
+      BRAIN.live(true);
+
+    } catch (err) {
+      paint("failed", "<strong>" + BRAIN.esc(err.message) + "</strong>" +
+        '<div class="srcs"><span class="src">is “06 — KB ask” Active?</span></div>');
+      BRAIN.live(false);
+    } finally {
+      btn.disabled = false; btn.textContent = "Ask";
+    }
+  }
+
+  btn.addEventListener("click", ask);
+  q.addEventListener("keydown", e => { if (e.key === "Enter") ask(); });
+  q.focus();
+})();
+</script>

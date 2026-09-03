@@ -1,0 +1,156 @@
+<!-- Documents · drop a file, it converts, chunks, embeds and lands in the memory.
+     Upload goes to 07 — KB upload; the list and forget come from 08 — KB library.
+     Loaded into index.html; not a standalone page. -->
+<div id="drop">
+  <div class="big">Drop documents here</div>
+  <div class="small">or click to choose — they convert, chunk and embed automatically</div>
+  <div class="fmts">pdf · docx · xlsx · pptx · html · csv · md · txt</div>
+  <input type="file" id="picker" multiple hidden
+         accept=".pdf,.docx,.xlsx,.pptx,.html,.htm,.csv,.md,.txt,.rtf,.epub,.json,.xml" />
+</div>
+
+<div class="queue" id="queue"></div>
+
+<h2>In the memory</h2>
+<div class="wrap">
+  <table>
+    <thead><tr><th>Document</th><th>Chunks</th><th>Last ingested</th><th></th></tr></thead>
+    <tbody id="sourcesBody"><tr><td class="empty-row" colspan="4">loading…</td></tr></tbody>
+  </table>
+</div>
+
+<script>
+(function () {
+  const drop = BRAIN.$("drop"), picker = BRAIN.$("picker"), queue = BRAIN.$("queue");
+
+  function row(name) {
+    const el = document.createElement("div");
+    el.className = "qrow work";
+    el.innerHTML = '<span class="ico">→</span><span class="name">' + BRAIN.esc(name) +
+                   '</span><span class="note">waiting…</span>';
+    queue.insertBefore(el, queue.firstChild);
+    return el;
+  }
+
+  function setRow(el, cls, ico, note) {
+    el.className = "qrow " + cls;
+    el.querySelector(".ico").textContent = ico;
+    el.querySelector(".note").textContent = note;
+  }
+
+  // One at a time, on purpose. Dropping twelve files fires twelve parallel
+  // executions, which hits the embedding rate limit and turns this list into noise.
+  // Sequential is slower and readable, and readable is what you want on a screen
+  // somebody else is watching.
+  let chain = Promise.resolve();
+
+  function enqueue(file) {
+    const el = row(file.name);
+    chain = chain.then(() => upload(file, el)).catch(() => {});
+  }
+
+  async function upload(file, el) {
+    setRow(el, "work", "→", "converting…");
+    const form = new FormData();
+    form.append("file", file, file.name);
+
+    let res;
+    try {
+      // FormData is a "simple" request, so no CORS preflight - which is why this
+      // works from the dashboard while a JSON POST needs the header dance.
+      res = await fetch(BRAIN.url("kb-upload"), { method: "POST", body: form });
+    } catch (err) {
+      setRow(el, "fail", "×", "could not reach n8n — " + err.message);
+      return;
+    }
+
+    if (!res.ok) {
+      setRow(el, "fail", "×",
+             "upload webhook answered " + res.status + " — is “07 — KB upload” Active?");
+      return;
+    }
+
+    let d;
+    try {
+      const raw = await res.json();
+      d = Array.isArray(raw) ? (raw[0] || {}) : raw;
+    } catch (err) {
+      setRow(el, "fail", "×", "the webhook returned something that isn't JSON");
+      return;
+    }
+
+    // A refusal is not a failure. A scan genuinely has no text in it, and saying so
+    // is the correct answer - it must not look like the red rows above.
+    if (d.ok === false) {
+      setRow(el, "empty", "−", d.message || "nothing to read in that file");
+      return;
+    }
+    if (d.warn === "thin") {
+      setRow(el, "thin", "!", (d.chunks || 0) + " chunks · only " + (d.chars || 0) +
+                              " characters — check it");
+    } else {
+      setRow(el, "ok", "✓", (d.chunks || 0) + " chunks");
+    }
+    loadSources();
+  }
+
+  function handle(files) {
+    Array.prototype.forEach.call(files, enqueue);
+  }
+
+  drop.addEventListener("click", () => picker.click());
+  picker.addEventListener("change", e => { handle(e.target.files); picker.value = ""; });
+  ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.classList.add("over");
+  }));
+  ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.classList.remove("over");
+  }));
+  drop.addEventListener("drop", e => {
+    if (e.dataTransfer && e.dataTransfer.files) handle(e.dataTransfer.files);
+  });
+
+  async function forget(source) {
+    if (!confirm('Remove "' + source + '" from the memory?\n\nIts chunks and their ' +
+                 'embeddings are deleted. The original file is untouched.')) return;
+    try {
+      await BRAIN.post("kb-forget", { source: source });
+      loadSources();
+    } catch (err) {
+      alert("Could not forget it: " + err.message);
+    }
+  }
+
+  function sourceRows(rows) {
+    if (!rows.length)
+      return '<tr><td class="empty-row" colspan="4">Nothing in the memory yet.</td></tr>';
+    return rows.map(r =>
+      "<tr><td>" + BRAIN.esc(r.source) +
+      '</td><td class="num">' + BRAIN.esc(r.chunks) +
+      '</td><td class="mono">' + BRAIN.when(r.last_ingested) +
+      '</td><td style="text-align:right"><button class="forget" type="button" data-src="' +
+      BRAIN.esc(r.source) + '">forget</button></td></tr>').join("");
+  }
+
+  async function loadSources() {
+    try {
+      const d = await BRAIN.get("kb-sources");
+      const rows = d.sources || [];
+      BRAIN.$("sourcesBody").innerHTML = sourceRows(rows);
+      BRAIN.$("badge-documents").textContent = rows.length;
+      BRAIN.live(true);
+    } catch (err) {
+      BRAIN.$("sourcesBody").innerHTML =
+        '<tr><td class="empty-row" colspan="4">' + BRAIN.esc(err.message) + "</td></tr>";
+    }
+  }
+
+  BRAIN.$("sourcesBody").addEventListener("click", e => {
+    const b = e.target.closest(".forget");
+    if (b) forget(b.dataset.src);
+  });
+
+  window.refresh_documents = loadSources;
+  loadSources();
+})();
+</script>

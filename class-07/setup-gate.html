@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Class 7 setup — the secret URL</title>
+<meta name="description" content="Where the private iCal address is on Google, Apple, Outlook and Fastmail - and what holding one actually grants." />
+<style>
+  :root{
+    --charcoal:#0F172A; --panel:#16223b; --panel-2:#1b2946; --border:#2a3a5c;
+    --blue:#2B6CB0; --blue-2:#3B82F6; --gold:#D4A843; --green:#16A34A; --red:#DC2626;
+    --teal:#3fb8af;
+    --text:#F8FAFC; --body:#c3cfe0; --muted:#94A3B8;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--charcoal);color:var(--text);font-family:var(--sans);line-height:1.65;padding:0 0 60px}
+  .hero{background:linear-gradient(140deg,#0b1120,var(--panel-2));border-bottom:3px solid var(--teal);padding:36px 24px 30px;text-align:center}
+  .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:2.6px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  h1{font-size:clamp(23px,4.6vw,33px);font-weight:800;letter-spacing:-.02em;max-width:660px;margin:0 auto 10px}
+  .sub{color:var(--muted);font-size:15px;max-width:560px;margin:0 auto}
+  .page{max-width:760px;margin:0 auto;padding:34px 22px 0}
+
+  h2{font-size:19px;font-weight:800;margin:34px 0 8px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+  p{color:var(--body);font-size:15px;margin-bottom:12px}
+  p strong,li strong,td strong{color:var(--text);font-weight:600}
+  a{color:var(--blue-2)}
+  ul,ol{color:var(--body);font-size:15px;margin:0 0 12px 21px}
+  li{margin-bottom:5px}
+
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:15px}
+  .step.core{border-color:var(--teal)}
+  .step-head{display:flex;align-items:center;gap:11px;margin-bottom:11px;flex-wrap:wrap}
+  .step-num{flex:none;width:29px;height:29px;border-radius:8px;background:var(--blue);color:#fff;
+            display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;font-family:var(--mono)}
+  .step-num.teal{background:var(--teal);color:#08201e}
+  .step-title{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .step-tick{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .step-tick input{width:17px;height:17px;accent-color:var(--green);cursor:pointer}
+
+  .code{position:relative;background:#0a1020;border:1px solid var(--border);border-radius:8px;margin:10px 0 12px}
+  .code-label{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);padding:8px 13px 0}
+  pre{font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#dbe6f5;padding:9px 13px 13px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+  .cp{position:absolute;top:6px;right:6px;background:var(--panel-2);color:var(--muted);border:1px solid var(--border);
+      border-radius:5px;font-family:var(--mono);font-size:10px;padding:4px 9px;cursor:pointer}
+  .cp:hover{color:var(--text);border-color:var(--blue-2)}
+  .cp.ok{color:#7ee2a8;border-color:var(--green)}
+  code{font-family:var(--mono);font-size:.9em;background:rgba(148,163,184,.14);padding:1px 5px;border-radius:4px;color:#e4ecf8}
+
+  .note{border-left:3px solid var(--blue-2);background:rgba(59,130,246,.08);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .warn{border-left:3px solid var(--gold);background:rgba(212,168,67,.09);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .danger{border-left:3px solid var(--red);background:rgba(220,38,38,.10);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .does{border-left:3px solid var(--green);background:rgba(22,163,74,.08);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .note p:last-child,.warn p:last-child,.danger p:last-child,.does p:last-child{margin-bottom:0}
+  .note-t,.warn-t,.danger-t,.does-t{font-weight:700;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:var(--mono)}
+  .note-t{color:var(--blue-2)} .warn-t{color:var(--gold)} .danger-t{color:#ff8080} .does-t{color:#6ee7a0}
+
+  .tw{overflow-x:auto;margin:12px 0;border:1px solid var(--border);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:420px}
+  th{background:var(--panel-2);text-align:left;padding:10px 13px;font-weight:700;font-size:11.5px;
+     letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+  td{padding:10px 13px;border-bottom:1px solid var(--border);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+
+  .btn{display:inline-block;background:var(--blue);color:#fff;text-decoration:none;font-weight:700;
+       font-size:14px;padding:9px 18px;border-radius:8px;border:1px solid var(--blue-2);margin:6px 8px 6px 0}
+  .btn:hover{background:var(--blue-2)}
+
+  .write{background:var(--panel-2);border:1px dashed var(--border);border-radius:10px;padding:15px 17px;margin:12px 0}
+  .write label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;
+               text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .write input{width:100%;background:#0a1020;border:1px solid var(--border);border-radius:7px;
+               color:var(--text);font-family:var(--mono);font-size:13px;padding:10px 12px}
+  .write input:focus{outline:none;border-color:var(--teal)}
+  .write .priv{font-size:12px;color:var(--muted);margin:9px 0 0}
+
+  .back{display:block;text-align:center;margin-top:30px;font-size:14px}
+  .foot{border-top:1px solid var(--border);margin-top:36px;padding-top:20px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="kicker">Class 7 · A Clock It Can Read</div>
+  <h1>One URL, and what it grants</h1>
+  <p class="sub">About five minutes. No account, no OAuth, no consent screen. But read step 2 before you copy anything.</p>
+</div>
+
+<div class="page">
+
+  <div class="does">
+    <div class="does-t">Nothing here costs anything</div>
+    <p>Not a free tier — <em>nothing</em>. Your calendar already generates this URL, and an <code>.ics</code> is just a file. The first class in the series where that is literally true.</p>
+  </div>
+
+  <!-- 1 -->
+  <div class="step" data-step="1">
+    <div class="step-head"><div class="step-num">1</div><div class="step-title">Find the secret URL</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>Every provider has one. Every provider calls it something different and hides it somewhere different.</p>
+    <p><strong>What you want in all cases:</strong> a private URL ending in <code>.ics</code> whose first line is <code>BEGIN:VCALENDAR</code>. Not the "share with a colleague" link.</p>
+
+    <h3 style="font-size:14.5px;margin:16px 0 6px">Google Calendar</h3>
+    <a class="btn" href="https://calendar.google.com/calendar/r/settings" target="_blank" rel="noopener noreferrer">Calendar settings →</a>
+    <p><em>Settings for my calendars</em> → click the calendar name → <strong>Integrate calendar</strong> → <strong>Secret address in iCal format</strong>.</p>
+    <div class="warn">
+      <div class="warn-t">If it is not there</div>
+      <p>Real, and it affects a fair number of accounts — Workspace admins can disable it, and some personal accounts simply lack it.</p>
+      <p style="margin-bottom:0">Check you are in <em>that calendar's</em> settings rather than the global ones. Then: make a <strong>new calendar</strong> with just what you want visible and take its address — often the better answer anyway, since the brain does not need your whole life. <code>docs/CALENDARS.md</code> has the rest. <strong>Untested against an account where it is genuinely absent</strong> — if that is you, say so in the thread.</p>
+    </div>
+
+    <h3 style="font-size:14.5px;margin:16px 0 6px">Apple iCloud</h3>
+    <p>iCloud.com → Calendar → the share icon → <strong>Public Calendar</strong> → copy.</p>
+    <p>It arrives as a <code>webcal</code> address — change the scheme to <code>https</code> for curl and n8n. <strong>And "public" means public here</strong>, so put only what you need into that calendar.</p>
+
+    <h3 style="font-size:14.5px;margin:16px 0 6px">Outlook / Microsoft 365</h3>
+    <p>Settings → Calendar → Shared calendars → <strong>Publish a calendar</strong>. You get two links; <strong>take the ICS one</strong>.</p>
+    <p>Choose <em>"Can view all details"</em> — the busy-only option gives blocks with no titles, which makes the digest useless.</p>
+
+    <h3 style="font-size:14.5px;margin:16px 0 6px">Fastmail · Nextcloud</h3>
+    <p>Settings → Calendars → Sharing → publish, and copy the ICS URL. Both also speak proper <strong>CalDAV</strong>, which is the better path if you later want write access without Google's consent screen.</p>
+  </div>
+
+  <!-- 2 -->
+  <div class="step core" data-step="2">
+    <div class="step-head"><div class="step-num teal">2</div><div class="step-title">Understand what you are holding</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+
+    <div class="danger">
+      <div class="danger-t">This is the only genuinely sharp edge in the class</div>
+      <p style="font-size:16px"><strong>That URL is read access to your entire calendar, for anyone who has it.</strong></p>
+      <p>Not scoped to today. Not scoped to titles. Not expiring. Anyone holding the string can fetch <strong>every event you have, past and future</strong> — without logging in as you, and without you ever knowing they did.</p>
+    </div>
+
+    <ul>
+      <li>It goes into an <strong>n8n credential</strong>, and nowhere else</li>
+      <li><strong>Never</strong> a node parameter, a prompt, a screenshot, or the class thread</li>
+      <li>Not a synced notes app either</li>
+    </ul>
+
+    <div class="does">
+      <div class="does-t">And that is the trade, made deliberately</div>
+      <p>In exchange you get: no OAuth, no consent screen, no Cloud project, no new account — and <strong>nothing that can write to your week</strong>.</p>
+      <p style="margin-bottom:0">Read-only is the right amount of access for step one, and revoking it is <strong>one click</strong>: Google has a <strong>Reset</strong> button beside the secret address; Apple and Outlook unpublish. No app to unpick, no consent to withdraw.</p>
+    </div>
+
+    <div class="warn">
+      <div class="warn-t">If you ever paste it somewhere public</div>
+      <p><strong>Reset it. Do not just delete the message.</strong> Deleting a post does not un-share a URL that has already been read.</p>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="step" data-step="3">
+    <div class="step-head"><div class="step-num">3</div><div class="step-title">Check it returns a calendar</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <div class="code"><div class="code-label">keep the quotes</div><button class="cp" type="button">copy</button>
+<pre>curl -s "&lt;your secret URL&gt;" | head -5</pre></div>
+    <p>You want:</p>
+    <div class="code"><div class="code-label">what good looks like</div>
+<pre>BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:...</pre></div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>What you get instead</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td>HTML, or <code>&lt;!DOCTYPE</code></td><td>You copied the browser link, not the iCal one</td></tr>
+          <tr><td><code>401</code> / <code>403</code></td><td>That is the <strong>public</strong> address, which needs the calendar to be public. You want the secret one</td></tr>
+          <tr><td><code>404</code></td><td>The address was reset, or mistyped</td></tr>
+          <tr><td>Nothing at all</td><td><strong>Quote the URL.</strong> Secret addresses routinely contain characters your shell treats as syntax</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="step core" data-step="4">
+    <div class="step-head"><div class="step-num teal">4</div><div class="step-title">Write down one recurring event</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+
+    <p>This step looks pointless. <strong>It is the one that catches the class's worst failure.</strong></p>
+
+    <p>Your calendar almost certainly has something repeating — a weekly standup, a monthly invoice, a Tuesday school run. In the feed, that is stored as <strong>one event plus a repeat rule</strong>, not one event per week.</p>
+
+    <div class="danger">
+      <div class="danger-t">A parser that ignores the rule shows it once — on the day it first happened</div>
+      <p>Possibly years ago. So today looks quiet.</p>
+      <p style="margin-bottom:0"><strong>Every one-off event still appears perfectly.</strong> That is exactly why you would believe it, plan around it, and miss the standup.</p>
+    </div>
+
+    <div class="write">
+      <label for="rec">A recurring event, and the date it next occurs</label>
+      <input id="rec" type="text" autocomplete="off" placeholder="e.g. Monday standup - next on 28 Sep" />
+      <p class="priv">Saved in this browser only, so it is still here on Wednesday. It never leaves your machine — this page makes no network requests.</p>
+    </div>
+
+    <p>When P1 lists your day, <strong>that is the line you check.</strong></p>
+
+    <p>Curious how many of yours repeat? Once you have the URL in a shell variable:</p>
+    <div class="code"><div class="code-label">count them</div><button class="cp" type="button">copy</button>
+<pre>curl -s "$BRAIN_ICAL_URL" | grep -c "^RRULE"</pre></div>
+  </div>
+
+  <!-- 5 -->
+  <div class="step" data-step="5">
+    <div class="step-head"><div class="step-num">5</div><div class="step-title">Check the timezone</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <div class="code"><div class="code-label">on the brain machine</div><button class="cp" type="button">copy</button>
+<pre>docker compose exec -T n8n printenv GENERIC_TIMEZONE
+date</pre></div>
+    <div class="warn">
+      <div class="warn-t">"What is on today" is a timezone question first</div>
+      <p>If <code>GENERIC_TIMEZONE</code> is empty, n8n is on <strong>UTC</strong> — and "today" is the wrong day for part of every day.</p>
+      <p style="margin-bottom:0">Class 5 hit this exact thing with a 7am digest firing at 2am. <strong>n8n reads environment variables when the container starts and never again</strong>, so changing it needs a restart.</p>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="step" data-step="6">
+    <div class="step-head"><div class="step-num">6</div><div class="step-title">Have a document with a date in it</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>P2 pulls dates out of your Class 3 documents. A lease, a warranty, an invoice with terms — something with a real date in the text.</p>
+    <div class="note">
+      <div class="note-t">The date is extracted, never generated</div>
+      <p>It comes out of the document, and the sentence it came from ships with it. A model that invents a plausible renewal date is <strong>worse than no reminder</strong>, because you will act on it.</p>
+    </div>
+  </div>
+
+  <!-- Done -->
+  <h2>Done — tell Claude Code</h2>
+  <div class="code"><div class="code-label">paste into Claude Code</div><button class="cp" type="button">copy</button>
+<pre>I finished the setup gate. I have my secret calendar URL saved somewhere safe and I have NOT pasted it to you. curl on it returned BEGIN:VCALENDAR. I wrote down one recurring event and the date it next occurs. I checked n8n's timezone against mine. Class 3 has documents with real dates in them. Verify what you can rather than believing me, then carry on - and do not ask me for the URL.</pre></div>
+
+  <a class="back" href="index.html">← Back to the show notes</a>
+
+  <div class="foot">
+    The Brain That Runs a Company — Class 7 · Orbix Automation Solutions
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Clipboard: on file:// Chromium reports isSecureContext true and exposes
+     navigator.clipboard, but writeText() REJECTS while execCommand works.
+     Rejection falls through rather than telling people to select by hand. */
+  function legacyCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function copyText(text, btn){
+    function done(ok){
+      btn.textContent = ok ? "copied" : "select it";
+      btn.classList.toggle("ok", ok);
+      setTimeout(function(){ btn.textContent = "copy"; btn.classList.remove("ok"); }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); },
+                                               function(){ done(legacyCopy(text)); });
+      return;
+    }
+    done(legacyCopy(text));
+  }
+
+  document.querySelectorAll(".cp").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var pre = btn.parentNode.querySelector("pre");
+      if (pre) copyText(pre.textContent, btn);
+    });
+  });
+
+  document.querySelectorAll(".step-tick input").forEach(function(box, i){
+    var key = "bc07-gate-" + i;
+    try { if (localStorage.getItem(key) === "1") box.checked = true; } catch(e){ /* blocked */ }
+    box.addEventListener("change", function(){
+      try {
+        if (box.checked) localStorage.setItem(key, "1");
+        else localStorage.removeItem(key);
+      } catch(e){ /* tick still works this session */ }
+    });
+  });
+
+  /* The recurring-event note is collected on Monday and needed on Wednesday.
+     Per-viewer, never leaves this browser. Deliberately NOT a place for the URL. */
+  var rec = document.getElementById("rec");
+  if (rec){
+    try { rec.value = localStorage.getItem("bc07-recurring") || ""; } catch(e){ /* blocked */ }
+    rec.addEventListener("input", function(){
+      try { localStorage.setItem("bc07-recurring", rec.value); } catch(e){ /* session only */ }
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

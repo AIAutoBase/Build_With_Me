@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Class 6 setup — the parts only you can do</title>
+<meta name="description" content="Python, a venv that really works, and the backend flag that costs money if you forget it." />
+<style>
+  :root{
+    --charcoal:#0F172A; --panel:#16223b; --panel-2:#1b2946; --border:#2a3a5c;
+    --blue:#2B6CB0; --blue-2:#3B82F6; --gold:#D4A843; --green:#16A34A; --red:#DC2626;
+    --violet:#8b7cd6;
+    --text:#F8FAFC; --body:#c3cfe0; --muted:#94A3B8;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--charcoal);color:var(--text);font-family:var(--sans);line-height:1.65;padding:0 0 60px}
+  .hero{background:linear-gradient(140deg,#0b1120,var(--panel-2));border-bottom:3px solid var(--violet);padding:36px 24px 30px;text-align:center}
+  .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:2.6px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  h1{font-size:clamp(23px,4.6vw,33px);font-weight:800;letter-spacing:-.02em;max-width:660px;margin:0 auto 10px}
+  .sub{color:var(--muted);font-size:15px;max-width:560px;margin:0 auto}
+  .page{max-width:760px;margin:0 auto;padding:34px 22px 0}
+
+  h2{font-size:19px;font-weight:800;margin:34px 0 8px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+  p{color:var(--body);font-size:15px;margin-bottom:12px}
+  p strong,li strong,td strong{color:var(--text);font-weight:600}
+  a{color:var(--blue-2)}
+  ul,ol{color:var(--body);font-size:15px;margin:0 0 12px 21px}
+  li{margin-bottom:5px}
+
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:15px}
+  .step.core{border-color:var(--violet)}
+  .step-head{display:flex;align-items:center;gap:11px;margin-bottom:11px;flex-wrap:wrap}
+  .step-num{flex:none;width:29px;height:29px;border-radius:8px;background:var(--blue);color:#fff;
+            display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;font-family:var(--mono)}
+  .step-num.violet{background:var(--violet);color:#1a1430}
+  .step-num.gold{background:var(--gold);color:#3a2c06}
+  .step-title{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .step-tick{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .step-tick input{width:17px;height:17px;accent-color:var(--green);cursor:pointer}
+
+  .code{position:relative;background:#0a1020;border:1px solid var(--border);border-radius:8px;margin:10px 0 12px}
+  .code-label{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);padding:8px 13px 0}
+  pre{font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#dbe6f5;padding:9px 13px 13px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+  .cp{position:absolute;top:6px;right:6px;background:var(--panel-2);color:var(--muted);border:1px solid var(--border);
+      border-radius:5px;font-family:var(--mono);font-size:10px;padding:4px 9px;cursor:pointer}
+  .cp:hover{color:var(--text);border-color:var(--blue-2)}
+  .cp.ok{color:#7ee2a8;border-color:var(--green)}
+  code{font-family:var(--mono);font-size:.9em;background:rgba(148,163,184,.14);padding:1px 5px;border-radius:4px;color:#e4ecf8}
+
+  .note{border-left:3px solid var(--blue-2);background:rgba(59,130,246,.08);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .warn{border-left:3px solid var(--gold);background:rgba(212,168,67,.09);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .danger{border-left:3px solid var(--red);background:rgba(220,38,38,.10);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .does{border-left:3px solid var(--green);background:rgba(22,163,74,.08);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .note p:last-child,.warn p:last-child,.danger p:last-child,.does p:last-child{margin-bottom:0}
+  .note-t,.warn-t,.danger-t,.does-t{font-weight:700;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:var(--mono)}
+  .note-t{color:var(--blue-2)} .warn-t{color:var(--gold)} .danger-t{color:#ff8080} .does-t{color:#6ee7a0}
+
+  .tw{overflow-x:auto;margin:12px 0;border:1px solid var(--border);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:420px}
+  th{background:var(--panel-2);text-align:left;padding:10px 13px;font-weight:700;font-size:11.5px;
+     letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+  td{padding:10px 13px;border-bottom:1px solid var(--border);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+
+  .back{display:block;text-align:center;margin-top:30px;font-size:14px}
+  .foot{border-top:1px solid var(--border);margin-top:36px;padding-top:20px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="kicker">Class 6 · See What Your Brain Knows</div>
+  <h1>The parts only you can do</h1>
+  <p class="sub">Five steps, about fifteen minutes, and no new signup. One of them is a check that lies to you, so read it rather than skimming.</p>
+</div>
+
+<div class="page">
+
+  <div class="does">
+    <div class="does-t">Nothing here costs anything</div>
+    <p>No new account, no card, not even a free tier. The engine that names your graph is the Claude Code you installed in Class 1.</p>
+  </div>
+
+  <div class="warn">
+    <div class="warn-t">Do this on the machine your brain runs on</div>
+    <p>The one with Docker, n8n and Postgres — not necessarily the laptop in front of you. You need shell access to it.</p>
+  </div>
+
+  <!-- 1 -->
+  <div class="step" data-step="1">
+    <div class="step-head"><div class="step-num">1</div><div class="step-title">Check your Python</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <div class="code"><div class="code-label">terminal</div><button class="cp" type="button">copy</button>
+<pre>python3 --version</pre></div>
+    <p><strong>You need 3.10 or newer.</strong> The teaching box has 3.13.5. If you are below 3.10, stop and upgrade before class — everything after this depends on it.</p>
+  </div>
+
+  <!-- 2 -->
+  <div class="step" data-step="2">
+    <div class="step-head"><div class="step-num">2</div><div class="step-title">You cannot pip install anything</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>Try, and Debian says no:</p>
+    <div class="code"><div class="code-label">what you get</div>
+<pre>error: externally-managed-environment</pre></div>
+    <p>That is <strong>PEP 668, and it is correct behaviour</strong>, not a broken machine. Debian is protecting its own Python packages. The marker that turns it on:</p>
+    <div class="code"><div class="code-label">see it for yourself</div><button class="cp" type="button">copy</button>
+<pre>ls /usr/lib/python3.13/EXTERNALLY-MANAGED</pre></div>
+    <div class="danger">
+      <div class="danger-t">Do not use --break-system-packages</div>
+      <p>The flag is named honestly. Use a virtual environment instead — that is step 3.</p>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="step core" data-step="3">
+    <div class="step-head"><div class="step-num violet">3</div><div class="step-title">The check that passes while it is broken</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+
+    <p>The obvious way to test whether you can make a virtual environment:</p>
+    <div class="code"><div class="code-label">DON'T use this as your check</div>
+<pre>python3 -c "import venv" &amp;&amp; echo ok</pre></div>
+
+    <p><strong>It prints <code>ok</code> on a box where venv creation fails.</strong> We found this the hard way — the check went green and the venv failed a minute later.</p>
+
+    <p>The reason: <code>venv</code> the module is present, but <strong><code>ensurepip</code></strong> is not, and <em>that</em> is what installs <code>pip</code> into the new environment. Importing <code>venv</code> never touches it.</p>
+
+    <div class="code"><div class="code-label">probe it for real</div><button class="cp" type="button">copy</button>
+<pre>python3 -m venv /tmp/probe &amp;&amp; echo "VENV WORKS" &amp;&amp; rm -rf /tmp/probe</pre></div>
+
+    <p>If that fails:</p>
+    <div class="code"><div class="code-label">fix</div><button class="cp" type="button">copy</button>
+<pre>sudo apt update &amp;&amp; sudo apt install -y python3-venv</pre></div>
+
+    <p>Then probe again. <strong>Do not continue until it prints <code>VENV WORKS</code>.</strong></p>
+
+    <div class="danger">
+      <div class="danger-t">The lesson, which is bigger than this class</div>
+      <p style="font-size:16px"><strong>A check that cannot fail is not a check.</strong></p>
+      <p><code>import venv</code> could never have told you the truth, because it does not touch the thing that was missing. It made you feel checked without checking anything.</p>
+      <p style="margin-bottom:0">Same shape as Class 3's green execution storing the wrong data, and Class 4's audio file of the right size full of static. <strong>Ask what your check would print if the thing were broken. If the answer is "the same thing", it is not a check.</strong></p>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="step" data-step="4">
+    <div class="step-head"><div class="step-num">4</div><div class="step-title">Make the real environment</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <div class="code"><div class="code-label">on the brain machine</div><button class="cp" type="button">copy</button>
+<pre>cd ~/brain
+python3 -m venv .graphify-venv
+source .graphify-venv/bin/activate
+python -m pip install --upgrade pip</pre></div>
+    <p>Your prompt should now start with <code>(.graphify-venv)</code>.</p>
+    <div class="warn">
+      <div class="warn-t">Every new terminal needs this again</div>
+      <div class="code" style="margin-top:8px"><div class="code-label">re-activate</div><button class="cp" type="button">copy</button>
+<pre>source ~/brain/.graphify-venv/bin/activate</pre></div>
+      <p style="margin-top:8px">Forgetting it is the single most common way to get <code>command not found: graphify</code> on a machine where graphify is definitely installed.</p>
+    </div>
+    <p>Budget: <strong>196 MB</strong> of disk once graphify is in, about <strong>50 MB</strong> of RAM at rest.</p>
+  </div>
+
+  <!-- 5 -->
+  <div class="step core" data-step="5">
+    <div class="step-head"><div class="step-num gold">5</div><div class="step-title">Know which backend you are about to use</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+
+    <p><strong>Read this even if you skip everything else.</strong> It is the one that quietly costs money.</p>
+
+    <p>Graphify picks a backend automatically by trying these in order:</p>
+    <div class="code"><div class="code-label">graphify's detection order</div>
+<pre>gemini → kimi → claude → openai → deepseek → azure → bedrock → ollama</pre></div>
+
+    <p><strong><code>claude-cli</code> — the free one we are going to use — is not in that list.</strong> It is never selected for you. You have to ask for it by name, every time:</p>
+    <div class="code"><div class="code-label">always</div><button class="cp" type="button">copy</button>
+<pre>graphify update . --backend=claude-cli</pre></div>
+
+    <p>You have an OpenRouter key from Class 1. If it is exported as <code>OPENAI_API_KEY</code>, auto-detection reaches <code>openai</code>, finds it, and takes the <strong>paid</strong> path.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th></th><th>Free (<code>claude-cli</code>)</th><th>Auto-detected paid</th></tr></thead>
+        <tbody>
+          <tr><td>Output</td><td>identical</td><td>identical</td></tr>
+          <tr><td>Time to name 15 communities</td><td>~10 s</td><td>~10 s</td></tr>
+          <tr><td>Community names</td><td>good</td><td>good</td></tr>
+          <tr><td>Error or warning</td><td>none</td><td>none</td></tr>
+          <tr><td><strong>Where the difference shows</strong></td><td colspan="2"><strong>your invoice, and nowhere else</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Check what is exported on that box, before class:</p>
+    <div class="code"><div class="code-label">terminal</div><button class="cp" type="button">copy</button>
+<pre>env | grep -E "OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY" || echo "none set - good"</pre></div>
+
+    <div class="note">
+      <div class="note-t">You do not have to unset anything</div>
+      <p>Just know that you must pass <code>--backend=claude-cli</code> explicitly. If you want to prove the free path really needs no credentials, strip them for one run:</p>
+      <div class="code" style="margin-top:8px"><div class="code-label">tested, not assumed</div><button class="cp" type="button">copy</button>
+<pre>env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u GEMINI_API_KEY \
+  graphify update . --backend=claude-cli</pre></div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="step" data-step="6">
+    <div class="step-head"><div class="step-num">6</div><div class="step-title">Have something worth graphing</div>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>This class draws a picture of what your brain knows. <strong>A brain that knows nothing draws an empty picture</strong>, and you learn nothing from it.</p>
+    <ul>
+      <li>Your Class 3 stack is running</li>
+      <li>There are <strong>real documents</strong> in it — the practice pack counts, your own paperwork is better</li>
+      <li>Your dashboard's Ask tab answers a question about them</li>
+    </ul>
+    <div class="note">
+      <div class="note-t">Whole documents, not chunks</div>
+      <p>Graphify wants the document <em>files</em>. The rows in your Postgres <code>kb</code> table are ~180-word chunks cut for retrieval, which is a different shape. Know where your actual files live.</p>
+    </div>
+  </div>
+
+  <!-- Obsidian -->
+  <h2>One expectation to correct</h2>
+  <div class="warn">
+    <div class="warn-t">You cannot install Obsidian on your brain</div>
+    <p>If you have read about Graphify elsewhere it was probably paired with Obsidian. <strong>Obsidian is an Electron desktop app; your brain is a headless server.</strong> There is no desktop to install it into.</p>
+    <p>So the class default is the graph <strong>served from the dashboard you already have</strong> — a web page, reachable from any device on your network, nothing to sync.</p>
+    <p style="margin-bottom:0">Obsidian is still available on <em>your laptop</em>, and it is nicer to explore in. It just means getting the vault there. That is <code>docs/UPGRADE-obsidian.md</code> in the pack, and it is an upgrade rather than the main path on purpose.</p>
+  </div>
+
+  <!-- Done -->
+  <h2>Done — tell Claude Code</h2>
+  <div class="code"><div class="code-label">paste into Claude Code</div><button class="cp" type="button">copy</button>
+<pre>I finished the setup gate. python3 is 3.10 or newer, the REAL venv probe printed VENV WORKS, ~/brain/.graphify-venv exists and activates, Claude Code is signed in, I know whether OPENAI_API_KEY is exported and I know the --backend=claude-cli rule, and my Class 3 stack has real documents in it. Verify it rather than believing me, then carry on.</pre></div>
+
+  <h2>If something goes wrong</h2>
+  <div class="tw">
+    <table>
+      <thead><tr><th>What you see</th><th>What it means</th></tr></thead>
+      <tbody>
+        <tr><td><code>error: externally-managed-environment</code></td><td>PEP 668. Use the venv. Working as designed.</td></tr>
+        <tr><td><code>import venv</code> ok, but creation fails</td><td><code>ensurepip</code> missing. <code>sudo apt install python3-venv</code>.</td></tr>
+        <tr><td><code>No module named pip</code> inside the venv</td><td>Same cause. Delete the venv, install <code>python3-venv</code>, make it again.</td></tr>
+        <tr><td><code>command not found: graphify</code></td><td>The venv is not activated in this terminal.</td></tr>
+        <tr><td><code>pip install graphify</code> not found</td><td>The <strong>package</strong> is <code>graphifyy</code>, two y's. The <strong>command</strong> is <code>graphify</code>, one.</td></tr>
+        <tr><td>Python is 3.9 or older</td><td>Graphify needs 3.10+. Upgrade before class.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Post the exact error text in the class thread — the wording is the diagnosis.</p>
+
+  <a class="back" href="index.html">← Back to the show notes</a>
+
+  <div class="foot">
+    The Brain That Runs a Company — Class 6 · Orbix Automation Solutions<br>
+    Graphify is © Graphify-Labs, Apache-2.0
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Clipboard: on file:// Chromium reports isSecureContext true and exposes
+     navigator.clipboard, but writeText() REJECTS while execCommand works.
+     Rejection falls through rather than telling people to select by hand. */
+  function legacyCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function copyText(text, btn){
+    function done(ok){
+      btn.textContent = ok ? "copied" : "select it";
+      btn.classList.toggle("ok", ok);
+      setTimeout(function(){ btn.textContent = "copy"; btn.classList.remove("ok"); }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); },
+                                               function(){ done(legacyCopy(text)); });
+      return;
+    }
+    done(legacyCopy(text));
+  }
+
+  document.querySelectorAll(".cp").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var pre = btn.parentNode.querySelector("pre");
+      if (pre) copyText(pre.textContent, btn);
+    });
+  });
+
+  document.querySelectorAll(".step-tick input").forEach(function(box, i){
+    var key = "bc06-gate-" + i;
+    try { if (localStorage.getItem(key) === "1") box.checked = true; } catch(e){ /* blocked */ }
+    box.addEventListener("change", function(){
+      try {
+        if (box.checked) localStorage.setItem(key, "1");
+        else localStorage.removeItem(key);
+      } catch(e){ /* tick still works this session */ }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

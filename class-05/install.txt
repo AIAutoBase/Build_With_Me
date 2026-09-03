@@ -1,0 +1,211 @@
+You are helping me install "The Brain That Runs a Company - Class 5: Hands and a Clock".
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess.
+
+Three things about this class before you start:
+
+  ONE. This class READS the rows my Class 2 classifier already writes. It must not add
+  a table, change my schema, or modify the Class 2 workflow. If you think you need to,
+  stop and tell me why instead.
+
+  TWO. This class FAILS SILENTLY in a way the others do not. A digest that stops
+  arriving looks exactly like a quiet week. Everything you help me check should be
+  aimed at "how would I know if it stopped", not just "did it work once".
+
+  THREE. There is one probe in here that genuinely has to be run rather than assumed.
+  That is Step 7 and it decides whether half this class is even possible on my setup.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N - <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+Never tell me a step passed unless you actually saw its output say so.
+
+## Step 1 - Work out where I am
+
+This has to run on the machine my brain runs on - the one with Docker, n8n and Postgres.
+
+Report:
+  - my operating system
+  - whether docker is running here and my containers are up
+  - whether python3 exists (the IMAP probe needs it - standard library only, nothing
+    to install)
+
+If I am not on the brain machine, stop and tell me.
+
+## Step 2 - Make a workspace folder
+
+Mac or Linux: ~/class-05
+Windows: %USERPROFILE%\class-05
+
+Create it if it is not there. Tell me the full path.
+
+## Step 3 - Download the pack
+
+Download this into the workspace folder, keeping the name
+class-05-hands-pack-DRAFT.zip:
+
+https://aiautobase.github.io/Build_With_Me/class-05/downloads/class-05-hands-pack-DRAFT.zip
+
+Mac / Linux / WSL:
+  curl -fL -o class-05-hands-pack-DRAFT.zip "<the URL above>"
+
+Windows PowerShell:
+  Invoke-WebRequest -Uri "<the URL above>" -OutFile class-05-hands-pack-DRAFT.zip
+
+The word DRAFT in that filename is deliberate. Explain it to me once you have read
+DRAFT.md in Step 6 - not before, because you do not know yet.
+
+Also download the gate page into the same folder:
+
+https://aiautobase.github.io/Build_With_Me/class-05/setup-gate.html
+
+If that fails, say so and carry on. It is a convenience.
+
+## Step 4 - Check I got the real file
+
+The zip must have this SHA-256:
+
+  7e45e546d2a245f5a53004adcbff7a997a93b44fa65f128005a656f6aa356cbe
+
+Mac / Linux / WSL:   sha256sum class-05-hands-pack-DRAFT.zip
+Mac (if missing):    shasum -a 256 class-05-hands-pack-DRAFT.zip
+Windows PowerShell:  Get-FileHash class-05-hands-pack-DRAFT.zip -Algorithm SHA256
+
+Compare it yourself. If it does not match, STOP. Do not unzip it.
+
+## Step 5 - Unzip it into its own folder
+
+Mac / Linux / WSL:
+  unzip -o class-05-hands-pack-DRAFT.zip -d class-05-hands-pack
+
+Windows PowerShell:
+  Expand-Archive -Path class-05-hands-pack-DRAFT.zip -DestinationPath class-05-hands-pack -Force
+
+List what came out.
+
+## Step 6 - Read DRAFT.md first, then the rest
+
+Read class-05-hands-pack/DRAFT.md before anything else and tell me:
+  - which part of this class is unproven
+  - why that matters to me specifically
+  - which prompt is NOT affected by it
+  - what I should do before building the affected one
+
+Then read README.md, PREWORK.md and TROUBLESHOOT.md all the way through.
+
+## Step 7 - The probe that decides whether half this class works
+
+This is the important one.
+
+The draft half of this class writes a reply into my Drafts folder using an IMAP APPEND.
+"My provider supports IMAP" does NOT tell us whether APPEND works on my account, into
+that folder, with the right flag. Three things have to be true at once.
+
+The pack ships verify.sh, which probes it properly: it connects, finds my drafts folder,
+appends a throwaway message with the \Draft flag, confirms it landed, and deletes it
+again.
+
+It needs three environment variables for that one run:
+
+  export BRAIN_IMAP_HOST=imap.myprovider.com
+  export BRAIN_IMAP_USER=me@myprovider.com
+  export BRAIN_IMAP_PASS='...'
+
+Rules for this:
+  - I type the password myself. Do not ask me to paste it to you, and do not echo it
+    back to the screen.
+  - Do not write these into any file. They are for one run.
+  - Tell me to unset them afterwards.
+
+Then:
+  bash class-05-hands-pack/verify.sh
+
+Read the output to me. In particular, tell me:
+  - THE EXACT NAME of my drafts folder - write it down where I can see it. There is no
+    universal name; Drafts, INBOX.Drafts and [Gmail]/Drafts are all real.
+  - whether APPEND was accepted
+  - whether the probe message was found and then deleted
+
+If APPEND is REJECTED: stop and tell me plainly that this half of the class cannot work
+on my provider, and point me at docs/UPGRADE-gmail-api.md. Do not invent a workaround,
+and do NOT suggest writing the draft into Postgres instead - a draft in a database is a
+row, and nobody sends from a database.
+
+## Step 8 - Check I have something to summarise
+
+The digest summarises what my Class 2 classifier wrote overnight.
+
+Find the Class 2 table and show me:
+  - how many rows it has
+  - the newest row's timestamp
+  - the distinct categories, with counts
+
+If the newest row is weeks old, say so plainly: Class 2 has stopped, and this class will
+build a digest that reports zero every morning while looking perfectly healthy.
+
+That is worth catching now rather than next Tuesday.
+
+## Step 9 - The timezone check nobody thinks to do
+
+A 7am schedule on a container set to UTC fires at 2am, and nothing about that looks
+broken from the inside.
+
+Check and report:
+  docker compose exec -T n8n printenv GENERIC_TIMEZONE
+  date
+
+Tell me whether n8n's timezone is MY timezone. If GENERIC_TIMEZONE is unset, tell me it
+will use UTC, and that n8n reads environment variables when the container starts and
+never again - so setting it needs a restart.
+
+## Step 10 - Ask me what I actually want at 7am
+
+Not technical, and it decides whether I keep using this.
+
+Ask me:
+  - what would make me glad this arrived at 7am
+  - what would make me start ignoring it
+  - what time I actually read email
+
+Write my answers down where I can find them in class. We build it around mine.
+
+A digest I delete unread is worse than no digest, because it teaches me to ignore
+something my own brain sends me.
+
+## Step 11 - Know when we are actually finished
+
+We are finished with the install when all of these are true. Print them as a checklist
+with a real PASS or FAIL:
+
+  - The checksum matched
+  - I know what DRAFT.md says, and that P1 is unaffected by it
+  - The IMAP APPEND probe RAN, and I know the result either way
+  - I have written down the exact name of my drafts folder
+  - Class 2 is writing rows, and the newest is recent
+  - I know whether n8n's timezone is mine
+  - I have answered what I want at 7am
+  - The IMAP environment variables are unset again
+
+Then tell me in two or three sentences: what I now have, that nothing is built yet, and
+that the digest and the drafts get built in class from prompts/P1-digest.md and
+P2-draft.md - in that order, and P1 is worth having on its own.
+
+Do not build the workflows for me now. That is the class.
+
+## Ground rules
+
+- Never claim something worked without output showing it worked.
+- Never skip the checksum.
+- Never write my mailbox password into a file, and never print it to the screen.
+- Do NOT modify my Class 2 workflow, my schema, or my tables.
+- Never send an email. Not once, not as a test.
+- If APPEND fails, say so and stop. Do not substitute a database row for a draft.
+- If you get stuck on the same thing twice, stop. Give me the exact command and the
+  exact error so I can post it in the community. Never post my password.

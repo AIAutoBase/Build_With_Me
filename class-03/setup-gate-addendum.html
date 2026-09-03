@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Class 3 addendum — the parts only you can do</title>
+<style>
+  :root{
+    --bg:#0F172A; --panel:#16223b; --panel2:#1b2946; --line:#2a3a5c;
+    --ink:#F8FAFC; --muted:#94A3B8; --blue:#3B82F6; --gold:#D4A843;
+    --green:#16A34A; --red:#DC2626;
+    --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+    --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;
+       padding:28px 20px 60px}
+  .page{max-width:860px;margin:0 auto}
+
+  header{margin-bottom:8px}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:14px;margin-top:4px}
+
+  .lede{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+        padding:18px;margin:22px 0;font-size:15px}
+  .lede p+p{margin-top:10px}
+
+  .gate{border:1px solid var(--gold);background:rgba(212,168,67,.10);border-radius:12px;
+        padding:16px 18px;margin:22px 0;font-size:14.5px}
+  .gate b{color:#f0d08a}
+
+  .progress{display:flex;align-items:center;gap:10px;margin:22px 0 8px;
+            font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .bar{flex:1;height:6px;border-radius:999px;background:var(--panel2);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .25s}
+
+  section.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+               padding:20px;margin:14px 0}
+  section.step.done{border-color:var(--green)}
+  section.step.done .num{background:rgba(22,163,74,.2);color:#86efac}
+
+  .head{display:flex;align-items:flex-start;gap:12px}
+  .num{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:700;
+       letter-spacing:.1em;background:rgba(59,130,246,.18);color:#9dc4ee;
+       padding:4px 9px;border-radius:999px;margin-top:3px}
+  .num.opt{background:rgba(148,163,184,.18);color:var(--muted)}
+  h2{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .why{color:var(--muted);font-size:13.5px;margin-top:3px}
+
+  .body{margin-top:14px;font-size:14.5px}
+  .body p+p{margin-top:10px}
+  ul{margin:10px 0 0 18px} li{margin:5px 0}
+
+  a.btn{display:inline-block;background:var(--blue);color:#fff;text-decoration:none;
+        border-radius:8px;padding:11px 18px;font-size:14px;font-weight:700;
+        margin:12px 10px 0 0}
+  a.btn:hover{background:#2f6fd8}
+  .btnnote{display:block;color:var(--muted);font-size:12.5px;margin-top:8px;
+           font-family:var(--mono)}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px;
+        border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  th{background:var(--panel2);text-align:left;padding:9px 12px;font-size:11px;
+     letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+  td.f{font-weight:600;white-space:nowrap}
+  code{font-family:var(--mono);font-size:12.5px;background:rgba(0,0,0,.35);
+       padding:2px 6px;border-radius:4px}
+  pre{font-family:var(--mono);font-size:12.5px;background:var(--bg);
+      border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:12px;
+      overflow-x:auto}
+
+  .warn{margin-top:14px;padding:13px 15px;border-radius:9px;
+        border:1px solid var(--gold);background:rgba(212,168,67,.10);font-size:13.5px}
+  .warn b{color:#f0d08a}
+
+  .prompt{margin-top:16px;border:1px solid var(--line);border-radius:9px;
+          background:var(--bg);overflow:hidden}
+  .prompt .k{display:flex;align-items:center;gap:10px;background:var(--panel2);
+             padding:8px 12px;font-family:var(--mono);font-size:11px;
+             letter-spacing:.12em;text-transform:uppercase;color:var(--blue)}
+  .prompt button{margin-left:auto;background:var(--blue);color:#fff;border:0;
+                 border-radius:6px;padding:6px 13px;font-family:var(--sans);
+                 font-size:12px;font-weight:700;cursor:pointer}
+  .prompt button:hover{background:#2f6fd8}
+  .prompt button.ok{background:var(--green)}
+  .prompt button.fail{background:var(--gold);color:#26200c}
+  .prompt textarea{display:block;width:100%;border:0;resize:vertical;
+                   background:var(--bg);color:var(--ink);font-family:var(--mono);
+                   font-size:12.5px;line-height:1.6;padding:13px;min-height:104px}
+  .prompt textarea:focus{outline:none}
+
+  label.chk{display:flex;align-items:center;gap:9px;margin-top:16px;
+            padding-top:14px;border-top:1px solid var(--line);
+            font-size:14px;cursor:pointer;user-select:none}
+  label.chk input{width:17px;height:17px;accent-color:var(--green);cursor:pointer}
+
+  .stuck{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+         padding:20px;margin-top:26px}
+  .stuck h2{margin-bottom:10px}
+  .stuck td.f{font-family:var(--mono);font-size:12.5px;white-space:normal}
+
+  footer{margin-top:28px;color:var(--muted);font-size:12px;font-family:var(--mono);
+         text-align:center;line-height:1.8}
+  .reset{background:none;border:0;color:var(--muted);font-family:var(--mono);
+         font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <h1>The parts only you can do</h1>
+  <div class="sub">The Brain That Runs a Company &middot; Class 3 addendum &mdash; the eyes, the door, and the inbox</div>
+</header>
+
+<div class="lede">
+  <p>The container is built and running. What is left happens in the n8n editor and in a
+  browser, so the script cannot do it &mdash; it can only wait.</p>
+  <p>Most of this addendum is this page. Four workflows have to be imported and switched
+  on by hand, and no amount of scripting gets around that.</p>
+</div>
+
+<div class="gate">
+  <b>Before you start:</b> the main Class 3 pack has to be working. If
+  <code>SELECT * FROM kb_sources;</code> does not list your documents, stop and fix that
+  first. A nicer door onto a broken pipeline is still broken.
+</div>
+
+<div class="progress">
+  <span id="ptext">0 of 4 done</span>
+  <span class="bar"><i id="pbar"></i></span>
+</div>
+
+<!-- ── 1 ─────────────────────────────────────────────────────────────────── -->
+<section class="step" id="s1">
+  <div class="head">
+    <span class="num">01</span>
+    <div>
+      <h2>Import all four workflows, then <u>activate</u> all four</h2>
+      <div class="why">Saving is not activating. An inactive workflow answers 404, and
+      the upload will tell you the webhook is missing.</div>
+    </div>
+  </div>
+  <div class="body">
+    <p>In n8n: <b>Workflows &rarr; Import from File</b>. All four are in the addendum's
+    <code>demo/</code> folder.</p>
+    <table>
+      <tr><th>File</th><th>What it is</th></tr>
+      <tr><td class="f"><code>02-dashboard-api.json</code></td><td>the Inbox tab's data</td></tr>
+      <tr><td class="f"><code>03-email-sort.json</code></td><td>reads your mail and files it</td></tr>
+      <tr><td class="f"><code>07-kb-upload.json</code></td><td>the drag-and-drop door</td></tr>
+      <tr><td class="f"><code>08-kb-library.json</code></td><td>the document list, and forgetting one</td></tr>
+    </table>
+
+    <a class="btn" href="http://localhost:5678/home/workflows" target="_blank" rel="noopener noreferrer">Open n8n workflows</a>
+    <span class="btnnote">http://localhost:5678/home/workflows</span>
+
+    <div class="warn">
+      <b>Then re-select the credential in every node that has one.</b> n8n gives
+      credentials their own IDs on your machine, and the ones written in these files are
+      mine. A node with a credential it cannot find shows a small warning, then fails at
+      run time with an authentication error that has nothing to do with your key. Open
+      each Postgres and HTTP node, pick your credential from the dropdown, save.
+    </div>
+
+    <div class="prompt">
+      <div class="k">Paste this back into Claude Code
+        <button type="button" data-copy="p1">Copy</button></div>
+      <textarea id="p1" readonly spellcheck="false">All four addendum workflows are imported, every node has my own credential re-selected, and all four are Active. Carry on and verify it rather than taking my word for it.</textarea>
+    </div>
+
+    <label class="chk"><input type="checkbox" data-step="1" /> Done &mdash; all four say Active</label>
+  </div>
+</section>
+
+<!-- ── 2 ─────────────────────────────────────────────────────────────────── -->
+<section class="step" id="s2">
+  <div class="head">
+    <span class="num">02</span>
+    <div>
+      <h2>Point the dashboard at your n8n</h2>
+      <div class="why">One line in one file. Usually there is nothing to change &mdash;
+      but if you get it wrong it costs an hour.</div>
+    </div>
+  </div>
+  <div class="body">
+    <p>Open <code>dashboard/config.js</code>. It holds one line:</p>
+    <pre>window.BRAIN_N8N = "http://localhost:5678";</pre>
+
+    <p><b>Browsing from the same machine the stack runs on?</b> Leave it alone. You are
+    done with this step.</p>
+
+    <p><b>Browsing from a laptop to a stack on another box?</b> Put that box's address
+    there instead &mdash; <code>http://192.168.1.50:5678</code>, or whatever yours is.</p>
+
+    <div class="warn">
+      <b><code>localhost</code> means the machine the browser is on.</b> Not the machine
+      n8n is on. Point a laptop at <code>localhost</code> and it looks at the laptop,
+      finds nothing, and shows a connection error while n8n is perfectly healthy
+      somewhere else. That one costs people an hour.
+    </div>
+
+    <div class="prompt">
+      <div class="k">Paste this back into Claude Code
+        <button type="button" data-copy="p2">Copy</button></div>
+      <textarea id="p2" readonly spellcheck="false">I have checked dashboard/config.js and it points at the right n8n for where I am browsing from. Carry on.</textarea>
+    </div>
+
+    <label class="chk"><input type="checkbox" data-step="2" /> Done &mdash; config.js is right for my setup</label>
+  </div>
+</section>
+
+<!-- ── 3 ─────────────────────────────────────────────────────────────────── -->
+<section class="step" id="s3">
+  <div class="head">
+    <span class="num opt">03</span>
+    <div>
+      <h2>Connect a mailbox <span style="color:var(--muted);font-weight:600">&mdash; optional</span></h2>
+      <div class="why">Only needed for the Inbox tab. Skip it and everything else still
+      works; the Inbox tab just stays empty, which is correct, not broken.</div>
+    </div>
+  </div>
+  <div class="body">
+    <p><code>03 &mdash; Email sort</code> reads a real mailbox, so it needs a real
+    credential. In n8n: <b>Credentials &rarr; New &rarr; IMAP</b>.</p>
+
+    <a class="btn" href="http://localhost:5678/home/credentials" target="_blank" rel="noopener noreferrer">Open n8n credentials</a>
+    <span class="btnnote">http://localhost:5678/home/credentials</span>
+
+    <table>
+      <tr><th>Field</th><th>What to type</th></tr>
+      <tr><td class="f">Name</td><td><code>Demo Mailbox</code> &mdash; use that name and the workflow finds it without editing</td></tr>
+      <tr><td class="f">Host</td><td>your mail server, usually <code>mail.yourdomain.com</code></td></tr>
+      <tr><td class="f">Port</td><td><code>993</code></td></tr>
+      <tr><td class="f">User</td><td>the full email address</td></tr>
+      <tr><td class="f">Password</td><td>the mailbox password, or an app password</td></tr>
+      <tr><td class="f">SSL/TLS</td><td>on</td></tr>
+    </table>
+
+    <div class="warn">
+      <b>Use a mailbox you do not mind seeing on your own screen.</b> A spare address, or
+      one you make for this. The workflow marks mail as read as it processes it &mdash;
+      that is how it avoids doing the same message twice. Point it at your main inbox and
+      it will march through everything unread in there.
+    </div>
+
+    <div class="prompt">
+      <div class="k">Paste this back into Claude Code
+        <button type="button" data-copy="p3">Copy</button></div>
+      <textarea id="p3" readonly spellcheck="false">I have set up the IMAP credential on a spare mailbox, or I have decided to skip the inbox for now. Tell me which you understood, then carry on.</textarea>
+    </div>
+
+    <label class="chk"><input type="checkbox" data-step="3" /> Done &mdash; mailbox connected, or deliberately skipped</label>
+  </div>
+</section>
+
+<!-- ── 4 ─────────────────────────────────────────────────────────────────── -->
+<section class="step" id="s4">
+  <div class="head">
+    <span class="num">04</span>
+    <div>
+      <h2>Open it, and drop a document on it</h2>
+      <div class="why">This is the proof. Everything before it was setup.</div>
+    </div>
+  </div>
+  <div class="body">
+    <p>Three tabs: Inbox, Ask, Documents. Go to <b>Documents</b> and drag a PDF onto the
+    drop zone. It should appear in the list within a few seconds, with a chunk count.</p>
+
+    <a class="btn" href="http://localhost:8088" target="_blank" rel="noopener noreferrer">Open the dashboard</a>
+    <span class="btnnote">http://localhost:8088 &middot; if you changed the port, use yours</span>
+
+    <p style="margin-top:14px">Then check the page and the database agree with each
+    other:</p>
+    <pre>docker compose exec -T postgres psql -U brain -d brain -c 'SELECT * FROM kb_sources;'</pre>
+    <p>If they disagree, the page is showing you something stale and the query is right.</p>
+
+    <div class="warn">
+      <b>A scanned PDF will be refused, and that is the system working.</b> A scan is a
+      photograph of a page. There is no text in it to extract, so the upload comes back
+      grey with "nothing to read" and does not go into the memory. If it went in, you
+      would have a document that appears to be filed and answers nothing &mdash; and you
+      would only find out the day you needed it.
+    </div>
+
+    <div class="prompt">
+      <div class="k">Paste this back into Claude Code
+        <button type="button" data-copy="p4">Copy</button></div>
+      <textarea id="p4" readonly spellcheck="false">The dashboard opens, I can see all three tabs, and I dropped a document on the Documents tab and it appeared in the list. Run the final checks - including that the Ask tab still answers the warehouse deposit question and still refuses the health plan question - and tell me straight whether this is finished.</textarea>
+    </div>
+
+    <label class="chk"><input type="checkbox" data-step="4" /> Done &mdash; a document I dropped is in the list</label>
+  </div>
+</section>
+
+<!-- ── stuck ─────────────────────────────────────────────────────────────── -->
+<div class="stuck">
+  <h2>If something here will not work</h2>
+  <table>
+    <tr><th>What you see</th><th>What it means</th></tr>
+    <tr><td class="f">Page loads, tabs empty, red box</td>
+        <td>n8n is not reachable. Check <code>config.js</code>, then check the workflow is Active.</td></tr>
+    <tr><td class="f"><code>Could not load inbox.html</code></td>
+        <td><code>bi-brain-web</code> is not running. <code>docker compose ps</code>.</td></tr>
+    <tr><td class="f">Upload says the webhook answered 404</td>
+        <td><code>07 &mdash; KB upload</code> is not Active. Saving is not activating.</td></tr>
+    <tr><td class="f">Upload says it could not reach n8n</td>
+        <td><code>config.js</code> is pointing somewhere wrong. Step 2.</td></tr>
+    <tr><td class="f">Everything green, list is empty</td>
+        <td>The Postgres credential is on the <code>n8n</code> database instead of <code>brain</code>.</td></tr>
+    <tr><td class="f">Dashboard fine, Inbox tab empty</td>
+        <td>No mail sorted yet. Is <code>03 &mdash; Email sort</code> Active, and is there unread mail?</td></tr>
+  </table>
+  <p style="margin-top:14px;font-size:14px"><b>The browser console is not optional here.</b>
+  Right-click, Inspect, Console. A page that looks blank and a page that is failing look
+  identical from the outside, and the console is the difference.</p>
+  <p style="margin-top:10px;font-size:14px">Still stuck? Post it in the community &mdash;
+  the exact command and the exact error, pasted, not described.</p>
+</div>
+
+<footer>
+  The Brain That Runs a Company &middot; Class 3 addendum<br />
+  Created by Hector Diaz, founder of Orbix Automation Solutions.<br />
+  <button class="reset" id="reset" type="button">clear my ticks on this page</button>
+</footer>
+
+</div>
+<script>
+(function () {
+  "use strict";
+  var KEY = "class03-addendum-gate-v1";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('input[data-step]'));
+
+  // localStorage is not guaranteed: private windows, cleared site data, and some
+  // browsers throw on the accessor itself. The page must render correctly with no
+  // stored value, so every read and write is wrapped and a failure is simply ignored.
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function save(state) {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  function paint() {
+    var done = 0;
+    boxes.forEach(function (b) {
+      var sec = document.getElementById('s' + b.getAttribute('data-step'));
+      if (b.checked) { done++; sec.classList.add('done'); }
+      else { sec.classList.remove('done'); }
+    });
+    document.getElementById('ptext').textContent = done + ' of ' + boxes.length + ' done';
+    document.getElementById('pbar').style.width = (done / boxes.length * 100) + '%';
+  }
+
+  var state = load();
+  boxes.forEach(function (b) {
+    var k = b.getAttribute('data-step');
+    b.checked = state[k] === true;
+    b.addEventListener('change', function () {
+      var s = load(); s[k] = b.checked; save(s); paint();
+    });
+  });
+  paint();
+
+  document.getElementById('reset').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    boxes.forEach(function (b) { b.checked = false; });
+    paint();
+  });
+
+  // Copy: the Clipboard API needs a secure context and this page is usually opened
+  // over file://, where support varies by browser. Fall back to execCommand, and if
+  // that fails too, select the text so the reader can copy it by hand - never leave
+  // the button looking like it worked when nothing reached the clipboard.
+  document.querySelectorAll('button[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var ta = document.getElementById(btn.getAttribute('data-copy'));
+      var flash = function (label, cls) {
+        var old = btn.textContent;
+        btn.textContent = label; btn.className = cls;
+        setTimeout(function () { btn.textContent = old; btn.className = ''; }, 1600);
+      };
+      var manual = function () {
+        ta.focus(); ta.select();
+        try {
+          if (document.execCommand('copy')) { flash('Copied', 'ok'); return; }
+        } catch (e) { /* fall through */ }
+        flash('Press Ctrl+C', 'fail');
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(ta.value)
+          .then(function () { flash('Copied', 'ok'); })
+          .catch(manual);
+      } else {
+        manual();
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

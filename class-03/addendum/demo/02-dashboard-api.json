@@ -1,0 +1,105 @@
+{
+  "id": "brainDashApi0001",
+  "name": "02 — Dashboard API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "brain",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c2000000-0000-4000-8000-000000000001",
+      "name": "Dashboard asks",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        0
+      ],
+      "webhookId": "brain-dashboard-webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  (SELECT coalesce(json_agg(row_to_json(c)), '[]'::json) FROM (\n      SELECT category, sum(n)::int AS n\n      FROM category_counts_7d GROUP BY category ORDER BY 2 DESC) c)  AS counts,\n  (SELECT coalesce(json_agg(row_to_json(f)), '[]'::json) FROM (\n      SELECT * FROM needs_followup LIMIT 20) f)                       AS followup,\n  (SELECT coalesce(json_agg(row_to_json(l)), '[]'::json) FROM (\n      SELECT from_email, from_name, subject, category, account, received_at\n      FROM messages ORDER BY received_at DESC LIMIT 20) l)            AS latest;",
+        "options": {}
+      },
+      "id": "c2000000-0000-4000-8000-000000000002",
+      "name": "Everything in one query",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -80,
+        0
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "brainPg0000000001",
+          "name": "Brain Postgres"
+        }
+      },
+      "notes": "Database must be `brain`, not `n8n`.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c2000000-0000-4000-8000-000000000003",
+      "name": "Respond (with CORS)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        0
+      ],
+      "notes": "The dashboard is served from a different port than n8n, so every request is cross-origin. Without this header the fetch fails and the console blames CORS while the data was fine all along.",
+      "notesInFlow": true
+    }
+  ],
+  "connections": {
+    "Dashboard asks": {
+      "main": [
+        [
+          {
+            "node": "Everything in one query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Everything in one query": {
+      "main": [
+        [
+          {
+            "node": "Respond (with CORS)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

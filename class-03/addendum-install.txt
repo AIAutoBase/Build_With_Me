@@ -1,0 +1,263 @@
+You are helping me install the addendum to "The Brain That Runs a Company — Class 3:
+Memory". This adds a tabbed dashboard, drag-and-drop document upload, and an inbox that
+sorts itself.
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess.
+
+This is a continuation of the main Class 3 pack, not a replacement. It changes nothing in
+what I already have.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N — <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+After the step, tell me plainly whether it worked. If it did not, tell me what the error
+means in ordinary words before you tell me how to fix it. Never tell me a step passed
+unless you actually saw its output say so.
+
+## Step 1 — Check I am allowed to do this yet
+
+This addendum sits on top of the main Class 3 pack. Before downloading anything, prove
+the thing underneath is alive. Find my stack folder first — it is normally ~/brain, the
+folder holding docker-compose.yml — and from there check all three:
+
+  1. docker compose ps                 both containers say Up
+  2. curl -s -o /dev/null -w '%{http_code}' http://localhost:5678/healthz    -> 200
+  3. docker compose exec -T postgres psql -U brain -d brain \
+       -c 'SELECT * FROM kb_sources;'  -> returns my documents, not an empty table
+        and not an error about a missing relation
+
+Tell me the result of each one.
+
+If any of them fails: STOP. Do not download the addendum. Tell me which one failed and
+that I need to get the main Class 3 pack working first — that is Prompt A, and this
+install cannot compensate for a broken kb table.
+
+If kb_sources is empty but the table exists, that is still a stop. An empty memory with a
+nicer front end on it is still an empty memory.
+
+## Step 2 — Find the right folder
+
+The addendum must be unzipped into the same folder as my docker-compose.yml — normally
+~/brain, but check rather than assume, because the installer honours an INSTALL_DIR
+setting and mine may be somewhere else.
+
+Tell me the full path you are going to use, and how you confirmed it is the right one.
+
+If I am on Windows, my stack lives inside WSL. Do this work inside WSL, not in
+PowerShell, and tell me that is what you are doing.
+
+## Step 3 — Download the addendum
+
+Download this into the stack folder, keeping the name
+class-03-brain-pack-addendum.zip:
+
+https://aiautobase.github.io/Build_With_Me/class-03/downloads/class-03-brain-pack-addendum.zip
+
+  curl -fL -o class-03-brain-pack-addendum.zip "<the URL above>"
+
+If the download fails, stop and show me the exact error.
+
+Download this second file into the same folder as well. It is the page the script opens
+whenever it needs me to do something in a browser:
+
+https://aiautobase.github.io/Build_With_Me/class-03/setup-gate-addendum.html
+
+If that one fails, say so and carry on anyway — it is a convenience, not a dependency.
+
+## Step 4 — Check I got the real file
+
+The file must have this SHA-256:
+
+  66c0b9288e26e95898b5270546e25dfead5ee8a1ae7dcaf1d665e8a03d7870bd
+
+  sha256sum class-03-brain-pack-addendum.zip
+
+Compare it yourself and tell me match or no match. If it does not match: STOP, do not
+unzip it, tell me to download it again.
+
+## Step 5 — Unzip it, in place, carefully
+
+This zip has no folder inside it. It unpacks flat on purpose, so that brain-web/ and
+dashboard/ land next to my docker-compose.yml where Docker expects them. That is correct
+here — do not redirect it into a subfolder the way the main pack is done.
+
+  unzip -o class-03-brain-pack-addendum.zip
+
+Use -o. Without it, unzip stops and waits for an "overwrite?" answer if I run this twice,
+and inside a script that wait never ends.
+
+Before you run it, list what is already in the folder and tell me whether anything is
+about to be overwritten. Then run it, and confirm brain-web/ and dashboard/ are there.
+
+## Step 6 — Read the two things I am about to run, and tell me straight
+
+The pack asks for this by name, so do it properly. Read both files in full:
+
+  docker-compose.override.yml
+  brain-web/app.py
+
+Then tell me:
+  - what they start, and what ports they open
+  - what they can read on my machine
+  - whether anything sends data anywhere
+  - whether you would run them
+
+Also explain to me what an override file is: Docker merges it into my existing compose
+automatically, my original docker-compose.yml is never edited, and deleting the override
+undoes the whole change. I want to understand that before anything starts.
+
+## Step 7 — Read the README and sort the commands
+
+Read README.md and VERIFY.md from the addendum in full.
+
+Then give me a numbered list of every command and instruction they contain, in order,
+marked:
+
+  [AUTO]  a command a script can run for me
+  [HUMAN] something only I can do — importing a workflow, activating it, re-selecting a
+          credential in a node, creating an IMAP credential, dragging a file onto a page
+
+Do not invent steps. Do not reorder them. Do not drop the verification commands.
+
+Be honest about the balance here: most of the real work in this addendum is [HUMAN],
+because n8n workflows have to be imported and activated by hand. Tell me roughly how many
+of each there are, so I know what I am in for before we start.
+
+## Step 8 — Write my install script
+
+Write ONE script that runs every [AUTO] command in order and STOPS at every [HUMAN] step
+with clear, numbered instructions.
+
+Which file to write:
+- Mac or Linux            -> install-addendum.sh
+- Windows                 -> install-addendum.sh, to run inside WSL, because that is
+                             where the stack lives. If you also write a .ps1, its only
+                             job is to hand off to WSL. Tell me which to run.
+
+Do not write a .bat file. It cannot reach the stack.
+
+The script must obey these rules:
+
+1. Safe to run twice. Check before doing. Never touch .env, and never edit my original
+   docker-compose.yml — the whole design of this addendum is that it does not.
+
+2. Fail loudly. set -euo pipefail.
+
+3. Re-check the Step 1 preconditions at the top and refuse to continue if the main pack
+   is not healthy. Someone will run this script a week later on a stack that has since
+   broken, and it should say so rather than pile a second problem on the first.
+
+4. Phases and gates. After the [AUTO] block, print a numbered "DO THIS YOURSELF" list
+   covering the [HUMAN] steps, then exit 0 printing the exact command to run to carry on.
+   Re-running must skip finished work.
+
+4b. At every gate, OPEN setup-gate-addendum.html in my browser rather than only printing
+   a list at me. It is the same steps with clickable buttons into the n8n editor, the
+   exact values to type, and the prompt to paste back to you:
+
+     Linux            xdg-open setup-gate-addendum.html
+     Mac              open setup-gate-addendum.html
+     WSL (Windows)    explorer.exe "$(wslpath -w setup-gate-addendum.html)" || true
+
+   explorer.exe returns a non-zero exit code even when it worked, and under
+   set -euo pipefail that kills the script on a step that actually succeeded — hence the
+   `|| true`. If nothing opens at all, print the full path and the steps in the terminal
+   and carry on. Opening a browser is a convenience, never a requirement.
+
+   Once brain-web is up, also open the dashboard itself the same way —
+   http://localhost:8088, or my port if I changed it.
+
+5. Handle the port properly. The build publishes port 8088. Before starting, check
+   whether 8088 is already taken. If it is, do not just fail — tell me which port to put
+   in docker-compose.override.yml instead, and that 8080 is deliberately not the default
+   precisely because it is so often in use.
+
+6. Verify, never assume. Print PASS or FAIL for each:
+     - docker compose ps shows brain-web running
+     - curl http://localhost:8088/health returns {"ok":true,...} with a markitdown
+       version in it
+     - the dashboard page loads at http://localhost:8088
+     - after I have imported and activated the workflows, kb_sources still agrees with
+       what the Documents tab lists
+   A FAIL stops the script with a plain-English explanation.
+
+7. The build takes a few minutes the first time because it is installing MarkItDown and
+   its dependencies. Say so on screen before it starts, so I do not think it has hung.
+
+8. dashboard/config.js holds one line pointing at my n8n. Default it to
+   http://localhost:5678, but explain to me that localhost means "the machine the
+   browser is on" — so if I browse from a laptop to a stack on another box, I have to put
+   that box's address there instead, or the page shows a connection error while n8n is
+   perfectly healthy.
+
+9. Echo each command before running it, and comment each section with the step number
+   from the addendum README.
+
+## Step 9 — Show me the script and explain it before anything runs
+
+Print the whole script, walk me through it section by section in plain language, and tell
+me what it starts, what it writes to, what it sends anywhere, and anything you would be
+uneasy about.
+
+Then ask me whether to run it now or whether I want to read it first. Do not run it until
+I say yes.
+
+## Step 10 — Run it, once I say so
+
+Run it and show me the output. When it stops at a gate, the gate page will already be
+open in my browser. Tell me which numbered step on it I am on, in one line, and wait —
+do not read the whole page back to me. When I say it is done, verify it rather than
+believing me.
+
+The gates are these, and the page walks me through them one at a time:
+
+  - Import all four workflows from demo/ and ACTIVATE all four. Saving is not
+    activating. An inactive workflow answers 404, and that is the single most common
+    "it's broken" moment here.
+  - Re-select the credential in every node that has one. The credential IDs written in
+    those files are not mine. A node with a credential it cannot find fails at run time
+    with an authentication error that has nothing to do with my key.
+  - If I want the inbox, create the IMAP credential. Tell me to point it at a spare
+    mailbox, not my main one, because the workflow marks mail as read as it works
+    through it. If I skip this, the Inbox tab stays empty and that is correct, not
+    broken.
+
+## Step 11 — Know when we are actually finished
+
+We are finished when all of these are true:
+
+  - http://localhost:8088 loads and shows three tabs: Inbox, Ask, Documents
+  - the Ask tab still answers the warehouse deposit question with $7,700 and still
+    refuses the health plan question — the addendum must not have changed that
+  - I drop a PDF onto the Documents tab and it appears in the list within a few seconds
+    with a chunk count
+  - this query and the Documents tab agree with each other:
+      docker compose exec -T postgres psql -U brain -d brain \
+        -c 'SELECT * FROM kb_sources;'
+    If they disagree, the page is stale and the query is right. Say so.
+
+Tell me two things before you finish:
+
+  - A scanned PDF will be refused with "nothing to read", and that is the system working,
+    not a bug. A scan is a photograph of a page with no text in it to extract.
+  - A document's name is its identity. Two different files both called invoice.pdf will
+    overwrite each other.
+
+Then tell me in two or three sentences what I now have, and what it still cannot do.
+
+## Ground rules for the whole job
+
+- Never claim something worked without output showing it worked.
+- Never skip the checksum.
+- Never edit my original docker-compose.yml.
+- If you get stuck on the same thing twice, stop. Give me the exact command and the exact
+  error, pasted, so I can post it in the community.
+- Never write my OpenRouter key or my mailbox password into any file you create. They
+  belong in n8n credentials and nowhere else.

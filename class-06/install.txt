@@ -1,0 +1,230 @@
+You are helping me install "The Brain That Runs a Company - Class 6: See What Your
+Brain Knows".
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess.
+
+Two things about this class before you start:
+
+  ONE. This tool READS my documents. It does not write to my database, my workflows or
+  my containers. If at any point you are about to modify those, stop and tell me why.
+
+  TWO. There is a step in here that costs money if it is done wrong, and the wrong way
+  looks exactly like the right way on screen. That is Step 8. Do not skip it.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N - <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+Never tell me a step passed unless you actually saw its output say so.
+
+## Step 1 - Work out what machine I am on
+
+This has to run on the machine my BRAIN runs on - the one with Docker, n8n and Postgres
+- not necessarily the laptop I am typing on.
+
+Find out:
+  - my operating system
+  - whether I am on the brain machine or somewhere else
+  - python3 --version
+  - whether docker is running here
+
+If I am not on the brain machine, stop and tell me. I need shell access to that box.
+
+## Step 2 - Make a workspace folder
+
+Mac or Linux: ~/class-06
+Windows: %USERPROFILE%\class-06
+
+Create it if it is not there. Tell me the full path.
+
+## Step 3 - Download the pack
+
+Download this into the workspace folder, keeping the name class-06-graph-pack.zip:
+
+https://aiautobase.github.io/Build_With_Me/class-06/downloads/class-06-graph-pack.zip
+
+Mac / Linux / WSL:
+  curl -fL -o class-06-graph-pack.zip "<the URL above>"
+
+Windows PowerShell:
+  Invoke-WebRequest -Uri "<the URL above>" -OutFile class-06-graph-pack.zip
+
+Also download the gate page into the same folder - it is what you open when you need me
+to do something in a browser:
+
+https://aiautobase.github.io/Build_With_Me/class-06/setup-gate.html
+
+If the gate fails, say so and carry on. It is a convenience, not a dependency.
+
+## Step 4 - Check I got the real file
+
+The zip must have this SHA-256:
+
+  12e06b4900b230905b83ab09c2d599ea264a689f63faa12e3ae76c9a01cd8a3e
+
+Mac / Linux / WSL:   sha256sum class-06-graph-pack.zip
+Mac (if missing):    shasum -a 256 class-06-graph-pack.zip
+Windows PowerShell:  Get-FileHash class-06-graph-pack.zip -Algorithm SHA256
+
+Compare it yourself and tell me match or no match. If it does not match, STOP. Do not
+unzip it.
+
+## Step 5 - Unzip it into its own folder
+
+The zip unpacks flat, so give it a destination on purpose:
+
+Mac / Linux / WSL:
+  unzip -o class-06-graph-pack.zip -d class-06-graph-pack
+
+Windows PowerShell:
+  Expand-Archive -Path class-06-graph-pack.zip -DestinationPath class-06-graph-pack -Force
+
+Twelve files should come out. List them.
+
+## Step 6 - Read the pack, and ATTRIBUTION.md properly
+
+Read README.md, PREWORK.md and TROUBLESHOOT.md all the way through.
+
+Then read ATTRIBUTION.md and tell me, in your own words:
+  - what licence the tool we are installing uses
+  - what that licence requires of me
+  - what happens to that requirement if I build something on this and pass it on
+
+This is not a formality. Apache-2.0 is the reason this pack is legal to hand me, and
+attribution is a condition of it, not a courtesy.
+
+## Step 7 - Prove the venv actually works, with a check that CAN fail
+
+This is the part where the obvious check lies to you, so do it the way I am asking.
+
+DO NOT use this as your check:
+
+  python3 -c "import venv"
+
+That prints ok on machines where creating a venv fails, because what is missing is
+`ensurepip`, and importing venv never touches it. It is a check that cannot fail, which
+means it is not a check.
+
+Use a real probe instead:
+
+  python3 -m venv /tmp/graphify-probe && echo "VENV WORKS" && rm -rf /tmp/graphify-probe
+
+If it fails:
+  sudo apt update && sudo apt install -y python3-venv
+Then probe again. Do not continue until it prints VENV WORKS.
+
+Also confirm python3 is 3.10 or newer. Stop if it is older.
+
+Then explain back to me why the import check was insufficient. I want to hear you say
+it, because this is the lesson the whole series keeps repeating in different clothes.
+
+## Step 8 - The step that costs money if you get it wrong
+
+Report what this prints:
+
+  env | grep -E "OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY" || echo "none set"
+
+Then explain to me:
+
+  - graphify auto-detects a backend by trying, in this order:
+      gemini -> kimi -> claude -> openai -> deepseek -> azure -> bedrock -> ollama
+  - claude-cli - the FREE one this class uses - is NOT in that list, and is never
+    selected automatically
+  - I have an OpenRouter key from Class 1, and if it is exported as OPENAI_API_KEY the
+    auto-detection finds it and silently takes the PAID path
+  - free and paid produce identical output, identical timing and identical names
+
+Then tell me the rule: pass --backend=claude-cli explicitly, every time, on any command
+that uses a model.
+
+I want you to say out loud what the failure looks like, because the whole problem is
+that it does not look like a failure.
+
+## Step 9 - Create the environment and install graphify
+
+  cd ~/brain
+  python3 -m venv .graphify-venv
+  source .graphify-venv/bin/activate
+  python -m pip install --upgrade pip
+  pip install graphifyy
+
+Note the spelling: the PyPI package is graphifyy with two y's; the command it installs
+is graphify with one. That is not a typo.
+
+Confirm:
+  graphify --version
+
+Tell me the version. This pack was measured against 0.9.49 - if mine is much newer, say
+so, because something may have moved.
+
+Then:
+  graphify install --platform claude
+
+Do NOT copy in any pre-packaged graphify skill folder you might find elsewhere. There is
+a Windows-flavoured copy in circulation that is dozens of releases behind. The command
+above fetches the correct current one.
+
+## Step 10 - Run the pack's own preflight
+
+  bash class-06-graph-pack/verify.sh
+
+Read its output to me. It checks Python, the venv (with the real probe), graphify,
+Claude Code, which backend would be selected, and whether I have enough documents to be
+worth graphing.
+
+If it names something missing, that is the thing to fix. It is more reliable than
+anything you would write here, and it exits non-zero when it fails.
+
+## Step 11 - Check I have something worth graphing
+
+This class draws a picture of what my brain knows. A brain that knows nothing draws an
+empty picture and teaches me nothing.
+
+Confirm:
+  - my Class 3 stack is running
+  - there are real documents in it
+  - my dashboard's Ask tab answers a question about them
+
+Find where the actual document FILES live - graphify wants whole documents, not the
+~180-word chunks in the Postgres kb table. Tell me the folder and how many files.
+
+If I have fewer than about four documents, say plainly that the graph will be thin and
+that I should ingest more before class.
+
+## Step 12 - Know when we are actually finished
+
+We are finished with the install when all of these are true. Print them back as a
+checklist with a real PASS or FAIL:
+
+  - The checksum matched
+  - I understand what ATTRIBUTION.md requires of me
+  - python3 is 3.10+ and the REAL venv probe passed
+  - ~/brain/.graphify-venv exists and activates
+  - graphify --version prints a version
+  - claude -p answers
+  - I know whether OPENAI_API_KEY is exported, and I know the --backend rule
+  - verify.sh says Ready
+  - I have real documents to graph, and I know where they are
+
+Then tell me in two or three sentences: what I now have, that no graph exists yet, and
+that the graph gets built in class from prompts/P1-install.md through P4-mcp.md in
+order - each one ending somewhere I can see.
+
+Do not build the graph for me now. That is the class.
+
+## Ground rules
+
+- Never claim something worked without output showing it worked.
+- Never skip the checksum.
+- Do not use --break-system-packages. Use the venv.
+- Do NOT modify my Postgres database, my n8n workflows, or my containers. This tool
+  reads.
+- Always pass --backend=claude-cli explicitly on anything that uses a model.
+- If you get stuck on the same thing twice, stop. Give me the exact command and the
+  exact error, pasted, so I can post it in the community.

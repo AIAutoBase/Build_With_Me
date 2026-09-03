@@ -1,0 +1,305 @@
+#!/usr/bin/env bash
+#
+# gcommit - a versioned commit wrapper. Bumps SemVer, writes the CHANGELOG, and
+#           commits, in one step.
+#
+#   gcommit --init                 one-time per repo: VERSION + CHANGELOG.md + README section
+#   gcommit --dry-run "feat: x"    print what it WOULD do. Writes nothing
+#   gcommit "feat: add the thing"  the real thing
+#
+# Plain bash. No dependencies beyond git, awk and sed.
+#
+# ---------------------------------------------------------------------------
+# WHY THIS EXISTS, AND WHY IT REFUSES THINGS
+#
+# There is a PowerShell version of this in the workspace it came from. This one
+# is a rewrite, and every refusal below is a real failure that happened, with a
+# date and a cost. All five are the same shape: a SILENT failure that produces a
+# plausible artifact - which is the lesson this whole series keeps teaching.
+#
+#   1. The original ran `git add -A` unconditionally. Two people (or two agent
+#      sessions) in one repo, and whoever commits first sweeps the other's whole
+#      working tree into their commit. Observed 2026-08-25: three commits carried
+#      one session's work under another session's message.
+#      -> THIS SCRIPT NEVER STAGES ANYTHING. You stage; it commits.
+#
+#   2. A multi-line message silently lost its conventional-commit prefix, so
+#      `feat:` quietly became chore -> patch, and the entire blob became the
+#      CHANGELOG subject. Observed 2026-08-10. No error, wrong version.
+#      -> REFUSES a multi-line message.
+#
+#   3. Writing the CURRENT version into an app footer makes it stale the instant
+#      the commit lands, because committing is what bumps it. Chasing that cost
+#      three releases on 2026-08-04.
+#      -> --dry-run prints the version it WILL CREATE, so you write that one.
+#
+#   4. Docs-only commits bump SemVer too, restarting the same treadmill. Two
+#      releases for zero app change, 2026-08-05.
+#      -> WARNS when only documentation changed, and points at plain git commit.
+#
+#   5. The CHANGELOG marker. If it is missing the entry lands above the title;
+#      and the original replaced EVERY occurrence, so a CHANGELOG entry whose
+#      prose quoted the marker got a whole release section injected inside a
+#      bullet. Two `## [1.4.1]` sections, one buried mid-list, 2026-08-18.
+#      -> Inserts after the heading when the marker is absent, and replaces
+#         ONLY THE FIRST occurrence.
+# ---------------------------------------------------------------------------
+
+set -uo pipefail
+
+MARKER="<!-- CHANGELOG:ENTRIES -->"
+LATEST_BEGIN="<!-- LATEST:BEGIN -->"
+LATEST_END="<!-- LATEST:END -->"
+
+die()  { printf '\033[31mgcommit: %s\033[0m\n' "$*" >&2; exit 1; }
+warn() { printf '\033[33mgcommit: %s\033[0m\n' "$*" >&2; }
+say()  { printf '%s\n' "$*"; }
+
+command -v git >/dev/null 2>&1 || die "git is not installed"
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || die "not inside a git repository.
+       Run 'git init' first, or cd into your repo."
+cd "$ROOT" || die "cannot cd to $ROOT"
+
+VERSION_FILE="$ROOT/VERSION"
+CHANGELOG="$ROOT/CHANGELOG.md"
+README="$ROOT/README.md"
+
+# ── --init ────────────────────────────────────────────────────────────────────
+if [ "${1:-}" = "--init" ]; then
+  if [ -f "$VERSION_FILE" ]; then
+    die "VERSION already exists ($(cat "$VERSION_FILE")). This repo is already set up."
+  fi
+  printf '0.1.0\n' > "$VERSION_FILE"
+
+  if [ -f "$CHANGELOG" ]; then
+    warn "CHANGELOG.md already exists - leaving it alone."
+    grep -qF "$MARKER" "$CHANGELOG" || warn "It has no $MARKER marker.
+       Add one just under the '# Changelog' heading, or entries will be inserted
+       directly after the heading instead."
+  else
+    cat > "$CHANGELOG" <<EOF
+# Changelog
+
+All notable changes to this project are documented here.
+Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](https://semver.org/).
+
+$MARKER
+
+## [0.1.0] - $(date +%Y-%m-%d)
+
+### Added
+
+- First version.
+EOF
+  fi
+
+  if [ -f "$README" ] && ! grep -qF "$LATEST_BEGIN" "$README"; then
+    {
+      printf '\n## Latest changes\n\n%s\n%s\n' "$LATEST_BEGIN" "$LATEST_END"
+    } >> "$README"
+    say "added a 'Latest changes' section to README.md"
+  fi
+
+  say ""
+  say "Initialised at 0.1.0."
+  say "  VERSION       $(cat "$VERSION_FILE")"
+  say "  CHANGELOG.md  $( [ -f "$CHANGELOG" ] && echo present || echo missing )"
+  say ""
+  say "Now stage these and commit them yourself:"
+  say "  git add VERSION CHANGELOG.md README.md && git commit -m 'chore: start versioning'"
+  exit 0
+fi
+
+# ── arguments ─────────────────────────────────────────────────────────────────
+DRY=0
+if [ "${1:-}" = "--dry-run" ] || [ "${1:-}" = "-n" ]; then DRY=1; shift; fi
+MSG="${1:-}"
+[ -n "$MSG" ] || die "usage: gcommit [--dry-run] \"feat: what you did\"
+       gcommit --init      (one-time, per repo)"
+
+# ── trap 2: a multi-line message silently loses its prefix ────────────────────
+case "$MSG" in
+  *$'\n'*)
+    die "the message must be a SINGLE line.
+
+       A multi-line message loses its conventional-commit prefix: 'feat:' quietly
+       becomes chore -> patch, and the whole blob is written into the CHANGELOG as
+       the entry. There is no error - just a wrong version number.
+       (Happened 2026-08-10.)
+
+       If your commit needs a body or a Co-Authored-By footer, it is not a gcommit
+       candidate. Use plain 'git commit' - no bump, no CHANGELOG entry." ;;
+esac
+
+# ── trap 1: never stage anything ──────────────────────────────────────────────
+if git diff --cached --quiet 2>/dev/null; then
+  die "nothing is staged.
+
+       This script never runs 'git add'. That is deliberate: the version it
+       replaces staged everything, so two people working the same repo swept each
+       other's half-finished work into their commits. (Happened 2026-08-25.)
+
+       Stage what you mean, then run this again:
+         git status --short
+         git add <the files you actually changed>"
+fi
+
+# ── version ───────────────────────────────────────────────────────────────────
+[ -f "$VERSION_FILE" ] || die "no VERSION file. Run: gcommit --init"
+CUR=$(tr -d ' \t\r\n' < "$VERSION_FILE")
+case "$CUR" in
+  [0-9]*.[0-9]*.[0-9]*) : ;;
+  *) die "VERSION does not look like SemVer: '$CUR'" ;;
+esac
+MAJOR=${CUR%%.*}; REST=${CUR#*.}; MINOR=${REST%%.*}; PATCH=${REST#*.}
+
+# ── conventional commit -> bump + changelog section ───────────────────────────
+TYPE=$(printf '%s' "$MSG" | sed -n 's/^\([a-zA-Z]\{1,\}\)\(([^)]*)\)\{0,1\}!\{0,1\}:.*/\1/p')
+BREAKING=0
+case "$MSG" in
+  *"BREAKING CHANGE"*) BREAKING=1 ;;
+esac
+printf '%s' "$MSG" | grep -qE '^[a-zA-Z]+(\([^)]*\))?!:' && BREAKING=1
+
+if [ "$BREAKING" = "1" ]; then
+  BUMP=major; SECTION="BREAKING"
+else
+  case "$TYPE" in
+    feat)            BUMP=minor; SECTION="Added" ;;
+    fix)             BUMP=patch; SECTION="Fixed" ;;
+    perf)            BUMP=patch; SECTION="Performance" ;;
+    docs)            BUMP=patch; SECTION="Documentation" ;;
+    refactor|style|test|build|ci|chore) BUMP=patch; SECTION="Maintenance" ;;
+    "")              die "no conventional-commit prefix found in: $MSG
+
+       Expected something like:  feat: add the search box
+       Types: feat fix perf docs refactor style test build ci chore
+       Add ! for a breaking change:  feat!: drop the old schema" ;;
+    *)               BUMP=patch; SECTION="Maintenance"
+                     warn "unknown type '$TYPE' - treating as a patch." ;;
+  esac
+fi
+
+case "$BUMP" in
+  major) NEW="$((MAJOR+1)).0.0" ;;
+  minor) NEW="$MAJOR.$((MINOR+1)).0" ;;
+  patch) NEW="$MAJOR.$MINOR.$((PATCH+1))" ;;
+esac
+
+# ── trap 4: docs-only changes should not bump ─────────────────────────────────
+STAGED=$(git diff --cached --name-only)
+NONDOC=$(printf '%s\n' "$STAGED" | grep -vE '\.(md|txt)$|^docs/' | grep -v '^$' | wc -l)
+DOCS_ONLY=0
+[ "$NONDOC" -eq 0 ] && DOCS_ONLY=1
+
+say ""
+say "  Message   $MSG"
+say "  Type      $TYPE -> $BUMP bump"
+say "  Section   $SECTION"
+say "  Version   $CUR -> $NEW"
+say "  Staged    $(printf '%s\n' "$STAGED" | grep -c '^') file(s)"
+
+if [ "$DOCS_ONLY" = "1" ]; then
+  say ""
+  warn "everything staged is documentation."
+  printf '       A docs-only release bumps the version while the app has nothing new to\n'
+  printf '       announce - so any version string inside the app is instantly stale, and\n'
+  printf '       fixing that costs another bump. (Cost two releases on 2026-08-05.)\n\n'
+  printf '       Consider plain:  git commit -m "%s"\n' "$MSG"
+fi
+
+if [ "$DRY" = "1" ]; then
+  say ""
+  say "  DRY RUN - nothing written, nothing committed."
+  say ""
+  printf '  If any version string lives INSIDE this repo - an app footer, an about\n'
+  printf '  screen, APP_VERSION - write \033[1m%s\033[0m into it now, stage it, then run for real.\n' "$NEW"
+  printf '  Writing %s instead is the treadmill: committing is what creates %s.\n' "$CUR" "$NEW"
+  say ""
+  exit 0
+fi
+
+# ── write the changelog ───────────────────────────────────────────────────────
+SUBJECT=$(printf '%s' "$MSG" | sed 's/^[a-zA-Z]\{1,\}\(([^)]*)\)\{0,1\}!\{0,1\}: *//')
+TODAY=$(date +%Y-%m-%d)
+
+ENTRY_FILE=$(mktemp) || die "cannot create a temp file"
+{
+  printf '\n## [%s] - %s\n\n### %s\n\n- %s\n' "$NEW" "$TODAY" "$SECTION" "$SUBJECT"
+} > "$ENTRY_FILE"
+
+if [ ! -f "$CHANGELOG" ]; then
+  { printf '# Changelog\n\n%s\n' "$MARKER"; cat "$ENTRY_FILE"; } > "$CHANGELOG"
+else
+  # Trap 5, both halves: insert after the FIRST marker only, and if there is no
+  # marker fall back to just after the '# Changelog' heading - never line 1,
+  # which would put the entry above the title.
+  TMP=$(mktemp) || die "cannot create a temp file"
+  awk -v entry="$ENTRY_FILE" -v marker="$MARKER" '
+    BEGIN { done = 0 }
+    {
+      print
+      if (!done && index($0, marker) > 0) {
+        while ((getline line < entry) > 0) print line
+        close(entry); done = 1
+      }
+    }
+    END { if (!done) exit 9 }
+  ' "$CHANGELOG" > "$TMP"
+
+  if [ $? -eq 9 ]; then
+    warn "no $MARKER found - inserting after the '# Changelog' heading instead."
+    printf '       Add the marker there to make future inserts explicit.\n'
+    awk -v entry="$ENTRY_FILE" '
+      BEGIN { done = 0 }
+      {
+        print
+        if (!done && $0 ~ /^#[[:space:]]+[Cc]hangelog/) {
+          while ((getline line < entry) > 0) print line
+          close(entry); done = 1
+        }
+      }
+      END { if (!done) exit 9 }
+    ' "$CHANGELOG" > "$TMP"
+    if [ $? -eq 9 ]; then
+      rm -f "$TMP" "$ENTRY_FILE"
+      die "CHANGELOG.md has neither the marker nor a '# Changelog' heading.
+       Refusing to guess where the entry goes - fix the file and try again."
+    fi
+  fi
+  mv "$TMP" "$CHANGELOG"
+fi
+rm -f "$ENTRY_FILE"
+
+printf '%s\n' "$NEW" > "$VERSION_FILE"
+
+# ── refresh the README 'Latest changes' block ─────────────────────────────────
+if [ -f "$README" ] && grep -qF "$LATEST_BEGIN" "$README"; then
+  TMP=$(mktemp)
+  awk -v b="$LATEST_BEGIN" -v e="$LATEST_END" -v v="$NEW" -v d="$TODAY" \
+      -v s="$SECTION" -v subj="$SUBJECT" '
+    index($0, b) > 0 { print; printf "\n**%s** - %s\n\n- %s: %s\n\n", v, d, s, subj; skip=1; next }
+    index($0, e) > 0 { skip=0 }
+    !skip { print }
+  ' "$README" > "$TMP" && mv "$TMP" "$README"
+fi
+
+# ── commit ────────────────────────────────────────────────────────────────────
+git add "$VERSION_FILE" "$CHANGELOG" 2>/dev/null
+[ -f "$README" ] && git add "$README" 2>/dev/null
+
+if ! git commit -q -m "$MSG"; then
+  die "git commit failed. VERSION and CHANGELOG.md were already updated -
+       check 'git status', then either commit by hand or revert those two files."
+fi
+
+say ""
+say "  Committed $CUR -> $NEW"
+say "  $(git log -1 --oneline)"
+say ""
+say "  Read it back before you trust it:"
+say "    head -20 CHANGELOG.md"
+say ""
+printf '  A dry run prints the version summary, not the diff - so it cannot show you\n'
+printf '  a mangled CHANGELOG. Look at the file.\n'
+say ""

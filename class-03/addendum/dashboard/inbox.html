@@ -1,0 +1,86 @@
+<!-- Inbox · reads 02 — Dashboard API, which is filled by 03 — Email sort.
+     Loaded into index.html; not a standalone page. -->
+<div class="tiles" id="tiles"></div>
+
+<h2>Needs a reply</h2>
+<div class="wrap">
+  <table>
+    <thead><tr><th>From</th><th>Subject</th><th>Why</th><th>When</th></tr></thead>
+    <tbody id="followupBody"><tr><td class="empty-row" colspan="4">loading…</td></tr></tbody>
+  </table>
+</div>
+
+<h2>Latest</h2>
+<div class="wrap">
+  <table>
+    <thead><tr><th>From</th><th>Subject</th><th>Category</th><th>Account</th><th>When</th></tr></thead>
+    <tbody id="latestBody"><tr><td class="empty-row" colspan="5">loading…</td></tr></tbody>
+  </table>
+</div>
+
+<script>
+(function () {
+  const REFRESH_MS = 30000;
+
+  function tiles(counts, followup) {
+    const by = {};
+    let total = 0;
+    counts.forEach(c => { by[c.category] = Number(c.n || 0); total += Number(c.n || 0); });
+
+    // `unclassified` only earns a tile when it exists. A permanent zero teaches people
+    // to stop seeing it, which defeats the point of flagging it in the first place.
+    const cards = [
+      { k: "messages, 7d", v: total },
+      { k: "leads",        v: by.lead || 0 },
+      { k: "clients",      v: by.client || 0 },
+      { k: "invoices",     v: by.invoice || 0 },
+      { k: "needs a reply", v: followup.length, alert: true }
+    ];
+    if (by.unclassified) cards.push({ k: "unclassified", v: by.unclassified, alert: true });
+
+    BRAIN.$("tiles").innerHTML = cards.map(c =>
+      '<div class="tile' + (c.alert ? " alert" : "") + '"><div class="k">' +
+      BRAIN.esc(c.k) + '</div><div class="v">' + c.v + "</div></div>").join("");
+  }
+
+  function followupRows(rows) {
+    if (!rows.length)
+      return '<tr><td class="empty-row" colspan="4">Nothing waiting. Genuinely.</td></tr>';
+    return rows.map(r => "<tr><td>" + BRAIN.esc(r.from_name || r.from_email) +
+      "</td><td>" + BRAIN.esc(r.subject) +
+      "</td><td>" + BRAIN.esc(r.reason) +
+      '</td><td class="mono">' + BRAIN.when(r.received_at) + "</td></tr>").join("");
+  }
+
+  function latestRows(rows) {
+    if (!rows.length)
+      return '<tr><td class="empty-row" colspan="5">No messages yet. Is “03 — Email sort” Active?</td></tr>';
+    return rows.map(r => "<tr><td>" + BRAIN.esc(r.from_name || r.from_email) +
+      "</td><td>" + BRAIN.esc(r.subject) +
+      '</td><td><span class="pill ' + BRAIN.esc(r.category) + '">' + BRAIN.esc(r.category) +
+      '</span></td><td class="mono">' + BRAIN.esc(r.account) +
+      '</td><td class="mono">' + BRAIN.when(r.received_at) + "</td></tr>").join("");
+  }
+
+  async function load() {
+    try {
+      const d = await BRAIN.get("brain");
+      const counts = d.counts || [], followup = d.followup || [], latest = d.latest || [];
+
+      tiles(counts, followup);
+      BRAIN.$("followupBody").innerHTML = followupRows(followup);
+      BRAIN.$("latestBody").innerHTML = latestRows(latest);
+      BRAIN.$("badge-inbox").textContent = followup.length;
+      BRAIN.live(true);
+    } catch (err) {
+      // A blank dashboard that looks "empty" is worse than one that says why.
+      BRAIN.fail(BRAIN.$("panel-inbox"), err.message,
+                 "Most likely the Respond node is missing Access-Control-Allow-Origin: *");
+    }
+  }
+
+  window.refresh_inbox = load;
+  load();
+  setInterval(load, REFRESH_MS);
+})();
+</script>

@@ -1,0 +1,243 @@
+You are helping me install "The Brain That Runs a Company — Class 3: Memory".
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess. Do not skip ahead.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N — <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+After the step, tell me plainly whether it worked. If it did not, tell me what the error
+means in ordinary words before you tell me how to fix it. Never tell me a step passed
+unless you actually saw its output say so.
+
+## Step 1 — Work out what machine I am on
+
+Find out my operating system. If I am on Windows, also check whether WSL is installed
+(`wsl -l -v`) and whether Docker Desktop is present. Tell me what you found.
+
+Do not ask me questions you can answer by looking.
+
+## Step 2 — Make a workspace folder
+
+Mac or Linux: ~/class-03
+Windows: %USERPROFILE%\class-03
+
+Create it if it is not there. Tell me the full path you are using.
+
+## Step 3 — Download the pack
+
+Download this file into the workspace folder, keeping the name class-03-brain-pack.zip:
+
+https://aiautobase.github.io/Build_With_Me/class-03/downloads/class-03-brain-pack.zip
+
+Mac / Linux / WSL:
+  curl -fL -o class-03-brain-pack.zip "<the URL above>"
+
+Windows PowerShell:
+  Invoke-WebRequest -Uri "<the URL above>" -OutFile class-03-brain-pack.zip
+
+If the download fails, stop and show me the exact error. Do not carry on with a
+zero-byte file.
+
+Download this second file into the same folder as well. It is the page the script opens
+whenever it needs me to do something in a browser:
+
+https://aiautobase.github.io/Build_With_Me/class-03/setup-gate.html
+
+If that one fails, say so and carry on anyway — it is a convenience, not a dependency.
+The steps are also in the README.
+
+## Step 4 — Check I got the real file, not a broken or swapped one
+
+The file must have this SHA-256:
+
+  981bd63dbf188cc2f709fcb6401b81764e014d7aeac9bcd6cd9ded60f56ad43c
+
+Mac / Linux / WSL:   sha256sum class-03-brain-pack.zip
+Mac (if that is missing): shasum -a 256 class-03-brain-pack.zip
+Windows PowerShell:  Get-FileHash class-03-brain-pack.zip -Algorithm SHA256
+
+Compare it yourself and tell me match or no match.
+
+If it does not match: STOP. Do not unzip it. Tell me the file is not what it is supposed
+to be and that I should download it again.
+
+Explain to me in one sentence why we bother checking this.
+
+## Step 5 — Unzip it into its own folder
+
+This zip has no folder inside it — it unpacks flat, straight into wherever you are
+standing. So give it a destination on purpose, or it scatters README.md, prompts/ and
+docs-pack/ loose into my workspace:
+
+Mac / Linux / WSL:
+  unzip -o class-03-brain-pack.zip -d class-03-brain-pack
+
+Windows PowerShell:
+  Expand-Archive -Path class-03-brain-pack.zip -DestinationPath class-03-brain-pack -Force
+
+Use -o (and -Force) so that re-running never sits there waiting for me to answer an
+"overwrite?" prompt I cannot see.
+
+Then list what came out so I can see it. From here on, "the pack folder" means
+class-03-brain-pack/.
+
+## Step 6 — Read the README properly, do not skim it
+
+Read class-03-brain-pack/README.md all the way through, and VERIFY.md as well.
+
+Then give me a numbered list of every command the README contains, in the order it
+gives them, and mark each one:
+
+  [AUTO]  a command a script can run for me
+  [HUMAN] something only I can do — signing up for a service, clicking in a browser,
+          creating a credential, importing a workflow, activating a workflow, pasting
+          a prompt into Claude Code
+
+Rules for this list:
+- Do not invent commands that are not in the README.
+- Do not reorder them.
+- Do not quietly drop the checking commands. The psql checks, the cosine_sim sanity
+  check and the two curl tests are the point of the exercise, not decoration.
+
+Tell me how many of each you found.
+
+## Step 7 — Write my install script
+
+Now write me ONE script that runs every [AUTO] command in order and STOPS at every
+[HUMAN] step with clear instructions for me.
+
+Which file to write:
+- Mac or Linux            -> install-class-03.sh
+- Windows, WSL installed  -> install-class-03.ps1 for the Windows-side prerequisites,
+                             PLUS install-class-03.sh to run inside Ubuntu. The .ps1
+                             should hand off to the .sh with `wsl bash ...`. Tell me
+                             clearly which one I run first.
+- Windows, no WSL         -> the .ps1 installs WSL first and tells me to reboot, then
+                             re-run it.
+
+Do not write a .bat file unless I genuinely have no PowerShell. A .bat cannot do what
+this needs and would make the install worse, not simpler. If you do fall back to .bat,
+say why.
+
+The script must obey these rules:
+
+1. Safe to run twice. Check whether something is already done before doing it again.
+   Never overwrite ~/brain/.env — that file holds the key that decrypts my saved n8n
+   credentials, and replacing it silently locks me out of every credential I have saved.
+
+2. Fail loudly. Bash: set -euo pipefail. PowerShell: $ErrorActionPreference = 'Stop'.
+
+3. Phases and gates. After each block of [AUTO] commands, print a numbered
+   "DO THIS YOURSELF" block covering the [HUMAN] steps that come next, then exit 0
+   printing the exact command to run to carry on. When I re-run it, it must skip the
+   work that is already finished and pick up where it stopped.
+
+3b. At every gate, OPEN setup-gate.html in my browser rather than only printing a list
+   at me. It is the same steps with clickable buttons, the exact values to type, and the
+   prompt to paste back to you. Use the right command for my machine:
+
+     Linux            xdg-open setup-gate.html
+     Mac              open setup-gate.html
+     WSL (Windows)    explorer.exe "$(wslpath -w setup-gate.html)"
+     PowerShell       Start-Process setup-gate.html
+
+   Two things about this that will bite you:
+
+   - explorer.exe returns a non-zero exit code even when it worked. Under
+     set -euo pipefail that kills the script on a step that actually succeeded. Append
+     `|| true` to it.
+   - If nothing opens — a headless box, a server over SSH, no browser installed — do
+     not fail. Print the full path to the file and the steps in the terminal instead,
+     and carry on. Opening a browser is a convenience, never a requirement.
+
+   At the OpenRouter gate specifically, ALSO open the credits page directly, in the same
+   way: https://openrouter.ai/settings/credits — that is the page where I put money on
+   the account, and it is the step people skip. Open it from the shell, not from
+   JavaScript inside the page: a second tab opened by a script in the page gets eaten by
+   the popup blocker.
+
+4. Verify, never assume. After each phase, run the README's own checks and print PASS
+   or FAIL for each:
+     - docker compose ps shows both containers Up
+     - /healthz returns 200 (the root address returning 404 is normal, do not treat
+       that as a failure)
+     - psql \d kb and \df cosine_sim kb_search
+     - the cosine_sim sanity check returns 1 | 0 | -1
+     - SELECT * FROM kb_sources; returns four sources
+     - array_length(embedding,1) is 1536
+     - both curl webhook tests behave as the README says
+   A FAIL stops the script with a plain-English explanation. Never print PASS for a
+   check you did not run.
+
+5. Do not reimplement install.sh. The pack ships it and it is already safe to run
+   twice. The script should call it, not copy what it does.
+
+6. No sudo unless the README itself uses sudo, and if it does, say so on screen before
+   it happens.
+
+7. Echo each command before running it, so I can see what is happening.
+
+8. Comment every section with which part of the README it comes from
+   (Part 1, Part 4.2, and so on) so I can read them side by side.
+
+9. Windows path note: if the pack is on the Windows disk but the stack runs in WSL,
+   translate the path — C:\Users\me\class-03 becomes /mnt/c/Users/me/class-03. Getting
+   this wrong is the reason `docker compose cp` says the files do not exist.
+
+## Step 8 — Show me the script and explain it before anything runs
+
+Print the whole script. Then walk me through it section by section in plain language,
+and tell me straight:
+  - what it installs
+  - what it writes to, and where
+  - whether it sends anything anywhere
+  - anything in it you would be uneasy about running on your own machine
+
+This is the same thing the pack asks me to do to scripts I am handed, including yours.
+
+Then ask me whether to run it now or whether I want to read it myself first.
+Do not run it until I say yes.
+
+## Step 9 — Run it, once I say so
+
+Run it and show me the output as it goes. When it stops at a gate, the gate page will
+already be open in my browser. Tell me which numbered step on that page I am on and what
+I am doing there in one line — do not read the whole page back to me, I can see it.
+
+Then wait. When I tell you it is done, verify it rather than believing me, and carry on.
+
+If something fails, tell me what the error actually means before you tell me the fix.
+
+## Step 10 — Know when we are actually finished
+
+We are finished when both of these behave:
+
+  A question the documents answer:
+    "How much is the security deposit on the warehouse?"
+    -> $7,700, citing warehouse-lease.md
+
+  A question they do not answer:
+    "What is my employee health plan copay?"
+    -> {"answered": false, "answer": "I don't have that in your documents.", "sources": []}
+
+If the second one invents an answer, we are not finished. Tell me plainly that it is not
+working and do not call it done. That refusal is the whole point of the build.
+
+Finish by telling me what I now have, in two or three sentences, and what the optional
+second download adds.
+
+## Ground rules for the whole job
+
+- Never claim something worked without output showing it worked.
+- Never skip the checksum.
+- If you get stuck on the same thing twice, stop. Give me the exact command and the
+  exact error, pasted, so I can post it in the community.
+- Never write my OpenRouter key into any file you create. It belongs in the n8n
+  credential and nowhere else.

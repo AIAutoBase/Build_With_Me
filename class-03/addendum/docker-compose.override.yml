@@ -1,0 +1,26 @@
+# Docker merges this into your docker-compose.yml automatically. Your original file is
+# never edited, and deleting this one file undoes the whole addendum.
+#
+# Read it before you run it. It starts one container, opens one port, and mounts two
+# folders from this directory.
+services:
+  brain-web:
+    build: ./brain-web
+    container_name: bi-brain-web
+    restart: unless-stopped
+
+    volumes:
+      # Mounted, not baked into the image: edit dashboard/ask.html, hit refresh, see
+      # the change. Read-only, so the container cannot write to your files.
+      - ./dashboard:/app/static:ro
+
+    ports:
+      # Bound to 127.0.0.1 on purpose - this is your filing cabinet, and it should not
+      # answer the coffee shop wifi. Your browser on this machine reaches it fine.
+      #
+      # If your Docker stack runs on ANOTHER machine and you browse from a laptop,
+      # change this to "8088:8000" so it listens on the network, and understand that
+      # anything on your LAN can then reach it.
+      #
+      # If 8088 is taken, the container refuses to start and says so. Pick another.
+      - "127.0.0.1:8088:8000"

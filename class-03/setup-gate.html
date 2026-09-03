@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Class 3 — the parts only you can do</title>
+<style>
+  :root{
+    --bg:#0F172A; --panel:#16223b; --panel2:#1b2946; --line:#2a3a5c;
+    --ink:#F8FAFC; --muted:#94A3B8; --blue:#3B82F6; --gold:#D4A843;
+    --green:#16A34A; --red:#DC2626;
+    --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+    --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;
+       padding:28px 20px 60px}
+  .page{max-width:860px;margin:0 auto}
+
+  header{margin-bottom:8px}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:14px;margin-top:4px}
+
+  .lede{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+        padding:18px;margin:22px 0;font-size:15px}
+  .lede p+p{margin-top:10px}
+
+  .progress{display:flex;align-items:center;gap:10px;margin:22px 0 8px;
+            font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .bar{flex:1;height:6px;border-radius:999px;background:var(--panel2);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .25s}
+
+  section.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+               padding:20px;margin:14px 0}
+  section.step.done{border-color:var(--green)}
+  section.step.done .num{background:rgba(22,163,74,.2);color:#86efac}
+
+  .head{display:flex;align-items:flex-start;gap:12px}
+  .num{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:700;
+       letter-spacing:.1em;background:rgba(59,130,246,.18);color:#9dc4ee;
+       padding:4px 9px;border-radius:999px;margin-top:3px}
+  h2{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .why{color:var(--muted);font-size:13.5px;margin-top:3px}
+
+  .body{margin-top:14px;font-size:14.5px}
+  .body p+p{margin-top:10px}
+  ul{margin:10px 0 0 18px} li{margin:5px 0}
+
+  a.btn{display:inline-block;background:var(--blue);color:#fff;text-decoration:none;
+        border-radius:8px;padding:11px 18px;font-size:14px;font-weight:700;
+        margin:12px 10px 0 0}
+  a.btn:hover{background:#2f6fd8}
+  a.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);font-weight:600}
+  a.btn.ghost:hover{border-color:var(--blue)}
+  .btnnote{display:block;color:var(--muted);font-size:12.5px;margin-top:8px;
+           font-family:var(--mono)}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px;
+        border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  th{background:var(--panel2);text-align:left;padding:9px 12px;font-size:11px;
+     letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+  td.f{font-weight:600;white-space:nowrap}
+  code{font-family:var(--mono);font-size:12.5px;background:rgba(0,0,0,.35);
+       padding:2px 6px;border-radius:4px}
+
+  .warn{margin-top:14px;padding:13px 15px;border-radius:9px;
+        border:1px solid var(--gold);background:rgba(212,168,67,.10);font-size:13.5px}
+  .warn b{color:#f0d08a}
+
+  .prompt{margin-top:16px;border:1px solid var(--line);border-radius:9px;
+          background:var(--bg);overflow:hidden}
+  .prompt .k{display:flex;align-items:center;gap:10px;background:var(--panel2);
+             padding:8px 12px;font-family:var(--mono);font-size:11px;
+             letter-spacing:.12em;text-transform:uppercase;color:var(--blue)}
+  .prompt button{margin-left:auto;background:var(--blue);color:#fff;border:0;
+                 border-radius:6px;padding:6px 13px;font-family:var(--sans);
+                 font-size:12px;font-weight:700;cursor:pointer}
+  .prompt button:hover{background:#2f6fd8}
+  .prompt button.ok{background:var(--green)}
+  .prompt button.fail{background:var(--gold);color:#26200c}
+  .prompt textarea{display:block;width:100%;border:0;resize:vertical;
+                   background:var(--bg);color:var(--ink);font-family:var(--mono);
+                   font-size:12.5px;line-height:1.6;padding:13px;min-height:104px}
+  .prompt textarea:focus{outline:none}
+
+  label.chk{display:flex;align-items:center;gap:9px;margin-top:16px;
+            padding-top:14px;border-top:1px solid var(--line);
+            font-size:14px;cursor:pointer;user-select:none}
+  label.chk input{width:17px;height:17px;accent-color:var(--green);cursor:pointer}
+
+  .stuck{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+         padding:20px;margin-top:26px}
+  .stuck h2{margin-bottom:10px}
+  .stuck td.f{font-family:var(--mono);font-size:12.5px;white-space:normal}
+
+  footer{margin-top:28px;color:var(--muted);font-size:12px;font-family:var(--mono);
+         text-align:center;line-height:1.8}
+  .reset{background:none;border:0;color:var(--muted);font-family:var(--mono);
+         font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <h1>The parts only you can do</h1>
+  <div class="sub">The Brain That Runs a Company &middot; Class 3, Memory</div>
+</header>
+
+<div class="lede">
+  <p>The script stopped on purpose. Everything below happens in a browser or in someone
+  else's website, so no script can do it for you &mdash; it can only wait.</p>
+  <p>Work down the list. Each step has a button that opens in a new tab, exactly what to
+  type, and the prompt to paste back into Claude Code when you are done. Your ticks are
+  remembered on this machine, so you can close this page and come back to it.</p>
+</div>
+
+<div class="progress">
+  <span id="ptext">0 of 5 done</span>
+  <span class="bar"><i id="pbar"></i></span>
+</div>
+
+<!-- ── 1 ─────────────────────────────────────────────────────────────────── -->
+<section class="step" id="s1">
+  <div class="head">
+    <span class="num">01</span>
+    <div>
+      <h2>Create your n8n account</h2>
+      <div class="why">It runs on your machine. This account is local &mdash; nobody
+      else can sign in to it, and there is nothing to verify by email.</div>
+    </div>
+  </div>
+  <div class="body">
+    <p>Pick any email and a password you will remember. Write the password down. There is
+    no reset link, because there is no server to send you one.</p>
+
+    <a class="btn" href="http://localhost:5678" target="_blank" rel="noopener noreferrer">Open n8n</a>
+    <span class="btnnote">http://localhost:5678</span>
+
+    <div class="warn">
+      <b>First boot takes 60&ndash;90 seconds.</b> n8n is running its database migrations.
+      If the page will not load yet, wait and refresh &mdash; it is not broken. A
+      <code>404</code> at the root address is also normal on n8n 2.x; the editor lives at
+      <code>/home/workflows</code>.
+    </div>
+
+    <div class="prompt">
+      <div class="k">Paste this back into Claude Code
+        <button type="button" data-copy="p1">Copy</button></div>
+      <textarea id="p1" readonly spellcheck="false">My n8n account is created and I can see the n8n editor. Carry on from where the script stopped. Check it yourself rather than taking my word for it.</textarea>
+    </div>
+
+    <label class="chk"><input type="checkbox" data-step="1" /> Done &mdash; I can see the n8n editor</label>
+  </div>
+</section>
+
+<!-- ── 2 ─────────────────────────────────────────────────────────────────── -->
+<section class="step" id="s2">
+  <div class="head">
+    <span class="num">02</span>
+    <div>
+      <h2>Get an OpenRouter key, and put money on it</h2>
+      <div class="why">This is the one part of the build that is not yours. It turns your
+      documents into numbers, and it charges you to do it.</div>
+    </div>
+  </div>
+  <div class="body">
+    <p>Sign up, then create a key, then add credit. All three, in that order. A key with
+    no balance is the single most confusing failure in this class, so do not stop after
+    step two.</p>
+
+    <a class="btn" href="https://openrouter.ai" target="_blank" rel="noopener noreferrer">1. Sign up</a>
+    <a class="btn ghost" href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">2. Create a key</a>
+    <a class="btn ghost" href="https://openrouter.ai/settings/credits" target="_blank" rel="noopener noreferrer">3. Add credit</a>
+    <span class="btnnote">openrouter.ai &middot; keys &middot; settings/credits</span>
+
+    <p style="margin-top:14px"><b>How much.</b> Add the smallest top-up the page offers.
+    Embedding this whole practice pack costs a fraction of a cent &mdash; you are not
+    buying credit you will use, you are buying a balance that exists. Whatever you put on
+    it will still be sitting there after Class 4.</p>
+
+    <p>Copy the key the moment it appears. OpenRouter shows it once and never again. If
+    you lose it, delete that key and make another one; there is no way to read it back.</p>
+
+    <div class="warn">
+      <b>A key with no balance does not say "you are out of money".</b> It fails with an
+      authentication error that reads like the key is wrong, and you will spend an hour
+      re-typing a key that was always correct. If anything breaks after this, check your
+      credits first.
+    </div>
+
+    <div class="prompt">
+      <div class="k">Paste this back into Claude Code
+        <button type="button" data-copy="p2">Copy</button></div>
+      <textarea id="p2" readonly spellcheck="false">I have an OpenRouter account, I created a key, and I put credit on it. I have the key on my clipboard. Do not ask me to paste the key to you and do not write it into any file - it goes into n8n and nowhere else. Tell me what to do next.</textarea>
+    </div>
+
+    <label class="chk"><input type="checkbox" data-step="2" /> Done &mdash; I have a key and a balance</label>
+  </div>
+</section>
+
+<!-- ── 3 ─────────────────────────────────────────────────────────────────── -->
+<section class="step" id="s3">
+  <div class="head">
+    <span class="num">03</span>
+    <div>
+      <h2>Put the key into n8n as a credential</h2>
+      <div class="why">A credential is stored encrypted and travels by name. A key typed
+      into a node travels inside every export you ever share.</div>
+    </div>
+  </div>
+  <div class="body">
+    <p>In n8n: <b>Credentials &rarr; New &rarr; Header Auth</b>. Three fields.</p>
+
+    <a class="btn" href="http://localhost:5678/home/credentials" target="_blank" rel="noopener noreferrer">Open n8n credentials</a>
+    <span class="btnnote">http://localhost:5678/home/credentials</span>
+
+    <table>
+      <tr><th>Field</th><th>What to type</th></tr>
+      <tr><td class="f">Name</td><td><code>OpenRouter</code> &mdash; spelled exactly like that, it is what the workflows look for</td></tr>
+      <tr><td class="f">Header Name</td><td><code>Authorization</code></td></tr>
+      <tr><td class="f">Header Value</td><td><code>Bearer </code> then your key. The word <code>Bearer</code>, then one space, then the key.</td></tr>
+    </table>
+
+    <div class="warn">
+      <b>Never paste a key into a node parameter.</b> That is why the files in this pack
+      are safe to hand around: they carry the credential's name, never its value. Do it
+      the other way once and your key is in every copy of that workflow, forever.
+    </div>
+
+    <div class="prompt">
+      <div class="k">Paste this back into Claude Code
+        <button type="button" data-copy="p3">Copy</button></div>
+      <textarea id="p3" readonly spellcheck="false">I created a Header Auth credential in n8n called OpenRouter, with header name Authorization and the value set to Bearer plus my key. Carry on, and verify it rather than assuming.</textarea>
+    </div>
+
+    <label class="chk"><input type="checkbox" data-step="3" /> Done &mdash; the OpenRouter credential is saved</label>
+  </div>
+</section>
+
+<!-- ── 4 ─────────────────────────────────────────────────────────────────── -->
+<section class="step" id="s4">
+  <div class="head">
+    <span class="num">04</span>
+    <div>
+      <h2>Point the Postgres credential at <code>brain</code></h2>
+      <div class="why">This is the most common mistake in the whole class. It costs
+      people an hour and the error never mentions the database name.</div>
+    </div>
+  </div>
+  <div class="body">
+    <p>Your Postgres credential from Class 2 probably says database <code>n8n</code>. It
+    needs to say <code>brain</code>. Open it, change that one field, save.</p>
+
+    <a class="btn" href="http://localhost:5678/home/credentials" target="_blank" rel="noopener noreferrer">Open n8n credentials</a>
+    <span class="btnnote">http://localhost:5678/home/credentials</span>
+
+    <p style="margin-top:12px">Get this wrong and everything connects, everything looks
+    healthy, and every query comes back empty &mdash; because it is looking in a database
+    where your documents were never stored. You will see
+    <code>relation "kb" does not exist</code> and go hunting for a table that is sitting
+    perfectly intact one database over.</p>
+
+    <div class="prompt">
+      <div class="k">Paste this back into Claude Code
+        <button type="button" data-copy="p4">Copy</button></div>
+      <textarea id="p4" readonly spellcheck="false">My n8n Postgres credential now points at the brain database, not n8n. Check that it really does, then carry on.</textarea>
+    </div>
+
+    <label class="chk"><input type="checkbox" data-step="4" /> Done &mdash; it says <code>brain</code></label>
+  </div>
+</section>
+
+<!-- ── 5 ─────────────────────────────────────────────────────────────────── -->
+<section class="step" id="s5">
+  <div class="head">
+    <span class="num">05</span>
+    <div>
+      <h2>Import the workflows, then <u>activate</u> them</h2>
+      <div class="why">Saving is not activating. An inactive workflow answers 404, and
+      that is the most common "it's broken" moment of the class.</div>
+    </div>
+  </div>
+  <div class="body">
+    <p>From the pack folder, import both files from <code>demo/</code>:</p>
+    <ul>
+      <li><code>05-kb-ingest.json</code> &mdash; document in, chunks and numbers out</li>
+      <li><code>06-kb-ask.json</code> &mdash; question in, grounded answer or a refusal out</li>
+    </ul>
+    <p>In n8n: <b>Workflows &rarr; Import from File</b>. Then open each one and turn on
+    the <b>Active</b> toggle in the top right. Both of them.</p>
+
+    <a class="btn" href="http://localhost:5678/home/workflows" target="_blank" rel="noopener noreferrer">Open n8n workflows</a>
+    <span class="btnnote">http://localhost:5678/home/workflows</span>
+
+    <p style="margin-top:12px">Then open each Postgres and HTTP node and re-select your
+    credential from the dropdown. n8n gives credentials their own IDs on every machine,
+    and the IDs written in these files are from the machine they were built on. A node
+    with a credential it cannot find shows a small warning and then fails at run time
+    with an authentication error that has nothing to do with your key.</p>
+
+    <p>You can build these yourself from <code>prompts/P2-ingest.md</code> and
+    <code>prompts/P3-ask.md</code> instead. Same result, and you learn more &mdash; the
+    <code>demo/</code> files are the fallback, not the lesson.</p>
+
+    <div class="prompt">
+      <div class="k">Paste this back into Claude Code
+        <button type="button" data-copy="p5">Copy</button></div>
+      <textarea id="p5" readonly spellcheck="false">Both workflows are imported, the credentials are re-selected in every node, and both workflows are Active. Carry on with the install script and run the verification checks. Do not tell me it passed unless you saw the output say so.</textarea>
+    </div>
+
+    <label class="chk"><input type="checkbox" data-step="5" /> Done &mdash; both workflows say Active</label>
+  </div>
+</section>
+
+<!-- ── stuck ─────────────────────────────────────────────────────────────── -->
+<div class="stuck">
+  <h2>If something here will not work</h2>
+  <table>
+    <tr><th>What you see</th><th>What it means</th></tr>
+    <tr><td class="f">The n8n page will not load at all</td>
+        <td>Give it 90 seconds from first start, then refresh. Still nothing:
+            <code>docker compose ps</code> &mdash; both containers must say Up.</td></tr>
+    <tr><td class="f"><code>404</code> at http://localhost:5678</td>
+        <td>Normal on n8n 2.x. The editor is at <code>/home/workflows</code>.</td></tr>
+    <tr><td class="f"><code>{"code":503,"message":"Database is not ready!"}</code></td>
+        <td>n8n lost the startup race to Postgres. <code>docker compose down &amp;&amp; docker compose up -d</code>
+            &mdash; <code>restart</code> will not fix it.</td></tr>
+    <tr><td class="f">An auth error after you added the key</td>
+        <td>Check your OpenRouter credits before you check the key. It almost always
+            means the balance, not the key.</td></tr>
+    <tr><td class="f"><code>404</code> from the ask webhook</td>
+        <td>The workflow is saved but not Active. Step 5.</td></tr>
+    <tr><td class="f">Everything green, every answer empty</td>
+        <td>The Postgres credential is on the <code>n8n</code> database. Step 4.</td></tr>
+  </table>
+  <p style="margin-top:14px;font-size:14px">Still stuck? Post it in the community &mdash;
+  the <b>exact command and the exact error</b>, pasted, not described. Half of these get
+  answered in a minute by someone who hit the same thing last week.</p>
+</div>
+
+<footer>
+  The Brain That Runs a Company &middot; Class 3, Memory<br />
+  Created by Hector Diaz, founder of Orbix Automation Solutions.<br />
+  <button class="reset" id="reset" type="button">clear my ticks on this page</button>
+</footer>
+
+</div>
+<script>
+(function () {
+  "use strict";
+  var KEY = "class03-gate-v1";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('input[data-step]'));
+
+  // localStorage is not guaranteed: private windows, cleared site data, and some
+  // browsers throw on the accessor itself. The page must render correctly with no
+  // stored value, so every read and write is wrapped and a failure is simply ignored.
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function save(state) {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  function paint() {
+    var done = 0;
+    boxes.forEach(function (b) {
+      var sec = document.getElementById('s' + b.getAttribute('data-step'));
+      if (b.checked) { done++; sec.classList.add('done'); }
+      else { sec.classList.remove('done'); }
+    });
+    document.getElementById('ptext').textContent = done + ' of ' + boxes.length + ' done';
+    document.getElementById('pbar').style.width = (done / boxes.length * 100) + '%';
+  }
+
+  var state = load();
+  boxes.forEach(function (b) {
+    var k = b.getAttribute('data-step');
+    b.checked = state[k] === true;
+    b.addEventListener('change', function () {
+      var s = load(); s[k] = b.checked; save(s); paint();
+    });
+  });
+  paint();
+
+  document.getElementById('reset').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    boxes.forEach(function (b) { b.checked = false; });
+    paint();
+  });
+
+  // Copy: the Clipboard API needs a secure context and this page is usually opened
+  // over file://, where support varies by browser. Fall back to execCommand, and if
+  // that fails too, select the text so the reader can copy it by hand - never leave
+  // the button looking like it worked when nothing reached the clipboard.
+  document.querySelectorAll('button[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var ta = document.getElementById(btn.getAttribute('data-copy'));
+      var flash = function (label, cls) {
+        var old = btn.textContent;
+        btn.textContent = label; btn.className = cls;
+        setTimeout(function () { btn.textContent = old; btn.className = ''; }, 1600);
+      };
+      var manual = function () {
+        ta.focus(); ta.select();
+        try {
+          if (document.execCommand('copy')) { flash('Copied', 'ok'); return; }
+        } catch (e) { /* fall through */ }
+        flash('Press Ctrl+C', 'fail');
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(ta.value)
+          .then(function () { flash('Copied', 'ok'); })
+          .catch(manual);
+      } else {
+        manual();
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

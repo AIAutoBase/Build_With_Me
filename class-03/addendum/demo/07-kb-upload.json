@@ -1,0 +1,424 @@
+{
+  "id": "brainKbUpload001",
+  "name": "07 — KB upload",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kb-upload",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "file"
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000031",
+      "name": "Upload",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -780,
+        0
+      ],
+      "webhookId": "brain-kb-upload-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Find the uploaded file, whatever n8n decided to call it.\n//\n// The Webhook node names the binary property after the form field on some versions\n// and data0/data1 on others. Hard-coding either one produces \"no binary data\" on\n// somebody else's install, so take the first binary property there is and say what\n// was actually present when there is none.\nconst out = [];\n\nfor (const item of $input.all()) {\n  const keys = Object.keys(item.binary || {});\n  if (!keys.length) {\n    throw new Error(\n      'No file on this request. Binary properties present: none. ' +\n      'The dashboard must send multipart/form-data with a file field.'\n    );\n  }\n\n  const bin = item.binary[keys[0]];\n  const name = bin.fileName || 'document';\n\n  out.push({\n    json: { fileName: name },\n    binary: { file: bin }        // normalised name, so the next node can rely on it\n  });\n}\n\nreturn out;\n"
+      },
+      "id": "c3000000-0000-4000-8000-000000000032",
+      "name": "Find the file",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://brain-web:8000/convert",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "file"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000033",
+      "name": "Convert it",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -340,
+        0
+      ],
+      "notes": "MarkItDown runs in bi-brain-web. neverError so a refusal comes back as data instead of stopping the workflow.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000034",
+      "name": "Anything to read?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// The converter's answer, shaped the way the chunker expects it.\nconst c = $json;\nreturn [{ json: {\n  data: c.markdown,\n  fileName: c.filename,\n  chars: c.chars,\n  warn: c.warn || null\n}}];\n"
+      },
+      "id": "c3000000-0000-4000-8000-000000000035",
+      "name": "Ready to chunk",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Cut the document into overlapping windows of WORDS.\n//\n// 180 words with 30 of overlap - the same numbers the rehearsal script used against\n// the real stack, so what you get here matches what you see there: the four practice\n// documents are each shorter than 180 words, so each becomes exactly one chunk.\n//\n// Words, not characters. A character cut lands mid-word and mid-number; \"$7,700\"\n// becomes \"$7,\" in one chunk and \"700\" in the next, and neither matches a question\n// about the deposit. Words cannot split a figure in half.\n//\n// The overlap is not decoration: a sentence that straddles a boundary would\n// otherwise be split across two chunks and match neither of them well.\nconst CHUNK_WORDS = 180;\nconst OVERLAP_WORDS = 30;\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const text = (item.json.data || item.json.content || '').toString();\n\n  // The filename, not the full path - this is what gets shown as the citation.\n  // Read File leaves it on the binary rather than the json, so check both.\n  const full = item.json.fileName || item.json.filePath ||\n               (item.binary && item.binary.data && item.binary.data.fileName);\n\n  // Deliberately no fallback name. Give several documents the same source and they\n  // all collapse onto one row through UNIQUE (source, chunk_index) - four documents\n  // in, one row out, every node green. A citation you cannot trace is worth stopping\n  // for.\n  if (!full) {\n    throw new Error(\n      'No filename on this item, so there is nothing to cite. Read File puts it on ' +\n      'the binary as $binary.data.fileName - if you are feeding this node from ' +\n      'somewhere else, set fileName on the item first.'\n    );\n  }\n\n  const source = full.split('/').pop().split('\\\\').pop();\n\n  if (!text.trim()) {\n    throw new Error(`${source} read as empty. Can the n8n container see the file?`);\n  }\n\n  const words = text.split(/\\s+/).filter(Boolean);\n  const step = CHUNK_WORDS - OVERLAP_WORDS;\n\n  let idx = 0;\n  for (let i = 0; i < words.length; i += step) {\n    const window = words.slice(i, i + CHUNK_WORDS);\n    if (!window.length) continue;\n    out.push({ json: {\n      source,\n      chunk_index: idx++,\n      content: window.join(' ')\n    }});\n\n    // Stop the moment a window reaches the end. Without this, a document\n    // shorter than two steps emits a last chunk that is already contained in\n    // the one before it - a scrap that costs an embedding call and can take one\n    // of the five slots retrieved for a question. Every practice document in\n    // the pack is short enough to hit it.\n    if (i + CHUNK_WORDS >= words.length) break;\n  }\n}\n\nreturn out;\n"
+      },
+      "id": "c3000000-0000-4000-8000-000000000036",
+      "name": "Chunk it",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"openai/text-embedding-3-small\", input: $json.content }) }}",
+        "options": {}
+      },
+      "id": "c3000000-0000-4000-8000-000000000037",
+      "name": "Embed the chunk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        -120
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "openRouter000001",
+          "name": "OpenRouter"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Pull the vector out and prove it is the right size BEFORE we try to insert it.\n//\n// The kb table has a CHECK constraint on 1536 dimensions. Without this node a bad\n// embedding still fails - but it fails in Postgres, and the error points at the\n// database instead of at the model that actually caused it.\nconst emb = $json.data?.[0]?.embedding;\n\nif (!Array.isArray(emb)) {\n  throw new Error(\n    'No embedding in the response. Check the OpenRouter credential and that the ' +\n    'key has a balance - an unfunded key does not say so in plain language.'\n  );\n}\nif (emb.length !== 1536) {\n  throw new Error(\n    `Embedding came back with ${emb.length} dimensions, expected 1536. ` +\n    'A different model returns a different size, and mixing sizes silently ' +\n    'ruins every search in the table.'\n  );\n}\n\n// Carry the chunk fields through from the chunker.\nconst src = $('Chunk it').all()[$itemIndex].json;\n\nreturn { json: { ...src, embedding: emb } };\n"
+      },
+      "id": "c3000000-0000-4000-8000-000000000038",
+      "name": "Check 1536",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO kb (source, chunk_index, content, embedding)\nVALUES (\n  $1,\n  $2::int,\n  $3,\n  -- The embedding arrives as a JSON array of numbers and is cast here. Passing\n  -- it as a JSON string rather than a raw array keeps it a bound parameter.\n  (SELECT array_agg(x::float8) FROM json_array_elements_text($4::json) AS x)\n)\nON CONFLICT (source, chunk_index) DO UPDATE\n  SET content    = EXCLUDED.content,\n      embedding  = EXCLUDED.embedding,\n      created_at = now();",
+        "options": {
+          "queryReplacement": "={{ $json.source }},{{ $json.chunk_index }},{{ $json.content }},{{ JSON.stringify($json.embedding) }}"
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000039",
+      "name": "Store it",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        980,
+        -120
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "brainPg0000000001",
+          "name": "Brain Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collapse every stored chunk into ONE item describing the document.\n//\n// The sweep below has to run once, not once per chunk, and it needs the highest\n// index that was actually written.\n//\n// Read from the node that produced the chunks, NOT from $input. $input here is the\n// Postgres node's output - a query summary with no source and no chunk_index on it.\n// Using it yields one item and an undefined source, which turns the sweep into\n// \"DELETE FROM kb WHERE source = NULL\": it matches nothing, raises nothing, reports\n// success, and quietly leaves the stale tail exactly where it was.\nconst items = $('Check 1536').all();\nconst source = items[0].json.source;\nlet last = 0;\nfor (const i of items) last = Math.max(last, Number(i.json.chunk_index || 0));\n\nreturn [{ json: {\n  source: source,\n  last_index: last,\n  chunks: items.length,\n  warn: $('Ready to chunk').first().json.warn\n}}];\n"
+      },
+      "id": "c3000000-0000-4000-8000-000000000040",
+      "name": "One item for the sweep",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM kb\nWHERE source = $1\n  AND chunk_index > $2;",
+        "options": {
+          "queryReplacement": "={{ $json.source }},{{ $json.last_index }}"
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000041",
+      "name": "Sweep the old tail",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        1420,
+        -120
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "brainPg0000000001",
+          "name": "Brain Postgres"
+        }
+      },
+      "notes": "Removes chunks left over from a longer previous version of the same document. Without it, deleted paragraphs stay answerable.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, source: $('One item for the sweep').first().json.source, chunks: $('One item for the sweep').first().json.chunks, chars: $('Ready to chunk').first().json.chars, warn: $('Ready to chunk').first().json.warn }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000042",
+      "name": "Respond (stored)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1640,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c3000000-0000-4000-8000-000000000043",
+      "name": "Respond (nothing to read)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        100,
+        120
+      ],
+      "notes": "A scan has no text in it. That is a correct answer, not an error - the dashboard shows it grey, the way the ask box shows a refusal.",
+      "notesInFlow": true
+    }
+  ],
+  "connections": {
+    "Upload": {
+      "main": [
+        [
+          {
+            "node": "Find the file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find the file": {
+      "main": [
+        [
+          {
+            "node": "Convert it",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert it": {
+      "main": [
+        [
+          {
+            "node": "Anything to read?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anything to read?": {
+      "main": [
+        [
+          {
+            "node": "Ready to chunk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond (nothing to read)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ready to chunk": {
+      "main": [
+        [
+          {
+            "node": "Chunk it",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk it": {
+      "main": [
+        [
+          {
+            "node": "Embed the chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed the chunk": {
+      "main": [
+        [
+          {
+            "node": "Check 1536",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check 1536": {
+      "main": [
+        [
+          {
+            "node": "Store it",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store it": {
+      "main": [
+        [
+          {
+            "node": "One item for the sweep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item for the sweep": {
+      "main": [
+        [
+          {
+            "node": "Sweep the old tail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sweep the old tail": {
+      "main": [
+        [
+          {
+            "node": "Respond (stored)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

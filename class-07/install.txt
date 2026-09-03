@@ -1,0 +1,180 @@
+You are helping me install "The Brain That Runs a Company - Class 7: A Clock It Can Read".
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess.
+
+Two things about this class before you start:
+
+  ONE. This class READS my calendar and READS my documents. It must not add a table,
+  change my schema, or modify any existing workflow. It also never writes to my
+  calendar - it emails me a file I click. If you are about to do any of those, stop and
+  tell me why instead.
+
+  TWO. There is a secret URL involved and it is more dangerous than it looks. Read the
+  rules about it in Step 6 before we touch it.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N - <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+Never tell me a step passed unless you actually saw its output say so.
+
+## Step 1 - Work out where I am
+
+This runs on the machine my brain runs on - the one with Docker, n8n and Postgres.
+
+Report my operating system, whether docker is running here, and whether my containers
+are up. If I am not on the brain machine, stop and tell me.
+
+## Step 2 - Make a workspace folder
+
+Mac or Linux: ~/class-07
+Windows: %USERPROFILE%\class-07
+
+Create it if it is not there. Tell me the full path.
+
+## Step 3 - Download the pack
+
+Download this into the workspace folder, keeping the name class-07-calendar-pack.zip:
+
+https://aiautobase.github.io/Build_With_Me/class-07/downloads/class-07-calendar-pack.zip
+
+Mac / Linux / WSL:
+  curl -fL -o class-07-calendar-pack.zip "<the URL above>"
+
+Windows PowerShell:
+  Invoke-WebRequest -Uri "<the URL above>" -OutFile class-07-calendar-pack.zip
+
+Also download the gate page into the same folder:
+
+https://aiautobase.github.io/Build_With_Me/class-07/setup-gate.html
+
+If that fails, say so and carry on - it is a convenience.
+
+## Step 4 - Check I got the real file
+
+The zip must have this SHA-256:
+
+  05b9b133ed6ab8220763c2a96534ac458a997996356ad488bbbaaae6c0df56ea
+
+Mac / Linux / WSL:   sha256sum class-07-calendar-pack.zip
+Mac (if missing):    shasum -a 256 class-07-calendar-pack.zip
+Windows PowerShell:  Get-FileHash class-07-calendar-pack.zip -Algorithm SHA256
+
+Compare it yourself. If it does not match, STOP. Do not unzip it.
+
+## Step 5 - Unzip it into its own folder
+
+Mac / Linux / WSL:
+  unzip -o class-07-calendar-pack.zip -d class-07-calendar-pack
+
+Windows PowerShell:
+  Expand-Archive -Path class-07-calendar-pack.zip -DestinationPath class-07-calendar-pack -Force
+
+Nine files should come out. List them.
+
+## Step 6 - The rules about my secret URL, before we go near it
+
+Read class-07-calendar-pack/PREWORK.md, then tell me back in your own words what that
+URL actually grants. I want to hear you say it before we use it.
+
+The facts: it is not a scoped token. It is permanent, unauthenticated read access to my
+ENTIRE calendar - every event title, past and future - for anyone holding the string,
+without logging in as me and without me knowing.
+
+So, rules for you, for the rest of this session:
+
+  - DO NOT ask me to paste that URL into this chat.
+  - DO NOT write it into any file you create.
+  - DO NOT echo it to the screen, including inside an error message.
+  - When something needs it, tell ME the command to run, and have me run it.
+  - It belongs in an n8n credential and nowhere else.
+
+If I paste it to you anyway, tell me to go and RESET it at my calendar provider - not to
+delete the message. Deleting a message does not un-share a URL.
+
+## Step 7 - Have me check the feed myself
+
+Do not run this for me. Print it and let me run it, so the URL stays out of your context
+and out of the transcript:
+
+  export BRAIN_ICAL_URL='<my secret URL>'    # I will paste mine, with the quotes
+  bash class-07-calendar-pack/verify.sh
+  unset BRAIN_ICAL_URL
+
+Then ask me to read you back ONLY these numbers, not the URL:
+
+  - did it fetch, and was the first line BEGIN:VCALENDAR
+  - how many events
+  - HOW MANY OF THEM REPEAT
+  - how many are all-day
+  - whether times carry a timezone
+
+## Step 8 - Explain the number that matters
+
+Once I give you the repeat count, explain to me why it is the important one.
+
+The facts you need:
+
+  A weekly meeting is stored in the feed as ONE event plus a repeat rule (RRULE), not as
+  one event per week. A parser that does not expand that rule shows the meeting once, on
+  the day it first happened - possibly years ago - and today looks emptier than it is.
+
+  My one-off events will still appear perfectly. That is exactly why I would believe it.
+
+Then tell me what I should do about it in class: I wrote down one recurring event and
+the date it next occurs, and THAT is the line I check when P1 lists my day.
+
+## Step 9 - The timezone check
+
+  docker compose exec -T n8n printenv GENERIC_TIMEZONE
+  date
+
+Tell me whether n8n's timezone is mine. If GENERIC_TIMEZONE is unset it is UTC, and
+"what is on today" will be the wrong day for part of every day.
+
+n8n reads environment variables when the container starts and never again, so changing
+it needs a restart. Class 5 hit this same thing with a 7am digest firing at 2am.
+
+## Step 10 - Check I have documents with dates in them
+
+P2 extracts dates from my Class 3 documents and emails me a calendar invite.
+
+Find my knowledge base and show me FIVE REAL EXCERPTS containing dates - renewal dates,
+due dates, expiry dates. Actual text with the filename, not a schema.
+
+If there are none, say so plainly: P2 will have nothing to propose, and I should ingest
+something with a date in it - a lease, a warranty, an invoice with terms - before class.
+
+## Step 11 - Know when we are actually finished
+
+Print this back as a checklist with a real PASS or FAIL:
+
+  - The checksum matched
+  - I can say what the secret URL grants, and it has not been pasted to you
+  - verify.sh fetched my feed and I know the four numbers
+  - I know how many of my events repeat, and why that matters
+  - n8n's timezone is mine
+  - I have documents with dates in them
+  - BRAIN_ICAL_URL is unset again
+
+Then tell me in two or three sentences: what I have, that nothing is built yet, and that
+the workflows get built in class from prompts/P1-read.md and P2-propose.md - P1 first,
+and P1 is worth having on its own.
+
+Do not build the workflows for me now. That is the class.
+
+## Ground rules
+
+- Never claim something worked without output showing it worked.
+- Never skip the checksum.
+- NEVER handle, print, store or ask for my secret calendar URL.
+- Do NOT modify my Postgres tables, my Class 2 classifier, or any existing workflow.
+- Never write to my calendar. This class proposes; I accept.
+- If you get stuck on the same thing twice, stop and give me the exact command and error
+  so I can post it in the community. Never post the URL.

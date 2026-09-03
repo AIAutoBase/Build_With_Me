@@ -1,0 +1,217 @@
+You are helping me install "The Brain That Runs a Company - Class 8: Make It a Project".
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess.
+
+Three things about this class before you start:
+
+  ONE. YOU MUST NOT RUN ANY GIT COMMAND THAT CHANGES ANYTHING. No git init, no git add,
+  no git commit, no git rm, no git checkout, no git reset. Reading is fine - git log,
+  git status, git ls-files. If you think you need a writing command, STOP and tell me
+  why instead of running it.
+
+  TWO. The reason is the whole class: an installer that helpfully ran `git init` and
+  `git add -A` on my brain folder would commit my .env, which is the single failure this
+  class exists to prevent. Choosing what goes in a commit is the skill. Do not take it
+  from me.
+
+  THREE. We are going to search my history for secrets. If we find one, do NOT print its
+  value, not even partially. Tell me the FILE and the COMMIT, and nothing else.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N - <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+Never tell me a step passed unless you actually saw its output say so.
+
+## Step 1 - Work out where I am
+
+This runs on the machine my brain runs on - the one with Docker, n8n and Postgres.
+
+Report my operating system, and whether git is installed:
+
+  git --version
+
+If git is missing, tell me the install command for my OS and stop until it is there.
+
+Then check git knows who I am:
+
+  git config user.name
+  git config user.email
+
+If either is blank, tell me to set them - my first commit fails without them:
+
+  git config --global user.name  "Your Name"
+  git config --global user.email "you@example.com"
+
+Those two strings go into every commit permanently, so let me choose them.
+
+## Step 2 - Make a workspace folder
+
+Mac or Linux: ~/class-08
+Windows: %USERPROFILE%\class-08
+
+Create it if it is not there. Tell me the full path.
+
+This is where the PACK goes. It is NOT my brain folder, and we are not going to mix
+the two up.
+
+## Step 3 - Download the pack
+
+Download this into the workspace folder, keeping the name class-08-project-pack.zip:
+
+https://aiautobase.github.io/Build_With_Me/class-08/downloads/class-08-project-pack.zip
+
+Mac / Linux / WSL:
+  curl -fL -o class-08-project-pack.zip "<the URL above>"
+
+Windows PowerShell:
+  Invoke-WebRequest -Uri "<the URL above>" -OutFile class-08-project-pack.zip
+
+## Step 4 - Check I got the real file
+
+The zip must have this SHA-256:
+
+  783c9032cd8e076163087b2df014113c5b5ec6ac46ab883361def972d4ac2fd3
+
+Mac / Linux / WSL:   sha256sum class-08-project-pack.zip
+Mac (if missing):    shasum -a 256 class-08-project-pack.zip
+Windows PowerShell:  Get-FileHash class-08-project-pack.zip -Algorithm SHA256
+
+Compare it yourself. If it does not match, STOP. Do not unzip it.
+
+## Step 5 - Unzip it into its own folder
+
+Mac / Linux / WSL:
+  unzip -o class-08-project-pack.zip -d class-08-project-pack
+
+Windows PowerShell:
+  Expand-Archive -Path class-08-project-pack.zip -DestinationPath class-08-project-pack -Force
+
+Thirteen files should come out. List them.
+
+## Step 6 - Find my brain folder, and do not guess
+
+Ask me where my brain folder is. Do not assume ~/brain.
+
+It is the folder with docker-compose.yml and my n8n data in it - the one from Class 1.
+Once I tell you, confirm it by listing what is there, and show me:
+
+  - is there a docker-compose.yml
+  - is there a .env
+  - is there a .git directory already
+  - roughly how many files, and anything over 10 MB
+
+Then say the path back to me and have me confirm it before we go further. Everything
+after this points at that folder.
+
+## Step 7 - Read the pack's own preflight before running it
+
+Read class-08-project-pack/PREWORK.md, then tell me back in your own words what the
+history check does and why `git status` cannot do it.
+
+The fact I want to hear from you: if a .env was ever committed, deleting the file and
+adding it to .gitignore leaves my working tree completely clean while every earlier
+commit still contains the key. `git status` will never mention it again.
+
+## Step 8 - Run the scan against my brain folder
+
+  bash class-08-project-pack/verify.sh <the path I confirmed in Step 6>
+
+Read me the output section by section. Remember: reading only. The script does not write
+anything, and neither do you.
+
+If my folder is NOT a repo yet, that is the normal and best starting point - say so
+plainly and move on. There is no history, so nothing can have leaked into it.
+
+## Step 9 - If it found something, handle it properly
+
+Only if section 4 reported a FAIL.
+
+Do this:
+
+  - Tell me WHICH file and HOW MANY commits. Nothing else.
+  - DO NOT print the secret, or any part of it, or grep it out to "confirm".
+  - DO NOT offer to rewrite my history. Do not mention filter-branch, filter-repo or
+    BFG as a first move.
+
+Then explain, in your own words, why the fix is to ROTATE:
+
+  Rewriting history changes every commit hash and does not help at all if anyone ever
+  cloned or copied the repo - and a backup is a copy. The value leaked. Changing where
+  it is stored does not un-leak it.
+
+Then tell me what to rotate, and warn me about the expensive one:
+
+  - N8N_ENCRYPTION_KEY decrypts every credential n8n has saved. Change it and n8n can no
+    longer read ANY of them - they are still there and unreadable. So plan on re-entering
+    every credential by hand. Budget an hour. Do not let me do this at 11pm.
+  - API keys: revoke and reissue at the provider.
+  - Telegram bot token from Class 4: /revoke to BotFather.
+  - The calendar URL from Class 7: reset it in the calendar settings.
+
+Point me at TROUBLESHOOT.md section 4 and let me decide. It is my key and my risk.
+
+## Step 10 - Show me the gap this class is closing
+
+Search my earlier class packs, if I still have them, for the .env warnings. Or just tell
+me this, which is the honest version:
+
+  Classes 2, 3 and 4 told me repeatedly never to OVERWRITE my .env, because it holds the
+  key that decrypts every credential n8n has saved.
+
+  Not one of them told me not to COMMIT it.
+
+That is not a small omission and I want it said out loud rather than quietly fixed. It is
+also why this class comes before the one that puts an agent with shell access in my
+dashboard.
+
+## Step 11 - Look at what I have, without touching it
+
+List what is in my brain folder that would be worth version control, and what would not:
+
+  WORTH IT:  the compose file, exported workflows, dashboard files, prompts, notes
+  NOT:       .env, postgres data directories, node_modules, video, anything over 10 MB
+
+Then ask me the one question I should bring to class:
+
+  What is in here that I could not rebuild if it vanished tonight?
+
+Write my answer down in the workspace folder as notes.txt. Not in my brain folder - we
+are not putting anything new in there before I have a repo.
+
+## Step 12 - Know when we are actually finished
+
+Print this back as a checklist with a real PASS or FAIL:
+
+  - The checksum matched
+  - Thirteen files unpacked
+  - git is installed and knows who I am
+  - I have confirmed which folder is my brain folder
+  - verify.sh has run against it and I have read the output
+  - I know whether a secret is already in my history, and what I am doing about it
+  - You have not run a single git command that changes anything
+  - I have written down the thing I could not rebuild
+
+Then tell me in two or three sentences: what I have, that NOTHING is under version
+control yet, and that the repo gets built in class from prompts/P1-track.md, then
+P2-version.md, then P3-document.md - in that order, and P1 alone is worth the hour.
+
+Do not run P1 for me now. That is the class.
+
+## Ground rules
+
+- Never claim something worked without output showing it worked.
+- Never skip the checksum.
+- NEVER run git init, git add, git commit, git rm, git checkout or git reset. Reading
+  commands only.
+- Never print the contents of my .env, or any secret found in my history.
+- Never suggest rewriting history as the first answer to a leak. Rotate.
+- Do not create, move or delete anything inside my brain folder.
+- If you get stuck on the same thing twice, stop and give me the exact command and error
+  so I can post it in the community. Never post a key.

@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Content Mate setup — the nine accounts</title>
+<meta name="description" content="The accounts, keys and traps for Content Mate. Two of these have approval delays you cannot rush." />
+<style>
+  :root{
+    --charcoal:#0F172A; --panel:#16223b; --panel-2:#1b2946; --border:#2a3a5c;
+    --blue:#2B6CB0; --blue-2:#3B82F6; --gold:#D4A843; --green:#16A34A; --red:#DC2626;
+    --text:#F8FAFC; --body:#c3cfe0; --muted:#94A3B8;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--charcoal);color:var(--text);font-family:var(--sans);line-height:1.65;padding:0 0 60px}
+  .hero{background:linear-gradient(140deg,#0b1120,var(--panel-2));border-bottom:3px solid var(--gold);padding:36px 24px 30px;text-align:center}
+  .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:2.6px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  h1{font-size:clamp(23px,4.6vw,33px);font-weight:800;letter-spacing:-.02em;max-width:660px;margin:0 auto 10px}
+  .sub{color:var(--muted);font-size:15px;max-width:580px;margin:0 auto}
+  .page{max-width:760px;margin:0 auto;padding:34px 22px 0}
+
+  h2{font-size:19px;font-weight:800;margin:34px 0 8px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+  p{color:var(--body);font-size:15px;margin-bottom:12px}
+  p strong,li strong,td strong{color:var(--text);font-weight:600}
+  a{color:var(--blue-2)}
+  ul,ol{color:var(--body);font-size:15px;margin:0 0 12px 21px}
+  li{margin-bottom:5px}
+
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:15px}
+  .step.slow{border-color:var(--gold)}
+  .step-head{display:flex;align-items:center;gap:11px;margin-bottom:11px;flex-wrap:wrap}
+  .step-num{flex:none;width:29px;height:29px;border-radius:8px;background:var(--blue);color:#fff;
+            display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;font-family:var(--mono)}
+  .step-num.gold{background:var(--gold);color:#3a2c06}
+  .step-title{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .cost{font-family:var(--mono);font-size:11px;color:var(--muted);background:rgba(148,163,184,.12);
+        border-radius:5px;padding:3px 8px;white-space:nowrap}
+  .cost.slowtag{background:rgba(212,168,67,.2);color:#f0d08a;font-weight:700}
+  .step-tick{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .step-tick input{width:17px;height:17px;accent-color:var(--green);cursor:pointer}
+
+  /* Affiliate disclosure, at the point of the link. Quiet enough not to shout,
+     legible enough that nobody can say it was hidden. */
+  .aff{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.5;
+       border-left:2px solid var(--border);padding-left:11px}
+  .aff a{color:#7f9fc4}
+  .aff b{color:var(--body);font-weight:600}
+
+  .bring{background:rgba(22,163,74,.08);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:11px 15px;margin-top:11px}
+  .bring-t{font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:#6ee7a0;font-weight:700;margin-bottom:4px}
+  .bring p:last-child{margin-bottom:0}
+
+  .btn{display:inline-block;background:var(--blue);color:#fff;text-decoration:none;font-weight:700;
+       font-size:14px;padding:9px 18px;border-radius:8px;border:1px solid var(--blue-2);margin:6px 8px 6px 0}
+  .btn:hover{background:var(--blue-2)}
+  .btn.ghost{background:transparent;color:var(--blue-2)}
+
+  .code{position:relative;background:#0a1020;border:1px solid var(--border);border-radius:8px;margin:10px 0 12px}
+  .code-label{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);padding:8px 13px 0}
+  pre{font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#dbe6f5;padding:9px 13px 13px;overflow-x:auto;white-space:pre}
+  .cp{position:absolute;top:6px;right:6px;background:var(--panel-2);color:var(--muted);border:1px solid var(--border);
+      border-radius:5px;font-family:var(--mono);font-size:10px;padding:4px 9px;cursor:pointer}
+  .cp:hover{color:var(--text);border-color:var(--blue-2)}
+  .cp.ok{color:#7ee2a8;border-color:var(--green)}
+  code{font-family:var(--mono);font-size:.9em;background:rgba(148,163,184,.14);padding:1px 5px;border-radius:4px;color:#e4ecf8}
+
+  .note{border-left:3px solid var(--blue-2);background:rgba(59,130,246,.08);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .warn{border-left:3px solid var(--gold);background:rgba(212,168,67,.09);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .danger{border-left:3px solid var(--red);background:rgba(220,38,38,.10);border-radius:0 8px 8px 0;padding:13px 16px;margin:12px 0}
+  .note p:last-child,.warn p:last-child,.danger p:last-child{margin-bottom:0}
+  .note-t,.warn-t,.danger-t{font-weight:700;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:var(--mono)}
+  .note-t{color:var(--blue-2)} .warn-t{color:var(--gold)} .danger-t{color:#ff8080}
+
+  .tw{overflow-x:auto;margin:12px 0;border:1px solid var(--border);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:420px}
+  th{background:var(--panel-2);text-align:left;padding:10px 13px;font-weight:700;font-size:11.5px;
+     letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+  td{padding:10px 13px;border-bottom:1px solid var(--border);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+
+  .back{display:block;text-align:center;margin-top:30px;font-size:14px}
+  .foot{border-top:1px solid var(--border);margin-top:36px;padding-top:20px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="kicker">Content Mate · setup</div>
+  <h1>The nine accounts</h1>
+  <p class="sub">Open them all before you start lesson 4. Two have a hold-up nobody can rush, so begin those now and carry on watching while they clear.</p>
+</div>
+
+<div class="page">
+
+  <div class="danger">
+    <div class="danger-t">Before you open a single account</div>
+    <p><strong>This class is optional and costs $35–$100 every month.</strong> Nothing else in the series depends on it. Take it only if you are actually publishing short-form video on a schedule. There is no version of this where you set it up "just to have it."</p>
+  </div>
+
+  <div class="warn">
+    <div class="warn-t">Start with 3 and 6 — they are the slow ones</div>
+    <p><strong>Blotato</strong> runs a separate approval for every social account you connect, and <strong>OpenAI</strong> credit can take a moment to clear. Do those days ahead. The other seven can be done in an afternoon.</p>
+  </div>
+
+  <!-- 1 -->
+  <div class="step" data-step="1">
+    <div class="step-head"><div class="step-num">1</div><div class="step-title">Airtable</div><span class="cost">free tier works</span>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>The database and the control panel. Every key and table ID lives here.</p>
+    <a class="btn" href="https://airtable.com" target="_blank" rel="noopener noreferrer">Sign up →</a>
+    <a class="btn ghost" href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer">Create a token →</a>
+    <div class="danger">
+      <div class="danger-t">Two things people get wrong here</div>
+      <p><strong>You need a workspace of your own</strong>, not just an account — otherwise the duplicate button does nothing.</p>
+      <p>Give the token every scope, and set access to <strong>"all current and future bases in this workspace"</strong>. A token scoped to one base breaks the moment you duplicate.</p>
+    </div>
+    <div class="bring"><div class="bring-t">Bring</div><p>The token — it starts with <code>pat</code></p></div>
+  </div>
+
+  <!-- 2 -->
+  <div class="step" data-step="2">
+    <div class="step-head"><div class="step-num">2</div><div class="step-title">n8n, self-hosted</div><span class="cost">VPS from ~$68/yr</span>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <div class="danger">
+      <div class="danger-t">This will not work on n8n Cloud</div>
+      <p>The workflow shells out to <strong>ffmpeg</strong> six times and uses <strong>Execute Command</strong>. n8n Cloud allows neither. This is not a preference.</p>
+    </div>
+    <p>A small VPS running Docker. 2 GB of RAM is enough — the class box is a Mac Mini with 3.7 GB and it renders fine, just not fast.</p>
+    <p><strong>Five lines decide whether video works at all.</strong> Get these into your <code>docker-compose.yml</code> before you import anything:</p>
+    <div class="code"><div class="code-label">docker-compose.yml</div><button class="cp" type="button">copy</button>
+<pre>    image: rxchi1d/n8n-ffmpeg:latest      # the official n8n image has NO ffmpeg
+    environment:
+      NODES_EXCLUDE: "[]"                 # re-enables Execute Command
+      N8N_RESTRICT_FILE_ACCESS_TO: ""     # lets nodes read and write /videos
+      N8N_DEFAULT_BINARY_DATA_MODE: filesystem
+    volumes:
+      - ./videos:/videos</pre></div>
+    <div class="warn">
+      <div class="warn-t">The one nobody thinks to set</div>
+      <p><code>N8N_DEFAULT_BINARY_DATA_MODE: filesystem</code>. Without it n8n holds every video in RAM. A 1080×1920 vertical goes through six ffmpeg nodes, and on a small box n8n gets killed partway through and <strong>reports nothing useful — it just stops.</strong></p>
+    </div>
+    <p>Then on the host, next to your compose file:</p>
+    <div class="code"><div class="code-label">terminal</div><button class="cp" type="button">copy</button>
+<pre>mkdir videos
+sudo chown -R 1000:1000 ./videos
+sudo chmod -R 775 ./videos
+docker compose up -d</pre></div>
+    <p><code>1000</code> is the uid n8n runs as inside the container. If your login user is already uid 1000 (<code>id</code> will tell you), the <code>chown</code> changes nothing and that is fine.</p>
+    <div class="note">
+      <div class="note-t">HTTPS is not optional</div>
+      <p>The Airtable buttons call your webhooks, and <strong>Airtable will not call plain HTTP.</strong> You need a green padlock.</p>
+    </div>
+    <h3 style="font-size:14.5px;margin:16px 0 6px">Where to get one</h3>
+    <a class="btn" href="https://www.hostinger.com?REFERRALCODE=DI1ROUGHBIMS" target="_blank" rel="noopener noreferrer">Hostinger — KVM 2 →</a>
+    <a class="btn ghost" href="https://hostgator.pvxt.net/JK3QKE" target="_blank" rel="noopener noreferrer">HostGator VPS →</a>
+    <p class="aff"><b>Both of those are my affiliate links</b> — AI Auto Base earns a commission if you buy through them, at no extra cost to you. <a href="https://www.hostinger.com" target="_blank" rel="noopener noreferrer">hostinger.com</a> and <a href="https://www.hostgator.com" target="_blank" rel="noopener noreferrer">hostgator.com</a> without the codes work identically.</p>
+    <p class="aff"><b>Hostinger's KVM 2 is the one this class was actually tested against</b>, and it is what Andy's guide uses. HostGator is there because some of you already have an account — I have not run this workflow on it, so if you pick it you are the first, and I would want to hear how it goes.</p>
+    <p class="aff"><b>Any VPS with Docker works.</b> If you already pay for one, use that and skip both links — 2 GB of RAM is enough.</p>
+    <div class="bring"><div class="bring-t">Bring</div><p>Your n8n URL, logged in, with a green padlock</p></div>
+  </div>
+
+  <!-- 3 -->
+  <div class="step slow" data-step="3">
+    <div class="step-head"><div class="step-num gold">3</div><div class="step-title">Blotato</div><span class="cost slowtag">$29/mo · SLOW</span>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>One API in front of nine platforms. No free tier, and there is a 7-day free trial on every plan.</p>
+    <a class="btn" href="https://blotato.com/?ref=hectoret" target="_blank" rel="noopener noreferrer">Sign up →</a>
+    <a class="btn ghost" href="https://my.blotato.com/settings" target="_blank" rel="noopener noreferrer">Get your keys →</a>
+    <p class="aff">That sign-up link is my affiliate link — AI Auto Base earns a commission if you subscribe through it, at no extra cost to you. <a href="https://www.blotato.com" target="_blank" rel="noopener noreferrer">blotato.com</a> without it works exactly the same.</p>
+    <div class="warn">
+      <div class="warn-t">Start this first — every platform runs its own approval</div>
+      <p>Days ahead, not the night before. <strong>Connect only the platforms you actually use.</strong> Nine is the maximum, not the target.</p>
+    </div>
+    <div class="bring"><div class="bring-t">Bring</div><p>The API key, and the account ID for <em>each</em> connected platform</p></div>
+  </div>
+
+  <!-- 4 -->
+  <div class="step" data-step="4">
+    <div class="step-head"><div class="step-num">4</div><div class="step-title">Replicate</div><span class="cost">~$12/mo</span>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>Avatar video and lip-sync. Add a card, then create a token.</p>
+    <a class="btn" href="https://replicate.com/account/api-tokens" target="_blank" rel="noopener noreferrer">API tokens →</a>
+    <div class="warn">
+      <div class="warn-t">The cost that surprises people</div>
+      <p>A Veo 3.1 avatar clip is about <strong>$1.60 per four seconds</strong>. Ten experiments is sixteen dollars.</p>
+      <p><strong>You do not need to generate one at all.</strong> A four-second phone video of yourself talking works — Andy says he uses real footage eighty percent of the time.</p>
+    </div>
+    <div class="bring"><div class="bring-t">Bring</div><p>The token — it starts with <code>r8_</code></p></div>
+  </div>
+
+  <!-- 5 -->
+  <div class="step" data-step="5">
+    <div class="step-head"><div class="step-num">5</div><div class="step-title">ElevenLabs</div><span class="cost">free 10k chars, then $5/mo</span>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>Two jobs here: it speaks the script, and its <strong>Scribe</strong> model returns per-word timings that the captions are built from. Captions are aligned to the audio, not guessed.</p>
+    <a class="btn" href="https://try.elevenlabs.io/wnvu5zc9tcly" target="_blank" rel="noopener noreferrer">ElevenLabs →</a>
+    <p class="aff">Affiliate link — AI Auto Base earns a commission if you subscribe, at no extra cost to you. <a href="https://elevenlabs.io" target="_blank" rel="noopener noreferrer">elevenlabs.io</a> works the same. <b>The free tier's 10,000 characters is genuinely enough to get through this class</b> — do not pay until you have run one video end to end.</p>
+    <p>API key from Profile → API Keys. Then pick a voice and copy its <strong>voice ID from the URL</strong> — a stock voice or your own clone.</p>
+    <div class="bring"><div class="bring-t">Bring</div><p>API key, and one voice ID</p></div>
+  </div>
+
+  <!-- 6 -->
+  <div class="step slow" data-step="6">
+    <div class="step-head"><div class="step-num gold">6</div><div class="step-title">OpenAI</div><span class="cost slowtag">~$5–10/mo · SLOW</span>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>Script, captions and research.</p>
+    <a class="btn" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">API keys →</a>
+    <div class="danger">
+      <div class="danger-t">Add credit, or nothing runs</div>
+      <p>A key with a zero balance returns <strong>429 and the run dies at the first node.</strong> This is the second thing to start early.</p>
+    </div>
+    <div class="bring"><div class="bring-t">Bring</div><p>The key</p></div>
+  </div>
+
+  <!-- 7 -->
+  <div class="step" data-step="7">
+    <div class="step-head"><div class="step-num">7</div><div class="step-title">twitterapi.io</div><span class="cost">~$7/mo</span>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>Where source material comes from. A third-party reader, <strong>not X's own API</strong>.</p>
+    <a class="btn" href="https://twitterapi.io" target="_blank" rel="noopener noreferrer">twitterapi.io →</a>
+    <div class="bring"><div class="bring-t">Bring</div><p>The key</p></div>
+  </div>
+
+  <!-- 8 -->
+  <div class="step" data-step="8">
+    <div class="step-head"><div class="step-num">8</div><div class="step-title">Google Drive</div><span class="cost slowtag">free · 20–30 min</span>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>Stores avatars, music and finished video. <strong>Two separate jobs here</strong>, and the second is the one people are not expecting.</p>
+
+    <p><strong>a) The folder.</strong> Make one, copy the folder ID from the end of its URL.</p>
+    <div class="danger">
+      <div class="danger-t">Set sharing to "Anyone with the link" → "Viewer"</div>
+      <p>Skip this and Replicate and Blotato cannot fetch your files. <strong>Both fail with an error that does not say why.</strong></p>
+    </div>
+
+    <p><strong>b) Google authentication — budget 20 to 30 minutes.</strong></p>
+    <p>A folder ID is not access. n8n needs an <strong>OAuth credential</strong> to write into your Drive, and that means a Google Cloud project, a consent screen and a client ID. It is the longest single item in this whole setup, and it is one-off and free.</p>
+    <a class="btn" href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer">Google Cloud Console →</a>
+    <div class="warn">
+      <div class="warn-t">Follow GOOGLE-AUTH.md in the pack — do not improvise it</div>
+      <p>There are four places this fails with an error that names the wrong cause. The most common is <code>redirect_uri_mismatch</code>, which means the URL you pasted into Google does not exactly match the one n8n shows — <strong>copy it from n8n rather than retyping it</strong>, protocol and port included.</p>
+    </div>
+    <div class="danger">
+      <div class="danger-t">The one that breaks a week later</div>
+      <p>Leave the OAuth app in <strong>"Testing"</strong> with External user type and <strong>Google expires your consent and refresh tokens after seven days.</strong> Content Mate runs on a schedule, so your uploads just stop, quietly.</p>
+      <p style="margin-bottom:0"><strong>Publish the app to "In production."</strong> Free, does not make anything public, and it is the difference between a setup that lasts and one that dies next Tuesday.</p>
+    </div>
+    <div class="warn">
+      <div class="warn-t">Name the credential exactly <code>Google Drive account</code></div>
+      <p>The workflow ships with credential ids stripped so n8n matches <strong>by name</strong>. The right token under the wrong name attaches to nothing.</p>
+    </div>
+    <div class="bring"><div class="bring-t">Bring</div><p>The folder ID, <strong>and</strong> a connected <code>Google Drive account</code> credential in n8n with the consent screen <strong>published</strong></p></div>
+  </div>
+
+  <!-- 9 -->
+  <div class="step" data-step="9">
+    <div class="step-head"><div class="step-num">9</div><div class="step-title">Telegram</div><span class="cost">free</span>
+      <label class="step-tick"><input type="checkbox"> done</label></div>
+    <p>Tells you a post went out. Message <strong>@BotFather</strong>, send <code>/newbot</code>, name it.</p>
+    <a class="btn" href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer">Open @BotFather →</a>
+    <p>Then message your own new bot three times, and open this with your token in place:</p>
+    <div class="code"><div class="code-label">browser</div><button class="cp" type="button">copy</button>
+<pre>https://api.telegram.org/botYOUR_TOKEN/getUpdates</pre></div>
+    <p>Copy the <code>chat.id</code>. <strong>Not <code>update_id</code></strong> — they sit next to each other and people take the wrong one.</p>
+    <div class="warn">
+      <div class="warn-t">Took Class 4? Make a second bot.</div>
+      <p>One Telegram bot carries one n8n trigger. Sharing one with your Brain bot makes messages vanish with no error anywhere.</p>
+    </div>
+    <div class="bring"><div class="bring-t">Bring</div><p>Bot token and chat ID</p></div>
+  </div>
+
+  <!-- DISCLOSURE -->
+  <h2>Where I make money on this, and where I don't</h2>
+
+  <p>Three of the nine sign-ups above are my affiliate links. <strong>Six are not.</strong> Here is the whole picture, so you are not left guessing which is which.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Provider</th><th>Link above</th><th>What it costs you</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Hostinger</strong> (VPS)</td><td><strong>Affiliate</strong></td><td>Nothing extra. Same price with or without my code</td></tr>
+        <tr><td><strong>HostGator</strong> (VPS)</td><td><strong>Affiliate</strong></td><td>Nothing extra. <em>Not what this class was tested on</em></td></tr>
+        <tr><td><strong>Blotato</strong></td><td><strong>Affiliate</strong></td><td>Nothing extra. 7-day free trial either way</td></tr>
+        <tr><td><strong>ElevenLabs</strong></td><td><strong>Affiliate</strong></td><td>Nothing extra. The free tier still applies</td></tr>
+        <tr><td>Airtable</td><td>plain link</td><td>—</td></tr>
+        <tr><td>Replicate</td><td>plain link</td><td>—</td></tr>
+        <tr><td>OpenAI</td><td>plain link</td><td>—</td></tr>
+        <tr><td>twitterapi.io</td><td>plain link</td><td>—</td></tr>
+        <tr><td>Google Drive</td><td>plain link</td><td>—</td></tr>
+        <tr><td>Telegram</td><td>plain link</td><td>free</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <div class="note-t">What an affiliate link actually does here</div>
+    <p>It tags the sign-up so the provider knows it came from me, and they pay me a share. <strong>You pay exactly the same price</strong> — there is no version of these links that costs you more, and none of them unlock anything special either.</p>
+    <p style="margin-bottom:0">Every one of them has the plain domain printed next to it. Use that instead if you would rather, and nothing about the class changes.</p>
+  </div>
+
+  <div class="warn">
+    <div class="warn-t">The thing an affiliate link should never do</div>
+    <p>Talk you into a class you should skip. <strong>This one costs $35–100 a month and most people should not take it</strong> — that is the first thing the show notes say and the first thing the installer asks you.</p>
+    <p style="margin-bottom:0">If the honest answer is "I don't publish video on a schedule", the right move is to close this page. I would rather you did that than sign up for four services through my links and cancel them in three weeks.</p>
+  </div>
+
+  <p style="font-size:13.5px;color:var(--muted)">Andy's own setup guide carries his Hostinger referral link. Members following his guide directly will use his. Neither of us hides it.</p>
+
+  <!-- SETUP TABLE -->
+  <h2>Bring this filled in</h2>
+  <p>This is the Setup table, and class starts by pasting it in. Print it or keep it in a note.</p>
+  <div class="code"><div class="code-label">the Airtable Setup table</div><button class="cp" type="button">copy</button>
+<pre>Active                    ON
+Airtable Base ID          app...
+Table ID - Ideas          tbl...
+Table ID - Create         tbl...
+Table ID - Avatars        tbl...
+Table ID - Music          tbl...
+Table ID - X              tbl...
+Airtable Personal Token   pat...
+TwitterAPI Key
+OpenAI API Key            sk-...
+ElevenLabs API Key
+Replicate API Key         r8_...
+Blotato API Key
+Blotato account IDs       one per platform you connected
+Google Drive Folder ID
+n8n Folder                /videos/
+Telegram Access Token
+Telegram Chat ID
+Timezone                  e.g. US/Central</pre></div>
+
+  <div class="danger">
+    <div class="danger-t">This table is as sensitive as a password manager</div>
+    <p>Most of these keys live in Airtable cells rather than n8n credentials — that is what makes one-cell rotation work, and it means <strong>anyone with access to this base has your keys.</strong> Be careful who you share it with.</p>
+  </div>
+
+  <!-- THE ORDER -->
+  <h2>The one ordering rule that ruins the import</h2>
+  <div class="danger">
+    <div class="danger-t">Install the Blotato node BEFORE importing the workflow — and from the n8n interface</div>
+    <p>Import first and the nine Blotato nodes arrive as <strong>unrecognized types</strong>.</p>
+    <p>Install it from a shell instead of the interface and you get this, which names a file that is right there on disk:</p>
+    <pre style="margin-top:8px">Failed to load package "@blotato/n8n-nodes-blotato"
+Error: Cannot find module './toString'</pre>
+    <p style="margin-top:8px">Blotato declares <code>n8n-workflow</code> as a peer dependency and npm 7+ installs peers by default, dropping a second copy into <code>.n8n/nodes/node_modules</code>. The path it resolves from is what is wrong, not the file.</p>
+    <p><strong>Right-click the canvas → add node → search Blotato → Install.</strong> Already broke it from a shell? Delete <code>.n8n/nodes/node_modules</code> and start over.</p>
+  </div>
+
+  <!-- TRAPS -->
+  <h2>Traps we already hit</h2>
+  <div class="tw">
+    <table>
+      <thead><tr><th>What you see</th><th>What it means</th></tr></thead>
+      <tbody>
+        <tr><td>A credential named <code>Strava</code></td><td><strong>Not Strava.</strong> It fetches the finished Replicate video and needs <code>Authorization: Bearer &lt;your Replicate token&gt;</code>. The name is left over from something else and was kept <em>on purpose</em> so Andy's screenshots still match what you see.</td></tr>
+        <tr><td>A key with no credential to put it in</td><td>twitterapi.io and both ElevenLabs calls read their keys straight from the Setup table as expressions. <strong>You never create a credential for them.</strong> Airtable, OpenAI, Blotato, Google Drive, Telegram and the two HTTP header credentials are real ones.</td></tr>
+        <tr><td>Google Drive nodes cannot write</td><td>Two of them target Andy's own shared drive upstream. The copy you have is repointed to <strong>My Drive</strong> — if you download the workflow from Andy's community instead, fix those two by hand.</td></tr>
+        <tr><td>A blank avatar or silent music track</td><td>The workflow picks one at random from each table, and <strong>an empty row is a valid choice</strong> as far as it is concerned. Delete what you are not using.</td></tr>
+        <tr><td>Credential has the right key but attaches to nothing</td><td>n8n links credentials <strong>by name</strong>, not by id. Name them exactly as the workflow expects.</td></tr>
+        <tr><td>An OpenAI node returns 404</td><td>The model was retired. Read their docs — the workflow is not wrong.</td></tr>
+        <tr><td><code>redirect_uri_mismatch</code> from Google</td><td>The URL in Google Cloud does not exactly match the one n8n shows. Copy it from n8n — protocol, port and trailing slash all count.</td></tr>
+        <tr><td>Drive worked for a week, then stopped</td><td><strong>The OAuth app was left in "Testing."</strong> Google expired the tokens after seven days. Publish the app and reconnect.</td></tr>
+        <tr><td><code>access_denied</code> when signing in to Google</td><td>External + Testing, and you are not on the test-user list. Add yourself, or publish the app.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BACK -->
+  <h2>Done — tell Claude Code</h2>
+  <div class="code"><div class="code-label">paste into Claude Code</div><button class="cp" type="button">copy</button>
+<pre>I finished the setup gate. All nine accounts are open, my n8n is self-hosted with ffmpeg and Execute Command and N8N_DEFAULT_BINARY_DATA_MODE=filesystem, I duplicated the Airtable base into my own workspace and filled the Setup table, and I installed the Blotato community node from the n8n interface and saved. For Google: the Cloud project exists, the Drive API is enabled, the credential is connected and named exactly "Google Drive account", and the consent screen is PUBLISHED rather than left in Testing. Verify what you can rather than believing me, then carry on.</pre></div>
+
+  <div class="note">
+    <div class="note-t">Where to ask what</div>
+    <p><strong>The workflow itself</strong> — Andy Hafell's community, <a href="https://skool.com/aimate" target="_blank" rel="noopener noreferrer">skool.com/aimate</a>. He maintains it; we teach it.<br>
+    <strong>The class, the Airtable pattern, self-hosting n8n</strong> — ours.</p>
+    <p>Bring the error text. Not "it doesn't work" — the actual red box, copied out.</p>
+  </div>
+
+  <a class="back" href="index.html">← Back to the show notes</a>
+
+  <div class="foot">
+    Content Mate v2.0.2 by <strong>Andy Hafell</strong>, shared with permission ·
+    Content Mate — a classroom section · Orbix Automation Solutions
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Clipboard: on file:// Chromium reports isSecureContext true and exposes
+     navigator.clipboard, but writeText() REJECTS while execCommand works.
+     Rejection falls through rather than giving up. */
+  function legacyCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function copyText(text, btn){
+    function done(ok){
+      btn.textContent = ok ? "copied" : "select it";
+      btn.classList.toggle("ok", ok);
+      setTimeout(function(){ btn.textContent = "copy"; btn.classList.remove("ok"); }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); },
+                                               function(){ done(legacyCopy(text)); });
+      return;
+    }
+    done(legacyCopy(text));
+  }
+
+  document.querySelectorAll(".cp").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var pre = btn.parentNode.querySelector("pre");
+      if (pre) copyText(pre.textContent, btn);
+    });
+  });
+
+  /* Nine accounts is a lot to open in one sitting - ticks persist so people
+     can walk away and come back. Per-viewer, never leaves the browser. */
+  document.querySelectorAll(".step-tick input").forEach(function(box, i){
+    var key = "bcm-gate-" + i;
+    try { if (localStorage.getItem(key) === "1") box.checked = true; } catch(e){ /* blocked */ }
+    box.addEventListener("change", function(){
+      try {
+        if (box.checked) localStorage.setItem(key, "1");
+        else localStorage.removeItem(key);
+      } catch(e){ /* tick still works this session */ }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,297 @@
+You are helping me set up "Content Mate" from the AI Auto Base classroom.
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess.
+
+Read all of this before you do anything, because two things here are unusual.
+
+  ONE. This class costs real money every month - $35 to $100 - and it is OPTIONAL.
+  Nothing else in the Brain series depends on it, and it is a classroom section I can
+  stop watching at any point. Before you help me install anything,
+  you are going to help me decide whether I should. That is Step 1 and it is not a
+  formality.
+
+  TWO. Most of this cannot be scripted. It is nine separate companies, each with its
+  own signup, and two of them have approval delays that no script can hurry. Do not
+  write me an installer that pretends otherwise. Your job is to verify the file, prove
+  my n8n can actually run this, and walk me through the parts only I can do.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N - <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+Never tell me a step passed unless you actually saw its output say so.
+
+## Step 1 - Talk me out of it, honestly
+
+Before anything else, ask me these three questions and wait for my answers:
+
+  1. Am I currently publishing short-form video on a schedule - actually publishing,
+     not intending to?
+  2. Am I willing to spend $35 to $100 every month, ongoing, for this?
+  3. Do I have about ten minutes a day to approve or reject what it makes?
+
+If I answer no to any of them, say so plainly: this class is optional and I should
+skip it. Do not soften it and do not carry on to Step 2 unless I tell you I want to
+anyway. Tell me the rest of the Brain series works completely without this.
+
+Nobody should set this up to have it.
+
+## Step 2 - Work out what machine I am on
+
+Find my operating system. If I am on Windows, check whether WSL is installed
+(`wsl -l -v`) and whether Docker Desktop is running. Tell me what you found.
+
+Do not ask me questions you can answer by looking.
+
+## Step 3 - Find the pack I already downloaded
+
+**This pack is NOT downloadable from the class website, and that is deliberate.** The
+workflow inside it is Andy Hafell's, shared with AI Auto Base by permission. It comes
+from the pinned Skool post, not from a public URL.
+
+Ask me where I saved `content-mate-pack-v2.zip`. Search the obvious places first
+(Downloads, Desktop, the current folder) and tell me if you find it rather than making
+me look.
+
+If I do not have it, stop. Tell me to get it from the Content Mate section in the
+classroom, and wait.
+
+## Step 4 - Check it is the real file
+
+Download the published checksum:
+
+https://aiautobase.github.io/Build_With_Me/content-mate/downloads/SHA256SUMS
+
+The zip must have this SHA-256:
+
+  6833c67f2cdb119a775d600222e4b8e032a62d8d2c3d4a202303cde1a72580c4
+
+Mac / Linux / WSL:   sha256sum content-mate-pack-v2.zip
+Mac (if missing):    shasum -a 256 content-mate-pack-v2.zip
+Windows PowerShell:  Get-FileHash content-mate-pack-v2.zip -Algorithm SHA256
+
+Compare it yourself and tell me match or no match.
+
+If it does not match: STOP. Do not unzip it. Tell me the file is not what it should be
+and that I should download it again from the community post.
+
+## Step 5 - Unzip it into its own folder
+
+Mac / Linux / WSL:
+  unzip -o content-mate-pack-v2.zip -d content-mate-pack
+
+Windows PowerShell:
+  Expand-Archive -Path content-mate-pack-v2.zip -DestinationPath content-mate-pack -Force
+
+Six files should come out. List them for me.
+
+## Step 6 - Read PREFLIGHT.md properly, and cost it out
+
+Read content-mate-pack/PREFLIGHT.md end to end. Also read README.md and CREDITS.md.
+
+Then give me:
+
+  a) Every account I have to open, in the order PREFLIGHT gives them. Do not reorder
+     and do not invent any.
+  b) For each one: what it costs, and whether it has an approval delay.
+  c) A total monthly figure, and tell me plainly if it lands above the $35-$100 range
+     that the pack quotes.
+  d) Which two have delays I cannot rush.
+
+When you list the sign-up links, do NOT paste URLs from memory. Point me at the gate
+page from Step 9 - it carries the current links, and four of them are Hector's affiliate
+links (Hostinger, HostGator, Blotato, ElevenLabs). Those are marked as affiliate right
+next to the link, with the plain domain printed beside each one.
+
+Say that out loud when you get there, in one line, rather than letting me find out
+later: they cost me the same either way, and the plain domains work identically.
+
+Then ask me again whether I want to continue. This is the last cheap moment to stop.
+
+## Step 6b - Google authentication, the longest single item
+
+Read content-mate-pack/GOOGLE-AUTH.md to me and then walk me through it.
+
+Do not skip this and do not summarise it away. **A Google Drive folder ID is not access.**
+The workflow needs an OAuth credential to write into my Drive, which means a Google Cloud
+project, a consent screen and a client ID. It is 20 to 30 minutes, one-off, and free -
+and it is the piece most likely to be assumed rather than done.
+
+I have NOT set Content Mate up before. Assume nothing exists.
+
+Things I want you to be explicit about, because each one fails with an error naming the
+wrong cause:
+
+  - Enable the Google DRIVE API on the project. If I also want the calendar, enable the
+    Google CALENDAR API at the same time - same project, same client, no second setup.
+  - The OAuth client application type is **Web application**, not Desktop. Only Web
+    application has the redirect URL field.
+  - **Copy the OAuth Redirect URL out of n8n. Do not retype it.** It must match exactly -
+    protocol, domain, port, path. A mismatch gives redirect_uri_mismatch.
+  - If the consent screen is External, add my own Google address as a **test user**, or
+    sign-in fails with access_denied and no explanation.
+  - Name the n8n credential **exactly** `Google Drive account`. The workflow ships with
+    credential ids stripped so n8n matches by name; the right token under the wrong name
+    attaches to nothing.
+
+Then the one that matters most, and I want you to say it back to me in your own words
+before we move on:
+
+  **If the OAuth app is left in "Testing" with External user type, Google expires the
+  consent and refresh tokens after SEVEN DAYS.** This workflow runs on a schedule, so my
+  Drive uploads would simply stop about a week from now, quietly, with nothing pointing at
+  the cause. Publishing the app to "In production" fixes it, costs nothing, and does not
+  make anything public.
+
+Check it with me before we continue:
+  - the credential shows connected in n8n
+  - the publishing status reads "In production" (or the user type is Internal)
+  - a Google Drive node actually put a file in my Drive - **check Drive, not the green
+    node**
+
+Then have me write down the date I did this. If uploads start failing in about a week, the
+first thing to check is the publishing status, and that note will save an hour.
+
+## Step 7 - Prove my n8n can even run this
+
+**This is the check that matters most, and it is the one you can actually do.**
+
+n8n Cloud CANNOT run this workflow. It needs Execute Command nodes and ffmpeg inside
+the container. If my n8n cannot do both, nothing later in this process will work and I
+need to know now, not at step ten.
+
+Check, and print PASS or FAIL for each:
+
+1. My n8n is self-hosted, not n8n Cloud.
+
+2. ffmpeg exists inside the n8n container:
+     docker compose exec n8n ffmpeg -version
+
+   If ffmpeg is missing, the image is wrong. PREFLIGHT.md names the image that works and
+   explains why the official n8n image will not do. Read it to me rather than guessing.
+
+3. Execute Command nodes are permitted - the workflow uses six of them.
+
+4. N8N_DEFAULT_BINARY_DATA_MODE is set to "filesystem":
+     docker compose exec n8n printenv N8N_DEFAULT_BINARY_DATA_MODE
+
+   Expect: filesystem
+
+   Explain to me why this one matters: without it a video render is held in memory and
+   the container gets OOM-killed. It does not error in a way that tells you what
+   happened - it just dies.
+
+5. There is disk space for video. Check what is free and tell me the number.
+
+A FAIL here stops everything. Say so plainly and tell me what to fix.
+
+## Step 8 - The ordering trap that ruins the import
+
+**Install the Blotato community node BEFORE importing the workflow, and install it from
+the n8n interface, not from a shell.**
+
+Get this backwards and the workflow's nine publishing nodes arrive as unrecognized node
+types, and the fix is worse than doing it in the right order.
+
+Read me what PREFLIGHT.md says about why the shell install breaks it. Do not paraphrase
+from memory - read the actual file.
+
+Then stop and let me do it in the n8n interface. Wait for me to say it is installed and
+saved.
+
+## Step 9 - The browser steps
+
+Open the gate page in my browser rather than reading a wall of text at me:
+
+https://aiautobase.github.io/Build_With_Me/content-mate/setup-gate.html
+
+  Linux            xdg-open setup-gate.html
+  Mac              open setup-gate.html
+  WSL (Windows)    explorer.exe "$(wslpath -w setup-gate.html)" || true
+  PowerShell       Start-Process setup-gate.html
+
+Two things that will bite you:
+
+  - explorer.exe returns a non-zero exit code even when it worked. Under
+    set -euo pipefail that kills the script on a step that succeeded. Append `|| true`.
+  - If nothing opens - headless box, SSH, no browser - do not fail. Print the path and
+    the steps in the terminal and carry on.
+
+The gate covers, in order: the nine accounts, duplicating the Airtable base into my own
+workspace, filling the Setup table, and creating the credentials with exact names.
+
+Then wait for me.
+
+## Step 10 - Import, and point one node
+
+Once I tell you the base is duplicated and the Setup table is filled:
+
+  1. Import content-mate-pack/content-mate-v2.0.2-aiab.json into n8n.
+  2. Open the node called "Setup" and point it at MY Airtable base.
+
+Explain to me why that is the only Airtable node I set by hand: every other one - about
+twenty-five of them - reads its base and table from that node's output. Even the
+Airtable credential's token is an expression that reads a cell out of that table.
+
+That pattern is the thing worth learning here. Say it in your own words: configuration
+is data, not settings. One node repoints all of them.
+
+  3. Create the credentials, named EXACTLY as the workflow expects. n8n links credentials
+     by name, not by id - a credential with the right token and the wrong name attaches
+     to nothing.
+
+Warn me about one confusing name: there is an HTTP header credential called "Strava"
+that actually holds a Replicate token. That is not a mistake in the pack. It was left
+alone on purpose so that Andy's screenshots still match what I see. PREFLIGHT.md
+explains it.
+
+## Step 11 - The workflow arrives switched OFF. Leave it off.
+
+It has three schedule triggers - a scrape at 7am, five creation runs from 8am, and
+publishing three times a day.
+
+Do NOT activate it yet. Activating before the credentials work produces a wall of failed
+executions.
+
+Instead: run the scraper trigger by hand, once, and watch the Ideas table in Airtable
+fill up.
+
+Only when a manual run has worked end to end do I arm the schedules. Tell me that
+plainly and do not offer to turn them on for me.
+
+## Step 12 - Know when we are actually finished
+
+We are finished with YOUR part when all of these are true. Print them back as a
+checklist with a real PASS or FAIL:
+
+  - I decided, on purpose, that this class is worth $35-$100 a month to me
+  - The zip checksum matched
+  - My n8n is self-hosted, has ffmpeg, allows Execute Command, and has
+    N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+  - The Blotato node was installed from the interface BEFORE the import
+  - The workflow is imported and the Setup node points at my own base
+  - Credentials exist with exactly the right names
+  - The workflow is still INACTIVE
+  - A manual scraper run filled the Ideas table
+
+Then tell me, in two or three sentences: what I now have, what it will cost me this
+month, and that the schedules stay off until a full manual run has produced a video.
+
+## Ground rules for the whole job
+
+- Never claim something worked without output showing it worked.
+- Never skip the checksum.
+- Never write any of my API keys into a file you create, and never print one to screen.
+  In this workflow most keys live in the Airtable Setup table, not in n8n credentials -
+  that is by design, and it means the table is as sensitive as a password manager.
+- If a node breaks later, the workflow itself is Andy Hafell's and support for it lives
+  at skool.com/aimate. The class, the Airtable pattern and self-hosting n8n are ours.
+- Nine outside companies are involved. Any of them can change price, API or terms
+  without warning. If something that used to work stops, check the provider's own docs
+  before you change the workflow.
