@@ -54,8 +54,15 @@ which reads exactly like a provider refusing you. It would have sent people to t
 API to work around a bug in our own script. Fixed, and covered by a test carrying the
 real server response.
 
-**Gmail has not been run against live.** Its shape is in the test, not in a real `APPEND`.
-If you are on Gmail, you are the first — run `verify.sh` before you build P2.
+**Gmail was run the same day, and it passes too.** `APPEND` into `[Gmail]/Drafts`,
+accepted, confirmed and cleaned up — on an account that had never been connected to
+anything. That is the provider Class 2's `.env.example` configures, so it is the one that
+mattered. It also corroborated the fix: the test carried a Gmail fixture as a
+*prediction*, and the live server returned exactly that shape.
+
+**The one thing that trips people on Gmail is not `APPEND`.** Google shows an app password
+as four groups of four — `abcd efgh ijkl mnop` — and IMAP rejects it with the spaces in.
+Strip them: 16 characters.
 
 **`prompts/P1-digest.md` — the whole clock half — does not touch any of this.** If `APPEND`
 does not work for you, you still have a working morning digest, which was always the more

@@ -108,12 +108,18 @@ The pack ships verify.sh, which probes it properly: it connects, finds my drafts
 appends a throwaway message with the \Draft flag, confirms it landed, and deletes it
 again.
 
-Before I run it, tell me this so I know what I am standing on: the probe was run against
-a cPanel/Dovecot mailbox on 2026-09-05 and APPEND worked, into INBOX.Drafts. The first
-run FAILED - and the fault was in the probe, not the mail server. It read the folder name
-wrong on that kind of server and sent a malformed APPEND, which looks exactly like a
-provider refusing you. That is fixed and covered by a test. Gmail has not been run
-against live. If my host is Gmail, say so plainly before I start - I am the first.
+Before I run it, tell me this so I know what I am standing on: on 2026-09-05 this probe
+was run against TWO real mail servers and APPEND worked on both - cPanel/Dovecot, into
+INBOX.Drafts, and Gmail, into [Gmail]/Drafts. The first run FAILED - and the fault was in
+the probe, not the mail server. It read the folder name wrong on Dovecot and sent a
+malformed APPEND, which looks exactly like a provider refusing you. Fixed, and covered
+by a test.
+
+So a failure here is a real answer about MY account, not a known bug. Treat it that way.
+
+If my provider is Gmail, remind me of the one thing that trips everybody: the app
+password Google shows me has spaces in it, and IMAP rejects it that way. Strip them -
+16 characters, no spaces.
 
 It needs three environment variables for that one run:
 
