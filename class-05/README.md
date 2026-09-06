@@ -37,26 +37,29 @@ Class 1.
 
 ---
 
-## One thing in this pack is unproven, and it says so
-
-The zip is `class-05-hands-pack-DRAFT.zip` and the word DRAFT is deliberate.
+## The probe found a bug in itself before it found an answer
 
 `prompts/P2-draft.md` writes a reply into your Drafts folder using an IMAP `APPEND`. That
 is the right approach — no new account, no consent screen, reuses your Class 2 mailbox.
 
-**At the time the pack was built, `APPEND` had not been run against a real mail server by
-us. Not once.**
+This pack shipped as `class-05-hands-pack-DRAFT.zip` until **5 September 2026**, because
+nobody had run that `APPEND` against a real mail server. It has now been run: accepted
+into `INBOX.Drafts` on a cPanel/Dovecot mailbox, found in the folder by a search, and
+deleted again.
 
-It may work perfectly on your provider. It may also fail for reasons that are known and
-documented — the folder is called something else, the server rejects `APPEND`, or the
-`\Draft` flag is missing and the message lands as *received mail*.
+**The first run failed, and the fault was ours, not the mail server's.** `verify.sh` read
+the folder name wrong — it assumed a `LIST` response quotes the mailbox name, which Gmail
+does and Dovecot does not — and sent a malformed `APPEND`. The server answered `BAD`,
+which reads exactly like a provider refusing you. It would have sent people to the Gmail
+API to work around a bug in our own script. Fixed, and covered by a test carrying the
+real server response.
 
-**`prompts/P1-digest.md` — the whole clock half — is unaffected and complete.** If `APPEND`
+**Gmail has not been run against live.** Its shape is in the test, not in a real `APPEND`.
+If you are on Gmail, you are the first — run `verify.sh` before you build P2.
+
+**`prompts/P1-digest.md` — the whole clock half — does not touch any of this.** If `APPEND`
 does not work for you, you still have a working morning digest, which was always the more
-useful of the two.
-
-`DRAFT.md` at the top of the zip explains all of this, `verify.sh` probes it properly, and
-`docs/UPGRADE-gmail-api.md` is the path if it fails.
+useful of the two, and `docs/UPGRADE-gmail-api.md` is the path if you want P2 anyway.
 
 > The build script **refuses** to produce a non-draft pack until someone records a real
 > probe result — and a file created just to silence the guard does not count.
@@ -134,9 +137,9 @@ cd downloads && sha256sum -c SHA256SUMS
 
 | File | SHA-256 |
 |---|---|
-| `class-05-hands-pack-DRAFT.zip` | `7e45e546d2a245f5a53004adcbff7a997a93b44fa65f128005a656f6aa356cbe` |
+| `class-05-hands-pack.zip` | `3260e3fd4864982889945d901c64171559d7b2b6324e72b0088b58a1d503afc4` |
 
-25,491 bytes · 10 files. This pack pins its zip timestamps, so the same sources always
+25,144 bytes · 9 files. This pack pins its zip timestamps, so the same sources always
 produce the same hash — a mismatch means the sources moved, not that the clock did.
 
 ---

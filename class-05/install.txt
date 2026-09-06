@@ -49,18 +49,15 @@ Create it if it is not there. Tell me the full path.
 ## Step 3 - Download the pack
 
 Download this into the workspace folder, keeping the name
-class-05-hands-pack-DRAFT.zip:
+class-05-hands-pack.zip:
 
-https://aiautobase.github.io/Build_With_Me/class-05/downloads/class-05-hands-pack-DRAFT.zip
+https://aiautobase.github.io/Build_With_Me/class-05/downloads/class-05-hands-pack.zip
 
 Mac / Linux / WSL:
-  curl -fL -o class-05-hands-pack-DRAFT.zip "<the URL above>"
+  curl -fL -o class-05-hands-pack.zip "<the URL above>"
 
 Windows PowerShell:
-  Invoke-WebRequest -Uri "<the URL above>" -OutFile class-05-hands-pack-DRAFT.zip
-
-The word DRAFT in that filename is deliberate. Explain it to me once you have read
-DRAFT.md in Step 6 - not before, because you do not know yet.
+  Invoke-WebRequest -Uri "<the URL above>" -OutFile class-05-hands-pack.zip
 
 Also download the gate page into the same folder:
 
@@ -72,33 +69,32 @@ If that fails, say so and carry on. It is a convenience.
 
 The zip must have this SHA-256:
 
-  7e45e546d2a245f5a53004adcbff7a997a93b44fa65f128005a656f6aa356cbe
+  3260e3fd4864982889945d901c64171559d7b2b6324e72b0088b58a1d503afc4
 
-Mac / Linux / WSL:   sha256sum class-05-hands-pack-DRAFT.zip
-Mac (if missing):    shasum -a 256 class-05-hands-pack-DRAFT.zip
-Windows PowerShell:  Get-FileHash class-05-hands-pack-DRAFT.zip -Algorithm SHA256
+Mac / Linux / WSL:   sha256sum class-05-hands-pack.zip
+Mac (if missing):    shasum -a 256 class-05-hands-pack.zip
+Windows PowerShell:  Get-FileHash class-05-hands-pack.zip -Algorithm SHA256
 
 Compare it yourself. If it does not match, STOP. Do not unzip it.
 
 ## Step 5 - Unzip it into its own folder
 
 Mac / Linux / WSL:
-  unzip -o class-05-hands-pack-DRAFT.zip -d class-05-hands-pack
+  unzip -o class-05-hands-pack.zip -d class-05-hands-pack
 
 Windows PowerShell:
-  Expand-Archive -Path class-05-hands-pack-DRAFT.zip -DestinationPath class-05-hands-pack -Force
+  Expand-Archive -Path class-05-hands-pack.zip -DestinationPath class-05-hands-pack -Force
 
 List what came out.
 
-## Step 6 - Read DRAFT.md first, then the rest
+## Step 6 - Read the README first, then the rest
 
-Read class-05-hands-pack/DRAFT.md before anything else and tell me:
-  - which part of this class is unproven
-  - why that matters to me specifically
-  - which prompt is NOT affected by it
-  - what I should do before building the affected one
+Read class-05-hands-pack/README.md before anything else and tell me:
+  - what the two halves of this class are
+  - which half runs on a schedule, and which half writes into my mailbox
+  - which of the two I could drop and still have something useful
 
-Then read README.md, PREWORK.md and TROUBLESHOOT.md all the way through.
+Then read PREWORK.md and TROUBLESHOOT.md all the way through.
 
 ## Step 7 - The probe that decides whether half this class works
 
@@ -111,6 +107,13 @@ that folder, with the right flag. Three things have to be true at once.
 The pack ships verify.sh, which probes it properly: it connects, finds my drafts folder,
 appends a throwaway message with the \Draft flag, confirms it landed, and deletes it
 again.
+
+Before I run it, tell me this so I know what I am standing on: the probe was run against
+a cPanel/Dovecot mailbox on 2026-09-05 and APPEND worked, into INBOX.Drafts. The first
+run FAILED - and the fault was in the probe, not the mail server. It read the folder name
+wrong on that kind of server and sent a malformed APPEND, which looks exactly like a
+provider refusing you. That is fixed and covered by a test. Gmail has not been run
+against live. If my host is Gmail, say so plainly before I start - I am the first.
 
 It needs three environment variables for that one run:
 
@@ -185,7 +188,7 @@ We are finished with the install when all of these are true. Print them as a che
 with a real PASS or FAIL:
 
   - The checksum matched
-  - I know what DRAFT.md says, and that P1 is unaffected by it
+  - I have read the README and know which half of the class is which
   - The IMAP APPEND probe RAN, and I know the result either way
   - I have written down the exact name of my drafts folder
   - Class 2 is writing rows, and the newest is recent

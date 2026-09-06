@@ -85,26 +85,63 @@ out("PASS", "connected and logged in to %s" % host)
 # Which folder is Drafts? There is no universal name -- Drafts, INBOX.Drafts, and
 # localised variants all exist. Prefer the server's own \Drafts special-use flag,
 # which is the only answer that is not a guess.
-typ, boxes = M.list()
-drafts = None
-names  = []
-for b in (boxes or []):
-    line = b.decode(errors="replace")
-    # crude but adequate: the folder name is the last quoted field
-    parts = line.split(' "')
-    name = parts[-1].strip('"') if len(parts) > 1 else line.split()[-1].strip('"')
-    names.append(name)
-    if "\\Drafts" in line:
-        drafts = name
+# --- PARSER: extracted and tested by test-verify-parser.py ---
+import re
 
-if drafts:
-    out("PASS", "server flags its drafts folder as: %s" % drafts)
-else:
+# An RFC 3501 LIST line is  (flags) SP delimiter SP name  -- and `name` is quoted
+# ONLY when it has to be. Gmail quotes it; Dovecot, which is what cPanel hosting
+# runs, sends a bare atom:
+#
+#     (\HasNoChildren \UnMarked \Drafts) "." INBOX.Drafts
+#                                        ^delimiter  ^name, no quotes
+#
+# Splitting on ' "' therefore lands on the DELIMITER and returns `." INBOX.Drafts`,
+# which the server then rejects as `BAD Invalid characters in atom` -- a failure that
+# reads exactly like "your provider will not let you APPEND". Measured against
+# mail.aiautobase.com on 2026-09-05. Match the structure instead of guessing.
+_LIST_RE = re.compile(r'^\((?P<flags>[^)]*)\)\s+(?:"(?:[^"\\]|\\.)*"|NIL)\s+(?P<name>.*)$')
+
+
+def _unquote(raw):
+    raw = raw.strip()
+    if len(raw) >= 2 and raw.startswith('"') and raw.endswith('"'):
+        return raw[1:-1].replace('\\"', '"').replace('\\\\', '\\')
+    return raw
+
+
+def drafts_from_list(boxes):
+    drafts = None
+    names  = []
+    for b in (boxes or []):
+        line = b.decode(errors="replace").strip()
+        m = _LIST_RE.match(line)
+        if m:
+            name  = _unquote(m.group("name"))
+            flags = m.group("flags").split()
+        else:
+            # Unparseable line: keep something usable rather than dropping the folder.
+            name  = _unquote(line.split()[-1]) if line.split() else ""
+            flags = []
+        if not name:
+            continue
+        names.append(name)
+        if "\\Drafts" in flags:
+            drafts = name
+    if drafts:
+        return drafts, names, "flag"
     for cand in ("Drafts", "INBOX.Drafts", "[Gmail]/Drafts"):
         if cand in names:
-            drafts = cand
-            out("WARN", "no \\Drafts flag; guessing by name: %s" % cand)
-            break
+            return cand, names, "guess"
+    return None, names, None
+# --- END PARSER ---
+
+typ, boxes = M.list()
+drafts, names, how = drafts_from_list(boxes)
+
+if how == "flag":
+    out("PASS", "server flags its drafts folder as: %s" % drafts)
+elif how == "guess":
+    out("WARN", "no \\Drafts flag; guessing by name: %s" % drafts)
 
 if not drafts:
     out("FAIL", "could not find a drafts folder. Yours is one of: %s" % ", ".join(names[:12]))

@@ -214,9 +214,9 @@
       </div>
     </div>
 
-    <a class="big" href="downloads/class-05-hands-pack-DRAFT.zip"><span class="go">↓</span>
-      <div class="t">class-05-hands-pack-DRAFT.zip</div>
-      <div class="d">The pack, if you would rather download it by hand · 25,491 bytes</div>
+    <a class="big" href="downloads/class-05-hands-pack.zip"><span class="go">↓</span>
+      <div class="t">class-05-hands-pack.zip</div>
+      <div class="d">The pack, if you would rather download it by hand · 25,144 bytes</div>
     </a>
     <p style="font-size:13.5px;color:var(--muted);margin-top:9px">Check you got the real file: <code>cd downloads &amp;&amp; sha256sum -c SHA256SUMS</code> — <a href="downloads/SHA256SUMS">SHA256SUMS</a></p>
     <a class="big" href="setup-gate.html"><span class="go">→</span>
@@ -229,9 +229,10 @@
     </a>
 
     <div class="warn">
-      <div class="warn-t">The word DRAFT in that filename is deliberate</div>
-      <p><strong>One thing in this pack is unproven.</strong> P2 writes a reply into your Drafts folder using an IMAP <code>APPEND</code>, and at the time the pack was built that had not been run against a real mail server by us. Not once.</p>
-      <p><strong>P1 — the whole clock half — is unaffected and complete.</strong> If <code>APPEND</code> turns out not to work on your provider, you still have a working morning digest, which was always the more useful of the two. <code>DRAFT.md</code> at the top of the zip says all of this, and <code>verify.sh</code> probes it properly.</p>
+      <div class="warn-t">The probe found a bug in itself before it found an answer</div>
+      <p><strong>This pack shipped as a DRAFT until 5 September 2026,</strong> because P2 writes a reply into your Drafts folder using an IMAP <code>APPEND</code> and nobody had run that against a real mail server. It has now been run. <code>APPEND</code> was accepted into <code>INBOX.Drafts</code> on a cPanel/Dovecot mailbox, the message was found in the folder, and it was deleted again.</p>
+      <p><strong>The first run failed, and the fault was ours.</strong> <code>verify.sh</code> read the folder name wrong on that kind of server — it assumed the name comes back quoted, which Gmail does and Dovecot does not — and sent a malformed <code>APPEND</code>. The server answered <code>BAD</code>, which reads exactly like a provider refusing you. It would have sent people to the Gmail API to work around a bug in our own script. It is fixed, and there is a test with the real server response in it so it stays fixed.</p>
+      <p><strong>Gmail has not been run against live.</strong> The Gmail path is covered by that test, not by a real <code>APPEND</code>. If you are on Gmail you are the first — run <code>verify.sh</code> before you build P2, and post what you get. <strong>P1, the whole clock half, does not touch any of this.</strong></p>
     </div>
   </section>
 
