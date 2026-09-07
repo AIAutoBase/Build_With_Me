@@ -1,0 +1,13 @@
+registration_id,workshop_id,workshop_title,session_date,registration_status,attended,ticket_price_usd,refund_usd,satisfaction_score,data_type
+R001,W01,Workshop Promise Lab,2026-08-11,confirmed,1,40.00,0.00,5,synthetic
+R002,W01,Workshop Promise Lab,2026-08-11,confirmed,1,40.00,0.00,4,synthetic
+R003,W01,Workshop Promise Lab,2026-08-11,confirmed,1,40.00,0.00,,synthetic
+R004,W01,Workshop Promise Lab,2026-08-11,confirmed,0,40.00,0.00,,synthetic
+R005,W02,Outline Builder,2026-08-18,confirmed,1,50.00,0.00,4,synthetic
+R006,W02,Outline Builder,2026-08-18,confirmed,1,50.00,0.00,3,synthetic
+R007,W02,Outline Builder,2026-08-18,confirmed,0,50.00,0.00,,synthetic
+R008,W02,Outline Builder,2026-08-18,cancelled,0,50.00,50.00,,synthetic
+R009,W03,Practice Session,2026-08-25,confirmed,1,30.00,0.00,5,synthetic
+R010,W03,Practice Session,2026-08-25,confirmed,1,30.00,0.00,4,synthetic
+R011,W03,Practice Session,2026-08-25,confirmed,1,30.00,0.00,5,synthetic
+R012,W03,Practice Session,2026-08-25,cancelled,0,30.00,30.00,,synthetic

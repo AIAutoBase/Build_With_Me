@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Northstar Workshops • Practice example</title>
+<style>
+:root{color-scheme:light;font-family:system-ui,sans-serif;color:#142235;background:#f5f2ea}*{box-sizing:border-box}body{margin:0}main{max-width:1000px;margin:auto;padding:clamp(24px,6vw,80px)}.label{letter-spacing:.14em;font-size:13px;text-transform:uppercase}h1{font-size:clamp(44px,8vw,90px);line-height:1.02;max-width:850px;letter-spacing:-.045em;margin:35px 0}p,li,label{font-size:19px;line-height:1.6}section{margin:60px 0;border-top:1px solid #a5b0b0;padding-top:25px}h2{font-size:30px}input,button{font:inherit;padding:14px;border:2px solid #142235;border-radius:0}input{max-width:100%;width:180px}button{background:#142235;color:white;cursor:pointer;margin:12px 0}label{display:block}output{display:block;min-height:4em;font-size:19px;line-height:1.5;margin-top:20px}:focus-visible{outline:3px solid #ca591c;outline-offset:4px}.note{font-size:15px}footer{padding:30px 0}
+</style></head><body><main>
+<p class="label">Northstar Workshops / Fictional practice example</p>
+<h1>Your first workshop starts with a clear idea</h1>
+<p>A weekly planning session for first-time workshop creators. We meet on Tuesday. The meeting time and time zone are unconfirmed.</p>
+<p><a href="#practice-signup">Try the practice signup</a></p>
+<section><h2>Learning objectives</h2><ul><li>Define your workshop audience.</li><li>Draft a simple workshop outline.</li><li>Choose your next step.</li></ul><h2>Proposed agenda</h2><ol><li>Introductions</li><li>Workshop idea review</li><li>Outline practice</li><li>Next steps</li></ol><p class="note">These are objectives and a proposed agenda for this fictional exercise.</p></section>
+<section><h2>Before the session</h2><ol><li>Introduce yourself to the community.</li><li>Draft a one-sentence workshop idea.</li></ol></section>
+<section id="practice-signup"><h2>Practice signup</h2><p>Use a synthetic address such as learner@example.com.</p><form id="signup" novalidate><label for="email">Practice email address</label><input id="email" type="email" required autocomplete="off" aria-describedby="email-help" style="width:360px"><br><button type="submit">Test the practice form</button><output id="signup-result" aria-live="polite"></output></form><p id="email-help" class="note">Local simulation only. This form never sends or stores your address.</p></section>
+<section><h2>A local capacity exercise</h2><p>This example has 20 seats and 8 confirmed seats, leaving 12 available.</p>
+<form id="capacity" novalidate><label for="seats">How many seats would you request?</label><input id="seats" type="number" min="1" step="1" inputmode="numeric" aria-describedby="simulation"><br><button type="submit">Check the example</button>
+<output id="result" aria-live="polite"></output></form>
+<p id="simulation" class="note">This is a local simulation. Each check starts with 12 available seats. No personal data leaves this page and no real reservation is created.</p></section>
+<footer class="note">Classroom material. Price, location, host details, and meeting link are unconfirmed.</footer>
+</main><script>
+function checkCapacity(raw){const seats=Number(raw);if(!raw.trim()||!Number.isInteger(seats)||seats<1)return 'Enter a whole number of at least 1.';if(seats>12)return 'This request exceeds the 12 available example seats.';return `In this simulation, a request for ${seats} would leave ${12-seats} seats. No reservation has been made.`;}
+document.querySelector('#capacity').addEventListener('submit',event=>{event.preventDefault();document.querySelector('#result').textContent=checkCapacity(document.querySelector('#seats').value);});
+document.querySelector('#signup').addEventListener('submit',event=>{event.preventDefault();const email=document.querySelector('#email');const valid=email.value.trim().length>0&&email.checkValidity();document.querySelector('#signup-result').textContent=valid?'Practice confirmation only. Nothing was sent or registered.':'Enter a valid practice email address.';email.setAttribute('aria-invalid',String(!valid));if(!valid)email.focus();});
+</script></body></html>

@@ -19,6 +19,7 @@ Served with GitHub Pages at **https://aiautobase.github.io/Build_With_Me/**
 | 7 · A Clock It Can Read | Your real calendar, both directions | [class-07/](https://aiautobase.github.io/Build_With_Me/class-07/) | [pack](class-07/pack/) |
 | 8 · Make It a Project | History, versions, and a README | [class-08/](https://aiautobase.github.io/Build_With_Me/class-08/) | [pack](class-08/pack/) |
 | — · Content Mate | The public voice — optional, classroom section | [content-mate/](https://aiautobase.github.io/Build_With_Me/content-mate/) | [pack](content-mate/pack/) |
+| — · Codex Masterclass | Materials for the ten Codex / GPT-6 Astra video lessons | [codex-masterclass/](https://aiautobase.github.io/Build_With_Me/codex-masterclass/) | [practice files](codex-masterclass/practice-files/) |
 
 Every class folder has the same shape:
 
