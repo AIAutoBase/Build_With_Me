@@ -1,0 +1,24 @@
+{
+  "hostApi": "1.0.0",
+  "commands": {
+    "ls":     { "mode": "READ", "allowFlags": ["-l", "-a", "-h", "-la", "-lh", "-lah", "-1"] },
+    "pwd":    { "mode": "READ", "allowFlags": [] },
+    "cat":    { "mode": "READ", "allowFlags": ["-n"] },
+    "head":   { "mode": "READ", "allowFlags": ["-n"] },
+    "tail":   { "mode": "READ", "allowFlags": ["-n"] },
+    "wc":     { "mode": "READ", "allowFlags": ["-l", "-c", "-w"] },
+    "grep":   { "mode": "READ", "allowFlags": ["-r", "-n", "-i", "-l", "-c", "-rn", "-ri"] },
+    "find":   { "mode": "READ", "allowFlags": ["-name", "-type", "-maxdepth"] },
+    "file":   { "mode": "READ", "allowFlags": [] },
+    "du":     { "mode": "READ", "allowFlags": ["-h", "-s", "-sh"] },
+    "df":     { "mode": "READ", "allowFlags": ["-h"] },
+    "date":   { "mode": "READ", "allowFlags": [] },
+    "git":    { "mode": "READ", "subcommands": ["status", "log", "diff", "show", "ls-files", "branch", "remote"], "allowFlags": ["--oneline", "--short", "-n", "--stat", "--name-only", "-v", "--porcelain"] },
+    "docker": { "mode": "READ", "subcommands": ["ps", "logs", "images", "stats"], "allowFlags": ["-a", "--tail", "-n", "--no-stream"] },
+    "node":   { "mode": "READ", "subcommands": ["--version"], "allowFlags": [] },
+    "mkdir":  { "mode": "WRITE", "allowFlags": ["-p"] },
+    "touch":  { "mode": "WRITE", "allowFlags": [] },
+    "cp":     { "mode": "WRITE", "allowFlags": ["-r", "-p", "-rp"] },
+    "mv":     { "mode": "WRITE", "allowFlags": [] }
+  }
+}

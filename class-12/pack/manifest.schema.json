@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aiautobase.github.io/Build_With_Me/class-12/manifest.schema.json",
+  "title": "Class 12 module manifest",
+  "description": "Schema for a module.json. This file is documentation of intent only -- the host does not load a JSON-schema library at runtime. The real enforcement lives in validate.mjs, hand-rolled, so the host has one fewer dependency between a bad manifest and a refusal. Keep the two in agreement by hand; check-registry.mjs is what proves they agree.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "version",
+    "hostApi",
+    "tables",
+    "routes",
+    "zones",
+    "dependsOn",
+    "permissions"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Lowercase, digits and hyphens only. This id is also the table prefix (m_<id>_) and the route prefix (/api/m/<id>/), so a bad id is not a style problem -- it is a boundary problem."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What shows on the tab. Free text, but not empty -- an empty tab label is a bug the host should not have to guess at."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "The module's own semver. Bumped by the module author, not the host."
+    },
+    "hostApi": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "The semver of the host API this module was BUILT against. Compared to the host's own version at load time -- a major mismatch refuses to load, because a module written for a different major API version is reading a contract that no longer holds."
+    },
+    "tables": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Table names this module creates. Every one must start with m_<id>_. A module that names a table outside its own prefix has stepped outside the one boundary Postgres can enforce for it."
+    },
+    "routes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "API paths this module mounts. Every one must start with /api/m/<id>/. A route outside that prefix can shadow or hijack another module's endpoint or a host endpoint, and the collision is invisible until two modules are installed together."
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["personal", "business", "clients", "general"]
+      },
+      "description": "Which document zones (Class 10) this module's bound search may read. May be empty. This is the only list that controls what searchFiles the host injects -- a module cannot ask for a zone at runtime that is not declared here."
+    },
+    "dependsOn": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Module ids this module's migrations must run after. May be empty. Used to topologically sort load and migration order -- never to import another module's code directly."
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["db.read", "db.write", "files.read", "search.read", "ui.tab"]
+      },
+      "description": "Capabilities this module asks the host for, from a FIXED enum the host defines. A permission string outside this enum is invalid, not ignored -- an unknown permission is what a module built for a newer host looks like, and ignoring it means running that module with fewer restrictions than its author intended."
+    }
+  }
+}

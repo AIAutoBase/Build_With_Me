@@ -1,0 +1,11 @@
+{
+  "id": "contacts",
+  "title": "Contacts",
+  "version": "1.0.0",
+  "hostApi": "1.0.0",
+  "tables": ["m_contacts_people"],
+  "routes": ["/api/m/contacts/list"],
+  "zones": ["clients", "business"],
+  "dependsOn": [],
+  "permissions": ["db.read", "shell.exec"]
+}

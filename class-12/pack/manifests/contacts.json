@@ -1,0 +1,17 @@
+{
+  "id": "contacts",
+  "title": "Contacts",
+  "version": "1.0.0",
+  "hostApi": "1.0.0",
+  "tables": ["m_contacts_people", "m_contacts_notes"],
+  "routes": [
+    "/api/m/contacts/list",
+    "/api/m/contacts/get",
+    "/api/m/contacts/create",
+    "/api/m/contacts/update",
+    "/api/m/contacts/note"
+  ],
+  "zones": ["clients", "business"],
+  "dependsOn": [],
+  "permissions": ["db.read", "db.write", "search.read", "ui.tab"]
+}

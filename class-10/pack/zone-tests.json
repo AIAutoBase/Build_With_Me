@@ -1,0 +1,25 @@
+{
+  "_comment": "Fixtures for check-zones.mjs. validFiles proves resolveZone works regardless of what the file is named -- the names below are realistic and deliberately awkward (accents, an em dash, a hash, non-Latin script) because the point of this test is that a weird filename never touches zone resolution. invalidZones proves there is no way to spell 'all zones'. An entry with no 'value' key represents the JavaScript value undefined, which JSON cannot encode directly -- accessing a missing property yields undefined on its own.",
+
+  "validFiles": [
+    { "name": "Contrato Adquisicion 2026.pdf", "zone": "clients" },
+    { "name": "Contrato Adquisición 2026.pdf", "zone": "clients" },
+    { "name": "Resume - A. Nunez.docx", "zone": "personal" },
+    { "name": "Résumé — A. Nuñez.docx", "zone": "personal" },
+    { "name": "factura #17 (final).pdf", "zone": "business" },
+    { "name": "invoice-0091.pdf", "zone": "business" },
+    { "name": "файл.txt", "zone": "general" },
+    { "name": "team-onboarding.md", "zone": "general" }
+  ],
+
+  "invalidZones": [
+    { "label": "the string \"all\"", "value": "all" },
+    { "label": "empty string", "value": "" },
+    { "label": "null", "value": null },
+    { "label": "uppercase \"ALL\"", "value": "ALL" },
+    { "label": "capitalized \"Personal\"", "value": "Personal" },
+    { "label": "comma-joined zones", "value": "personal,business" },
+    { "label": "undefined (no value key, on purpose)" },
+    { "label": "empty array", "value": [] }
+  ]
+}

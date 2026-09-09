@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Class 10 — The Mouth | Show Notes</title>
+<meta name="description" content="Drop a file in and the brain can read it forever. Four zones, content-addressed storage, and an OCR result that never pretends to be parsed text." />
+<style>
+  :root{
+    --charcoal:#0F172A; --panel:#16223b; --panel-2:#1b2946; --border:#2a3a5c;
+    --blue:#2B6CB0; --blue-2:#3B82F6; --gold:#D4A843; --green:#16A34A; --red:#DC2626;
+    --accent:#7dd3fc;
+    --text:#F8FAFC; --body:#c3cfe0; --muted:#94A3B8;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--charcoal);color:var(--text);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+
+  .hero{background:linear-gradient(140deg,#0b1120 0%,var(--panel-2) 100%);border-bottom:3px solid var(--accent);padding:52px 24px 40px;text-align:center}
+  .series{font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+  .hero h1{font-size:clamp(27px,5.2vw,44px);font-weight:800;line-height:1.15;max-width:760px;margin:0 auto 14px;letter-spacing:-.02em}
+  .hero h1 span{color:var(--accent)}
+  .hero-sub{font-size:16px;color:var(--muted);max-width:620px;margin:0 auto 26px}
+  .meta-row{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;max-width:820px;margin:0 auto}
+  .meta-item{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:999px;padding:7px 15px;font-size:13px;color:var(--muted);white-space:nowrap}
+  .meta-item strong{color:var(--text);font-weight:600}
+  .free{display:inline-block;margin-top:18px;background:rgba(22,163,74,.16);border:1px solid var(--green);border-radius:999px;padding:7px 18px;font-family:var(--mono);font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:#8ce8ae;font-weight:700}
+
+  .content{max-width:820px;margin:0 auto;padding:44px 24px 72px}
+  .section{margin-bottom:46px;scroll-margin-top:20px}
+  h2{font-size:21px;font-weight:800;margin-bottom:8px;padding-bottom:10px;border-bottom:1px solid var(--border);letter-spacing:-.01em}
+  h3{font-size:15px;font-weight:700;margin:22px 0 8px;color:var(--text)}
+  p{color:var(--body);font-size:15.5px;margin-bottom:13px}
+  p strong,li strong,td strong{color:var(--text);font-weight:600}
+  a{color:var(--blue-2)}
+  .lead{font-size:17px;color:var(--text)}
+  ul,ol{color:var(--body);font-size:15.5px;margin:0 0 13px 22px}
+  li{margin-bottom:6px}
+
+  .toc{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:40px}
+  .toc-t{font-family:var(--mono);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .toc ul{list-style:none;margin:0;display:flex;flex-wrap:wrap;gap:7px}
+  .toc li{margin:0}
+  .toc a{display:inline-block;background:var(--panel-2);border:1px solid var(--border);border-radius:999px;padding:5px 13px;font-size:13px;text-decoration:none;color:var(--body)}
+  .toc a:hover{border-color:var(--blue-2);color:var(--text)}
+
+  .organs{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:20px 0}
+  .organ{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 8px;text-align:center}
+  .organ.today{border-color:var(--accent);background:linear-gradient(180deg,rgba(125,211,252,.18),transparent)}
+  .organ-ico{font-size:20px;margin-bottom:5px}
+  .organ-name{font-weight:700;font-size:12px;margin-bottom:3px}
+  .tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.8px;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:rgba(148,163,184,.15);color:var(--muted)}
+  .tag.now{background:var(--accent);color:#06283a;font-weight:700}
+  .tag.done{background:rgba(22,163,74,.22);color:#7ee2a8}
+
+  .tw{overflow-x:auto;margin:16px 0;border:1px solid var(--border);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:480px}
+  th{background:var(--panel-2);text-align:left;padding:11px 14px;font-weight:700;font-size:12.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+  td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--body);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:16px}
+  .step.core{border-color:var(--accent);background:linear-gradient(160deg,rgba(125,211,252,.10),var(--panel))}
+  .step-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .step-num{flex:none;min-width:30px;height:30px;padding:0 8px;border-radius:8px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;font-family:var(--mono)}
+  .step-num.accent{background:var(--accent);color:#06283a}
+  .step-title{font-size:18px;font-weight:700;letter-spacing:-.01em}
+  .step-time{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+  .code{position:relative;background:#0a1020;border:1px solid var(--border);border-radius:8px;margin:10px 0 14px}
+  .code-label{font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:8px 14px 0}
+  pre{font-family:var(--mono);font-size:13.5px;line-height:1.65;color:#dbe6f5;padding:10px 14px 14px;overflow-x:auto;white-space:pre}
+  pre.wrap{white-space:pre-wrap;word-break:break-all}
+  .cp{position:absolute;top:6px;right:6px;background:var(--panel-2);color:var(--muted);border:1px solid var(--border);border-radius:5px;font-family:var(--mono);font-size:10.5px;padding:4px 9px;cursor:pointer}
+  .cp:hover{color:var(--text);border-color:var(--blue-2)}
+  .cp.ok{color:#7ee2a8;border-color:var(--green)}
+  code{font-family:var(--mono);font-size:.9em;background:rgba(148,163,184,.14);padding:1px 5px;border-radius:4px;color:#e4ecf8}
+
+  .install{background:linear-gradient(150deg,rgba(43,108,176,.2),rgba(15,23,42,.4));border:1px solid var(--blue);border-radius:14px;padding:24px 26px;margin:22px 0}
+  .install h3{margin-top:0;font-size:16px}
+  .osbar{display:flex;gap:8px;margin:14px 0 4px;flex-wrap:wrap}
+  .osbar button{background:var(--panel);border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:7px 17px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer}
+  .osbar button:hover{border-color:var(--blue-2);color:var(--text)}
+  .osbar button.on{background:var(--blue-2);border-color:var(--blue-2);color:#fff}
+  .osonly{display:none} .osonly.show{display:block}
+
+  .note{border-left:3px solid var(--blue-2);background:rgba(59,130,246,.08);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0}
+  .warn{border-left:3px solid var(--gold);background:rgba(212,168,67,.09);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0}
+  .danger{border-left:3px solid var(--red);background:rgba(220,38,38,.10);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0}
+  .does{border-left:3px solid var(--green);background:rgba(22,163,74,.08);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0}
+  .note p:last-child,.warn p:last-child,.danger p:last-child,.does p:last-child,
+  .note ul:last-child,.warn ul:last-child,.danger ul:last-child,.does ul:last-child{margin-bottom:0}
+  .note-t,.warn-t,.danger-t,.does-t{font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:var(--mono)}
+  .note-t{color:var(--blue-2)} .warn-t{color:var(--gold)}
+  .danger-t{color:#ff8080} .does-t{color:#6ee7a0}
+
+  .recap{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:0 12px 12px 0;padding:16px 20px;margin-bottom:10px}
+  .recap.c1{border-left-color:#7c6bd6} .recap.c2{border-left-color:#3b82f6}
+  .recap.c3{border-left-color:#16a34a} .recap.c4{border-left-color:#D4A843}
+  .recap.c5{border-left-color:#e07b53} .recap.c6{border-left-color:#8b7cd6}
+  .recap h3{margin-top:0;font-size:15.5px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .recap h3 .n{font-family:var(--mono);font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .recap p{font-size:14.5px;margin-bottom:6px}
+
+  .quote{background:linear-gradient(135deg,rgba(125,211,252,.16),transparent);border:1px solid var(--accent);border-left:4px solid var(--accent);border-radius:10px;padding:22px 24px;margin:18px 0}
+  .quote p{font-size:17px;font-weight:600;color:var(--text);margin:0;line-height:1.5}
+  .quote .after{font-size:14.5px;font-weight:400;color:var(--muted);margin-top:10px}
+
+  .flow{background:#0a1020;border:1px solid var(--border);border-radius:10px;padding:18px;margin:16px 0;overflow-x:auto}
+  .flow pre{padding:0;font-size:12.5px;color:#a9dcf5}
+  .flow .you{color:#8ce8ae;font-weight:700}
+
+  .check{list-style:none;margin:14px 0 0}
+  .check li{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);margin:0;color:var(--body)}
+  .check li:last-child{border-bottom:0}
+  .check input{margin-top:5px;width:16px;height:16px;accent-color:var(--green);flex:none;cursor:pointer}
+  .check label{cursor:pointer}
+
+  .ms{background:linear-gradient(135deg,rgba(22,163,74,.14),transparent);border:1px solid var(--green);border-radius:10px;padding:14px 18px;margin:14px 0}
+  .ms-t{font-family:var(--mono);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#8ce8ae;font-weight:700;margin-bottom:5px}
+  .ms p:last-child{margin-bottom:0}
+
+  a.big{display:block;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:11px;text-decoration:none;color:var(--text)}
+  a.big:hover{border-color:var(--blue-2)}
+  a.big .t{font-size:15.5px;font-weight:700}
+  a.big .d{color:var(--muted);font-size:13.5px;margin-top:3px}
+  a.big .go{float:right;color:var(--blue-2);font-weight:700;font-size:20px;line-height:1}
+
+  .foot{border-top:1px solid var(--border);margin-top:50px;padding-top:24px;text-align:center;color:var(--muted);font-size:13.5px}
+  .sig{font-size:17px;color:var(--text);font-weight:700;margin-bottom:6px}
+
+  @media (max-width:820px){ .organs{grid-template-columns:repeat(4,1fr)} }
+  @media (max-width:520px){
+    .organs{grid-template-columns:repeat(2,1fr)}
+    .step{padding:18px 16px} .step-time{display:none}
+  }
+  @media print{
+    body{background:#fff;color:#000}
+    .hero{background:#fff;border-bottom:2px solid #000;padding:20px 0}
+    .toc,.osbar,.cp{display:none}
+    .osonly{display:block !important}
+    .step,.recap,.code,.install,.quote{break-inside:avoid}
+    p,li,td{color:#111}
+  }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="series">The Brain That Runs a Company</div>
+  <h1>Drop a file in. The brain can read it <span>forever</span></h1>
+  <p class="hero-sub">Ten weeks in, it still cannot read a PDF you hand it. Class 10 fixes that, and decides who is allowed to see what.</p>
+  <div class="meta-row">
+<div class="meta-item">Class <strong>10 of the series</strong></div>
+<div class="meta-item">Runs <strong>Wednesday 14 October 2026, 11:00 AM ET</strong></div>
+<div class="meta-item">Length <strong>60 minutes</strong></div>
+<div class="meta-item">Needs <strong>Class 3 — the pgvector memory</strong></div>
+<div class="meta-item">Cost <strong>Nothing</strong></div>
+  </div>
+<div class="free">Free &middot; nothing to sign up for at all</div>
+</div>
+
+<div class="content">
+
+<nav class="toc">
+<div class="toc-t">Follow along</div>
+<ul>
+<li><a href="#read-this-before-class">Read this before class</a></li>
+<li><a href="#the-one-command">The one command</a></li>
+<li><a href="#four-zones-and-they-are-a-column">Four zones, and they are a column</a></li>
+<li><a href="#the-original-is-the-record-the-markdown-is-a-derivative">The original is the record. The markdown is a derivative</a></li>
+<li><a href="#the-object-key-is-the-hash-of-the-content">The object key is the hash of the content</a></li>
+<li><a href="#run-of-the-hour">Run of the hour</a></li>
+<li><a href="#conversion-is-a-queue-not-a-request">Conversion is a queue, not a request</a></li>
+<li><a href="#ocr-ships-and-it-ships-flagged">OCR ships, and it ships flagged</a></li>
+<li><a href="#the-five-traps">The five traps</a></li>
+<li><a href="#what-you-can-verify-before-class">What you can verify before class</a></li>
+<li><a href="#still-undecided-and-you-get-a-say">Still undecided, and you get a say</a></li>
+<li><a href="#what-this-class-does-not-do">What this class does not do</a></li>
+<li><a href="#next">Next</a></li>
+</ul>
+</nav>
+
+<div class="organs">
+<div class="organ"><div class="organ-ico">ear</div><div class="organ-name">Ears+Voice</div><span class="tag done">1</span></div>
+<div class="organ"><div class="organ-ico">hand</div><div class="organ-name">Hands+Clock</div><span class="tag done">2</span></div>
+<div class="organ"><div class="organ-ico">graph</div><div class="organ-name">Self-knowledge</div><span class="tag done">3</span></div>
+<div class="organ"><div class="organ-ico">clock</div><div class="organ-name">A Clock It Reads</div><span class="tag done">4</span></div>
+<div class="organ"><div class="organ-ico">git</div><div class="organ-name">History</div><span class="tag done">5</span></div>
+<div class="organ"><div class="organ-ico">terminal</div><div class="organ-name">The Cockpit</div><span class="tag done">6</span></div>
+<div class="organ today"><div class="organ-ico">files</div><div class="organ-name">The Mouth</div><span class="tag now">7</span></div>
+</div>
+
+<section class="section" id="read-this-before-class">
+<h2>Read this before class</h2>
+<p><strong>Nothing in this class has been run against a live box yet.</strong> No file has been ingested, no conversion timed, no MinIO container started. The conversion time you will see quoted for a forty-page PDF is an estimate, and it is labelled as one everywhere it appears.</p>
+<p>What *is* proven, on a real machine, is the zone system: every test filename resolves to exactly one zone, every attempt to say "all zones" throws, and a query scoped to two zones carries that filter in SQL rather than in JavaScript after the fetch. The installer runs that check on your machine before class.</p>
+</section>
+<section class="section" id="the-one-command">
+<h2>The one command</h2>
+<div class="code"><button class="cp">copy</button><pre>curl -fsSL -o install.txt https://aiautobase.github.io/Build_With_Me/class-10/install.txt &amp;&amp; claude "Read install.txt in this folder and follow it exactly, from the top."</pre></div>
+<p>Windows, in PowerShell:</p>
+<div class="code"><button class="cp">copy</button><pre>Invoke-WebRequest -Uri https://aiautobase.github.io/Build_With_Me/class-10/install.txt -OutFile install.txt; claude "Read install.txt in this folder and follow it exactly, from the top."</pre></div>
+<p>It starts no container, sets no password, and runs no migration. It reports what it found and stops.</p>
+</section>
+<section class="section" id="four-zones-and-they-are-a-column">
+<h2>Four zones, and they are a column</h2>
+<p>Personal, business, clients, general.</p>
+<p>They are <strong>one `zone` column with a check constraint</strong>, on one table, in one bucket. Not four folders.</p>
+<p>Folders were the obvious design and they are wrong. A file in a folder can be copied into a second folder, and then two rules apply to the same bytes and nothing says which wins. The question this whole system exists to answer — *may this prompt read this file?* — has to have exactly one answer per file, and a column is how you get exactly one.</p>
+<p>The cost is honest: moving a file between zones is an <code>UPDATE</code>, which is invisible unless you log it. So it is logged, in its own table.</p>
+</section>
+<section class="section" id="the-original-is-the-record-the-markdown-is-a-derivative">
+<h2>The original is the record. The markdown is a derivative</h2>
+<p>The uploaded bytes go into object storage unmodified. The extracted markdown goes into Postgres.</p>
+<p>If the extraction was bad, or the extractor improves, <strong>the markdown is thrown away and regenerated.</strong> The original never is, because it cannot be.</p>
+<p>You have met this idea before. It is the same argument this series makes about the difference between a build output and the record of what somebody actually downloaded — and it cost somebody something to learn.</p>
+</section>
+<section class="section" id="the-object-key-is-the-hash-of-the-content">
+<h2>The object key is the hash of the content</h2>
+<p>Content addressing, not filenames.</p>
+<p>Upload the same invoice twice and there is one object. Upload it under two names, into two zones, and there is still one object with two rows. Filenames are metadata — they are not identity, they are frequently <code>scan001.pdf</code>, and they arrive with accented characters that three layers of this stack each mangle differently.</p>
+<p>The trade: you cannot look in the bucket and see what anything is. Accepted. The bucket is not a filing cabinet for humans; the dashboard is.</p>
+</section>
+<section class="section" id="run-of-the-hour">
+<h2>Run of the hour</h2>
+<div class="step">
+<div class="step-head">
+<div class="step-num">1</div>
+<div class="step-title">Cold open</div>
+<div class="step-time">0-4</div>
+</div>
+<p>Drag a real PDF onto the dashboard. Ask the brain a question only that document answers.</p>
+</div>
+<div class="step">
+<div class="step-head">
+<div class="step-num">2</div>
+<div class="step-title">Why zones are a column, not folders</div>
+<div class="step-time">4-10</div>
+</div>
+<p>The design decision that makes Class 11 safe. Worth six minutes now to save an incident later.</p>
+</div>
+<div class="step core">
+<div class="step-head">
+<div class="step-num accent">3</div>
+<div class="step-title">P1 — MinIO</div>
+<div class="step-time">10-20</div>
+</div>
+<p>Container, named volume, real credentials, private bucket, and a script that makes an unauthenticated request to prove the bucket is actually private.</p>
+<p>Has to prove: files survive <code>docker compose restart</code>.</p>
+</div>
+<div class="step core">
+<div class="step-head">
+<div class="step-num accent">4</div>
+<div class="step-title">P2 — the table and the upload</div>
+<div class="step-time">20-30</div>
+</div>
+<p>Streaming upload, a size cap enforced during the stream, the sha256 as the object key, dedupe.</p>
+<p>Has to prove: the same file twice is one object and two rows.</p>
+</div>
+<div class="step core">
+<div class="step-head">
+<div class="step-num accent">5</div>
+<div class="step-title">P3 — the queue</div>
+<div class="step-time">30-40</div>
+</div>
+<p>n8n claims one pending row atomically, converts it to markdown, writes it back, embeds it into the Class 3 memory.</p>
+<p>Has to prove: a PDF becomes searchable text without blocking anything.</p>
+</div>
+<div class="step">
+<div class="step-head">
+<div class="step-num">6</div>
+<div class="step-title">The OCR segment</div>
+<div class="step-time">40-46</div>
+</div>
+<p>Run a bad scan on purpose and read out loud what it produced.</p>
+<p><strong>This is the beat the hour is built around.</strong></p>
+</div>
+<div class="step">
+<div class="step-head">
+<div class="step-num">7</div>
+<div class="step-title">Zone-scoped search</div>
+<div class="step-time">46-52</div>
+</div>
+<p>A query that cannot see <code>personal</code>, and a search function with no way to say "everything".</p>
+<p>Sets up Class 11 entirely.</p>
+</div>
+<div class="step">
+<div class="step-head">
+<div class="step-num">8</div>
+<div class="step-title">The five traps</div>
+<div class="step-time">52-58</div>
+</div>
+</div>
+<div class="step">
+<div class="step-head">
+<div class="step-num">9</div>
+<div class="step-title">Delete a file</div>
+<div class="step-time">58-60</div>
+</div>
+<p>And see that the object is still there. An honest close.</p>
+</div>
+</section>
+<section class="section" id="conversion-is-a-queue-not-a-request">
+<h2>Conversion is a queue, not a request</h2>
+<p>The upload endpoint's job ends when the bytes are durable. It returns immediately, marked <code>pending</code>. n8n picks the row up and converts it.</p>
+<p>A forty-page PDF must not hold an HTTP connection, and a conversion that fails must not look like a failed upload. Those are different problems with different fixes, and collapsing them means every OCR timeout gets debugged as a network issue.</p>
+<p>Statuses: <code>pending</code>, <code>converting</code>, <code>converted</code>, <code>failed</code>, <code>unsupported</code>.</p>
+<p><strong>`unsupported` is a real outcome, not an embarrassment.</strong> Audio and video get a row, an object, and no markdown. Hiding them would teach you the system holds everything, which is false. A file the brain has but cannot read is a fact the dashboard should state.</p>
+</section>
+<section class="section" id="ocr-ships-and-it-ships-flagged">
+<h2>OCR ships, and it ships flagged</h2>
+<p>Every OCR result is stored with its confidence and displayed with a visible marker — on the file row, in search results, and in the context handed to the model.</p>
+<p><strong>OCR is the one component here that fails by producing a confident, plausible, wrong artifact.</strong> A scanned invoice yields fluent text with the wrong numbers. It gets embedded, it gets retrieved, and the brain cites it. Nothing anywhere reports a failure.</p>
+<p>An unmarked OCR result sitting next to a parsed-PDF result in the same search output is a lie by formatting.</p>
+</section>
+<section class="section" id="the-five-traps">
+<h2>The five traps</h2>
+<div class="tw"><table>
+<tr><th></th><th>Trap</th><th>Why it costs time</th></tr>
+<tr><td>1</td><td>MinIO with no named volume</td><td><code>docker compose down -v</code> wipes it. Everything comes back healthy and empty, and Postgres still lists every file. You will debug this as a permissions problem for an hour</td></tr>
+<tr><td>2</td><td>MinIO default credentials</td><td>The quickstart's <code>minioadmin</code> works, so nobody changes it. With a published port that is a public file server holding client contracts</td></tr>
+<tr><td>3</td><td>Accented filenames</td><td>Survives the browser, mangled by the multipart parser, mangled differently by the converter's shell call. Content addressing hides the damage — the file is fine, only its name is ruined — which is why nobody notices for a month</td></tr>
+<tr><td>4</td><td>The body parser eats a 200 MB video</td><td>Express buffers the whole upload before your handler sees it. Two concurrent uploads OOM the container, and no error mentions upload size</td></tr>
+<tr><td>5</td><td>Confident OCR garbage</td><td>Fluent text, wrong numbers, no failure reported anywhere</td></tr>
+</table></div>
+</section>
+<section class="section" id="what-you-can-verify-before-class">
+<h2>What you can verify before class</h2>
+<div class="code"><button class="cp">copy</button><pre>node check-zones.mjs</pre></div>
+<p>Every test filename resolves to exactly one zone. Every invalid zone input throws — including <code>"all"</code>, <code>"ALL"</code>, <code>"Personal"</code>, an empty string, an empty array and <code>undefined</code>. A query scoped to <code>[general, business]</code> carries the filter in SQL and its parameters contain neither <code>personal</code> nor <code>clients</code>.</p>
+<p>It touches no database and uploads nothing.</p>
+</section>
+<section class="section" id="still-undecided-and-you-get-a-say">
+<h2>Still undecided, and you get a say</h2>
+<p><strong>Which converter.</strong> <code>markitdown</code> covers the Office formats in one Python dependency. <code>pandoc</code> plus <code>pdftotext</code> plus <code>tesseract</code> is three system binaries, each doing one thing, and more predictable when one of them fails.</p>
+<p>Build prompt 08 is written as the comparison rather than the implementation, so this choice is made once, in class, with the trade in front of you.</p>
+</section>
+<section class="section" id="what-this-class-does-not-do">
+<h2>What this class does not do</h2>
+<p><strong>Nothing here scans a file for malware.</strong> Files arrive from clients. That is a fact this class states rather than letting you assume otherwise.</p>
+<p>And deleting a file deletes the row, not the object. Your brain now has a retention policy, and you chose it by default rather than on purpose — the last two minutes of the hour are about that.</p>
+</section>
+<section class="section" id="next">
+<h2>Next</h2>
+<p>Class 11 gives all of this a phone number, and the zone system is the only thing standing between a caller and your personal documents.</p>
+</section>
+
+
+
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var buttons = Array.prototype.slice.call(document.querySelectorAll(".osbar button"));
+  var panels  = Array.prototype.slice.call(document.querySelectorAll(".osonly"));
+
+  function showOS(os){
+    buttons.forEach(function(b){ b.classList.toggle("on", b.dataset.os === os); });
+    panels.forEach(function(p){ p.classList.toggle("show", p.dataset.os === os); });
+    try { localStorage.setItem("bc-os", os); } catch(e){ /* private mode */ }
+  }
+
+  function detectOS(){
+    try { var s = localStorage.getItem("bc-os"); if (s) return s; } catch(e){ /* fall through */ }
+    var ua = navigator.userAgent || "";
+    if (/Windows/i.test(ua)) return "win";
+    if (/Mac OS X|Macintosh/i.test(ua)) return "mac";
+    if (/Linux|X11|CrOS/i.test(ua)) return "linux";
+    return "mac";
+  }
+
+  buttons.forEach(function(b){ b.addEventListener("click", function(){ showOS(b.dataset.os); }); });
+  showOS(detectOS());
+
+  /* Clipboard: on file:// Chromium reports isSecureContext true and exposes
+     navigator.clipboard, but writeText() REJECTS while execCommand works. So
+     rejection falls through rather than telling people to select by hand. */
+  function legacyCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function copyText(text, btn){
+    function done(ok){
+      btn.textContent = ok ? "copied" : "select it";
+      btn.classList.toggle("ok", ok);
+      setTimeout(function(){ btn.textContent = "copy"; btn.classList.remove("ok"); }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); },
+                                               function(){ done(legacyCopy(text)); });
+      return;
+    }
+    done(legacyCopy(text));
+  }
+
+  document.querySelectorAll(".cp").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var pre = btn.parentNode.querySelector("pre");
+      if (pre) copyText(pre.textContent, btn);
+    });
+  });
+
+  document.querySelectorAll(".check input[type=checkbox]").forEach(function(box){
+    var key = "bc-" + box.id;
+    try { if (localStorage.getItem(key) === "1") box.checked = true; } catch(e){ /* blocked */ }
+    box.addEventListener("change", function(){
+      try {
+        if (box.checked) localStorage.setItem(key, "1");
+        else localStorage.removeItem(key);
+      } catch(e){ /* tick still works this session */ }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

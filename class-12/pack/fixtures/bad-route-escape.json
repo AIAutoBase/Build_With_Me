@@ -1,0 +1,11 @@
+{
+  "id": "tasks",
+  "title": "Tasks",
+  "version": "1.0.0",
+  "hostApi": "1.0.0",
+  "tables": ["m_tasks_items"],
+  "routes": ["/api/m/other/list"],
+  "zones": ["business"],
+  "dependsOn": ["contacts"],
+  "permissions": ["db.read", "db.write"]
+}

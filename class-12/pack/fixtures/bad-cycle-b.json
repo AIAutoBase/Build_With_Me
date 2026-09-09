@@ -1,0 +1,11 @@
+{
+  "id": "cycle-b",
+  "title": "Cycle B",
+  "version": "1.0.0",
+  "hostApi": "1.0.0",
+  "tables": ["m_cycle-b_items"],
+  "routes": ["/api/m/cycle-b/list"],
+  "zones": [],
+  "dependsOn": ["cycle-a"],
+  "permissions": ["db.read"]
+}

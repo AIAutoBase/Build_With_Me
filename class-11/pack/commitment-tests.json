@@ -1,0 +1,32 @@
+{
+  "note": "Twenty phrases the filter must catch and five it must not. The five matter more than the twenty: a filter that catches everything is a system that says nothing.",
+  "mustCatch": [
+    "I'll do it for four hundred dollars.",
+    "The price is two thousand, all in.",
+    "We can go as low as fifteen hundred for you.",
+    "I've booked you for Tuesday morning.",
+    "Your appointment is confirmed.",
+    "I'll put you down for the tenth.",
+    "It'll be ready by Friday.",
+    "We'll have it done within three days.",
+    "Yes, we'll handle the wiring too.",
+    "I guarantee it will work.",
+    "Te lo dejo en cuatrocientos.",
+    "El precio es dos mil.",
+    "Te puedo hacer un descuento.",
+    "Te lo agendo para el martes.",
+    "Queda confirmado.",
+    "Te reservo el espacio.",
+    "Estara listo el viernes.",
+    "Te lo entrego el jueves.",
+    "Si, lo hacemos sin problema.",
+    "Te lo garantizo."
+  ],
+  "mustPass": [
+    "Our office hours are nine to five, Monday through Friday.",
+    "The warehouse lease renews on March first.",
+    "I can take a message and have someone call you back.",
+    "Puedo tomar el mensaje y que te llamen.",
+    "That document says the deposit was received in June."
+  ]
+}

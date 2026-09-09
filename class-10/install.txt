@@ -1,0 +1,176 @@
+You are helping me install "The Brain That Runs a Company - Class 10: The Mouth".
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess.
+
+Four things about this class before you start:
+
+  ONE. DO NOT START ANY CONTAINER. No docker compose up, no docker run, no docker start.
+  This class adds a file server to my machine and I am going to watch it come up in
+  class, not find it already running. If you think something needs starting, STOP and
+  tell me.
+
+  TWO. DO NOT GENERATE, INVENT OR WRITE ANY PASSWORD OR ACCESS KEY. Not into .env, not
+  into a compose file, not into a note. Choosing those is a segment of the class. If a
+  step seems to need a credential, leave the placeholder exactly as it is.
+
+  THREE. DO NOT READ, PRINT, COPY, EDIT OR SUMMARISE the .env file. Not to check it, not
+  to help. You may check whether a variable NAME exists in it using grep -c on the name
+  alone. You may never show me a value.
+
+  FOUR. DO NOT MODIFY docker-compose.yml. You may read it and you may write a SEPARATE
+  file for me to look at. My brain has been running for nine weeks and I am not letting
+  an installer edit the file that defines it.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N - <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+Never tell me a step passed unless you actually saw its output say so.
+
+## Step 1 - Work out where I am
+
+Report:
+  - my operating system
+  - docker --version and docker compose version
+  - node --version
+  - python3 --version
+
+Then find my brain folder - the one with the dashboard from Class 2 and a
+docker-compose file that defines Postgres and n8n. Print the path and ask me to confirm
+before you write anything into it.
+
+## Step 2 - The capacity report
+
+Two things ruin this class specifically. Check both and report them together.
+
+First, free disk space on the drive holding the brain folder. Report it in GB.
+
+  Mac/Linux: df -h .
+  Windows:   check the drive of the folder path
+
+If it is under 20 GB, say so plainly: this class stores every file I ever drop in, at
+full size, forever. That is the design. It needs room.
+
+Second, whether the brain folder sits inside a cloud-sync folder. Check the path for any
+of: OneDrive, Dropbox, Google Drive, iCloud Drive, pCloud, Nextcloud.
+
+If it does, STOP and tell me. A sync client and a database writing to the same folder
+corrupt each other in ways that produce no error message and no obvious symptom. Moving
+the folder is a fifteen-minute job now, or a lost week later.
+
+Print:
+
+  Free disk:    <N> GB
+  Cloud sync:   <none | NAME DETECTED - stop>
+
+## Step 3 - Read what I already have
+
+Do not change any of it. Report:
+
+  1. The Postgres service in my docker-compose.yml: image, version, whether it has a
+     named volume, and the volume's name.
+  2. Whether the pgvector extension is installed. Check with the query, do not guess:
+     select * from pg_extension where extname = 'vector';
+  3. My existing memory table from Class 3 - its name and columns.
+  4. Which ports are already published to the host. I need to know before we add 9000
+     and 9001 in class.
+
+If Postgres has no named volume, tell me now. That is a bigger problem than this class
+and it means nine weeks of memory is one command from gone.
+
+## Step 4 - Download the pack
+
+Make a folder:
+
+  Mac or Linux: ~/class-10
+  Windows:      %USERPROFILE%\class-10
+
+Download into it:
+
+  curl -fsSL -O https://aiautobase.github.io/Build_With_Me/class-10/downloads/class-10-ingress-pack.zip
+  curl -fsSL -O https://aiautobase.github.io/Build_With_Me/class-10/downloads/SHA256SUMS
+
+Verify before unpacking. The expected sha256 is:
+
+  73feeb59f37ee0bfbaf670a7a35a0de1a934f44bdec2e5ddc80ef9fd4ab69412
+
+  Mac:     shasum -a 256 class-10-ingress-pack.zip
+  Linux:   sha256sum class-10-ingress-pack.zip
+  Windows: certutil -hashfile class-10-ingress-pack.zip SHA256
+
+If it does not match, STOP and tell me the value you got. Do not unpack it.
+
+Then unpack into ~/class-10.
+
+## Step 5 - Show me the compose fragment, and read me the volume line
+
+The pack contains minio.compose.yml. Do NOT merge it into my docker-compose.yml.
+
+Print it in full. Then point at the volumes: section and explain, in two sentences, what
+happens to every file I ever upload if that section is not there.
+
+Then print the credential lines exactly as they ship:
+
+  MINIO_ROOT_USER:     <SET-THIS-IN-CLASS>
+  MINIO_ROOT_PASSWORD: <SET-THIS-IN-CLASS>
+
+Do not replace those placeholders. Do not suggest values. Tell me that the official MinIO
+quickstart uses minioadmin/minioadmin and that we are going to talk about that at minute
+10.
+
+## Step 6 - The converter check
+
+This class turns files into markdown. Find out which converters this machine already has.
+Report a table - present or missing, and the version if present:
+
+  pdftotext        (poppler-utils)
+  pandoc
+  tesseract        (OCR)
+  libreoffice      (Office formats, optional)
+  python3 -c "import markitdown"   (the one-dependency option)
+
+Do not install any of them. I want to see the gap before we decide what fills it - that
+decision is a segment of the class and there are two defensible answers.
+
+## Step 7 - The dry-run zone check
+
+The pack ships the zone rules and a test file listing files and the zone each must land
+in. Run only the offline checker:
+
+  node check-zones.mjs
+
+It touches no database and uploads nothing. It feeds the test list through the zone
+resolver and the query scoper, and prints a table.
+
+Two things must be true in that output, and it says both explicitly at the bottom:
+
+  - every test file resolves to exactly one zone
+  - a query scoped to [general, business] returns nothing from personal or clients
+
+If either line says FAIL, stop and show me. Do not continue.
+
+## Step 8 - Stop here
+
+Print this and stop:
+
+  Class 10 pack installed and verified. Nothing has been started.
+
+  Ready for class:
+    free disk           <N> GB
+    cloud sync          <none | DETECTED>
+    postgres volume     <named: NAME | NONE - problem>
+    pgvector            <installed | missing>
+    converters present  <list>
+    converters missing  <list>
+    zone dry-run        <pass | FAIL, listed above>
+
+  MinIO is not running and has no password yet. Both of those are on purpose and both
+  happen in class, at minute 10.
+
+Do not proceed past this. Do not start anything. Do not offer to.

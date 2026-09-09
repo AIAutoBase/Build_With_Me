@@ -1,0 +1,199 @@
+You are helping me install "The Brain That Runs a Company - Class 11: Clara Answers The
+Phone".
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess.
+
+Five things about this class before you start:
+
+  ONE. DO NOT BUY, PROVISION, RESERVE OR RELEASE A PHONE NUMBER. Not a trial number, not
+  a test number. No Twilio API call that creates, changes or deletes anything. Reading my
+  account balance and listing what I already have is fine. If a step seems to need a
+  number, STOP - I buy it in class, on camera, and I want to see the price when I do.
+
+  TWO. DO NOT START A TUNNEL. No cloudflared, no ngrok, no localtunnel, no port
+  forwarding. This class puts my machine on the public internet and that happens while I
+  am watching, at minute 9, together with the signature check that makes it safe.
+
+  THREE. DO NOT PLACE OR ANSWER A CALL, and do not send an SMS. Every one of those costs
+  money and at least one of them can wake somebody up.
+
+  FOUR. DO NOT READ, PRINT, COPY, EDIT OR SUMMARISE the .env file. You may check whether
+  a variable NAME exists using grep -c on the name alone. You may never show a value, not
+  even partially, not even masked.
+
+  FIVE. DO NOT MODIFY docker-compose.yml or any existing workflow in n8n. You may read
+  them and you may write new, separate files for me to look at.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N - <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+Never tell me a step passed unless you actually saw its output say so.
+
+## Step 1 - Work out where I am
+
+Report my operating system, node --version, docker --version, and whether ffmpeg is
+installed with its version. ffmpeg is not optional here - telephone audio is 8 kHz mu-law
+and everything else in this class expects 16 kHz PCM.
+
+Then find my brain folder - the one with the dashboard, Postgres, n8n, and the MinIO
+service added in Class 10. Print the path and ask me to confirm before writing anything.
+
+## Step 2 - The money step, and it comes first
+
+Before anything is downloaded, tell me plainly what this class costs to run, every month,
+whether or not anybody calls:
+
+  - a Twilio phone number: roughly 1 to 2 US dollars per month, per number, forever
+  - inbound voice: per minute
+  - outbound voice: per minute, higher
+  - SMS: per message, both directions
+  - speech to text: per minute of audio
+  - text to speech: per character
+
+Look up nothing. Print the shape of the bill, tell me the numbers vary by country and
+that I will see my real ones in class when I buy the number, and then ask me directly:
+
+  This class costs recurring money. Do you want to continue? (yes / no)
+
+If I say no, tell me the class is still worth watching, that everything except the phone
+number works from the dashboard, and stop cleanly. Do not download anything.
+
+## Step 3 - What I already have
+
+Report, without changing anything:
+
+  1. Which of these variable NAMES exist in my .env - name and "set" or "MISSING", never
+     a value:
+       TWILIO_ACCOUNT_SID
+       TWILIO_AUTH_TOKEN
+       ELEVENLABS_API_KEY
+       OPENAI_API_KEY        (or whichever provider my Class 4 workflow uses)
+  2. Whether Class 10's files table exists, and how many rows it has in each zone. I want
+     to know there is something for Clara to answer from.
+  3. Whether search/query.mjs from Class 10 exists, and - read the source, do not run it -
+     confirm that calling it with no zones throws. Quote the line that does it.
+  4. My n8n version, and whether it is reachable from the dashboard container.
+
+Item 3 is the one that matters. Everything protecting a caller from my personal documents
+is that one line. If it is not there, say so loudly.
+
+## Step 4 - The latency preflight
+
+Two of the five stages in this class's budget are network round-trips from THIS machine.
+Measure them now, from here, on this connection.
+
+Do this WITHOUT sending audio and WITHOUT spending money - a TCP connect and TLS
+handshake to each host, ten times, reporting median and worst:
+
+  api.twilio.com
+  api.elevenlabs.io
+  api.openai.com
+
+Print:
+
+  Twilio       median <N> ms   worst <N> ms
+  ElevenLabs   median <N> ms   worst <N> ms
+  STT provider median <N> ms   worst <N> ms
+
+Then tell me what these mean for a 1200 ms total budget, in two sentences. If any median
+is over 250 ms, say plainly that the budget in the class notes was written for a
+better-connected box than mine and that my calls will feel slower than the demo.
+
+Do not reassure me. I would rather know now.
+
+## Step 5 - Download the pack
+
+Make a folder:
+
+  Mac or Linux: ~/class-11
+  Windows:      %USERPROFILE%\class-11
+
+Download into it:
+
+  curl -fsSL -O https://aiautobase.github.io/Build_With_Me/class-11/downloads/class-11-phone-pack-DRAFT.zip
+  curl -fsSL -O https://aiautobase.github.io/Build_With_Me/class-11/downloads/SHA256SUMS
+
+Verify before unpacking. The expected sha256 is:
+
+  c699a933603b9e4270c7b890e7f8deb68ff18b88d3ed8f5077ca6da653b0e25f
+
+  Mac:     shasum -a 256 class-11-phone-pack-DRAFT.zip
+  Linux:   sha256sum class-11-phone-pack-DRAFT.zip
+  Windows: certutil -hashfile class-11-phone-pack-DRAFT.zip SHA256
+
+If it does not match, STOP. Do not unpack it. Tell me the value you got.
+
+Then unpack into ~/class-11.
+
+## Step 6 - Read me the greeting
+
+The pack ships NO audio. It ships two transcripts and a renderer:
+
+  greeting-standard.txt
+  greeting-recorded.txt
+  make-greeting.mjs
+
+Print both transcripts in full and tell me the one difference between them.
+
+Then tell me two things.
+
+FIRST: why the greeting is a rendered FILE and not a line in a system prompt. Your answer
+must mention what happens when a caller asks "am I talking to a real person?" and an
+agreeable model decides that reassurance is the helpful answer.
+
+SECOND: why the pack ships text instead of audio. There are two reasons and the second is
+the real one - one is about the voice being mine, the other is about what happens to a
+cloned voice that is published in a public zip.
+
+Then run ONLY the dry run, which sends nothing and costs nothing:
+
+  node make-greeting.mjs --dry-run --voice placeholder
+
+Report the word position it prints for the disclosure in each file, and whether it is
+inside the limit. Do NOT render the audio - that costs money and needs my key, and I do
+it myself before class with my own voice id.
+
+## Step 7 - The dry-run scope check
+
+The pack ships the call handler's zone constant and an offline checker. Run only:
+
+  node check-call-scope.mjs
+
+It makes no network call and places no call. It reads the call handler's source and
+asserts four things:
+
+  - the zone list for phone callers is a hardcoded constant, not read from env or config
+  - that list contains exactly general and business
+  - the handler never calls searchFiles without passing zones
+  - the commitment filter runs on the outbound path, after the model, not before
+
+Print its table. All four must pass. If any fails, stop and show me which - a failure
+here means a stranger on the phone can reach documents I did not mean to share.
+
+## Step 8 - Stop here
+
+Print this and stop:
+
+  Class 11 pack installed and verified. Nothing is running. No number has been bought.
+
+  Ready for class:
+    ffmpeg              <version | MISSING>
+    twilio credentials  <set | missing>
+    tts credentials     <set | missing>
+    stt credentials     <set | missing>
+    class 10 files      personal <N>  business <N>  clients <N>  general <N>
+    zones-required      <confirmed at query.mjs:NN | NOT FOUND - problem>
+    latency preflight   twilio <N> ms  tts <N> ms  stt <N> ms
+    scope dry-run       <4/4 pass | FAILURES, listed above>
+
+  We buy the number together, live, at minute 9. The tunnel goes up in the same segment
+  as the signature check, and not before.
+
+Do not proceed past this. Do not start anything. Do not offer to.

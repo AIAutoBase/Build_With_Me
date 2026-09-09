@@ -1,0 +1,194 @@
+You are helping me install "The Brain That Runs a Company - Class 12: The Socket".
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess.
+
+Five things about this class before you start:
+
+  ONE. DO NOT RUN ANY DATABASE MIGRATION. Not from the pack, not one you write. Reading
+  schema is fine. This class installs three modules that each create tables in the
+  database holding twelve weeks of my work, and I am going to read every one of those
+  migrations before it runs.
+
+  TWO. DO NOT CREATE, ALTER OR DROP A DATABASE ROLE, USER, GRANT OR PERMISSION. Not one.
+  We do that together at minute 20 and it is the segment that proves this class works.
+
+  THREE. DO NOT MODIFY ANY EXISTING FILE in my dashboard. Not the server, not the router,
+  not docker-compose.yml, not package.json. You may read all of them and you may create
+  new files in ~/class-12. Wiring the host into my dashboard is P1, in class.
+
+  FOUR. DO NOT READ, PRINT, COPY, EDIT OR SUMMARISE the .env file. You may check whether
+  a variable NAME exists using grep -c on the name alone. Never a value.
+
+  FIVE. DO NOT INSTALL ANY NPM PACKAGE. If a module needs one, list it and stop. A module
+  from a folder that pulls its own dependencies at install time is the supply chain
+  problem in miniature, and I want to see the list first.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N - <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+Never tell me a step passed unless you actually saw its output say so.
+
+## Step 1 - Work out where I am
+
+Report my operating system, node --version, and docker --version.
+
+Then find my brain folder and confirm which of the previous classes are actually present.
+Check for the thing, not for the folder name:
+
+  Class 2  dashboard       a Vite + React app with an Express server
+  Class 3  memory          a pgvector table with rows in it
+  Class 9  cockpit         cockpit_audit table, and cockpit/guard.mjs
+  Class 10 ingress         files table, and a MinIO service
+  Class 11 phone           calls table
+
+Print a table: present or absent, with the evidence you used for each.
+
+Classes 9 and 11 are optional for this hour. Class 10 is not - the zone system is what
+this class binds modules against. If the files table is missing, say plainly that the
+isolation segment at minute 30 will not have anything to isolate.
+
+## Step 2 - The conflict scan
+
+The pack ships three modules: contacts, tasks, invoices. Each wants table names, an API
+path and a tab. Find collisions before class.
+
+Check, and report anything already taken:
+
+  1. Any existing table starting with m_contacts_, m_tasks_ or m_invoices_
+  2. Any existing table plainly named contacts, tasks, invoices, clients or customers
+  3. Any route already mounted at or under /api/m/
+  4. Any existing dashboard tab named Contacts, Tasks or Invoices
+  5. Any file or folder named modules/ in my dashboard
+
+Print:
+
+  Table collisions:  <none | list>
+  Route collisions:  <none | list>
+  Tab collisions:    <none | list>
+  modules/ exists:   <no | yes - contents>
+
+If item 2 finds a plain "contacts" or "customers" table, do not treat that as a problem to
+solve. Tell me it exists and that we will decide in class whether the Contacts module
+adopts it or ignores it. Those are different decisions and I make them, not you.
+
+## Step 3 - Read my Postgres setup
+
+I need to know, before class, whether the isolation segment will work on my box.
+
+Report, using queries and not assumptions:
+
+  1. Which role my dashboard connects as, and whether that role is a superuser:
+       select current_user, usesuper from pg_user where usename = current_user;
+  2. Whether that role can create roles:
+       select rolcreaterole from pg_roles where rolname = current_user;
+  3. How many roles already exist, and their names.
+  4. Whether the database is the same one n8n uses, or a separate one.
+
+If item 1 says my dashboard connects as a superuser, tell me plainly: every module will
+be able to read every table regardless of what we grant, and the isolation we build at
+minute 20 will be decorative until that changes. Do not fix it. Tell me, so I arrive
+knowing.
+
+If item 4 says n8n shares the database, say so - it changes what "this module can only
+see its own tables" is actually worth.
+
+## Step 4 - Download the pack
+
+Make a folder:
+
+  Mac or Linux: ~/class-12
+  Windows:      %USERPROFILE%\class-12
+
+Download into it:
+
+  curl -fsSL -O https://aiautobase.github.io/Build_With_Me/class-12/downloads/class-12-modules-pack.zip
+  curl -fsSL -O https://aiautobase.github.io/Build_With_Me/class-12/downloads/SHA256SUMS
+
+Verify before unpacking. The expected sha256 is:
+
+  644e6628a2fc693403cce18b50cdc69706dd2441f60ba3a89ed6f5663cd68d1e
+
+  Mac:     shasum -a 256 class-12-modules-pack.zip
+  Linux:   sha256sum class-12-modules-pack.zip
+  Windows: certutil -hashfile class-12-modules-pack.zip SHA256
+
+If it does not match, STOP. Do not unpack it. Tell me the value you got.
+
+Then unpack into ~/class-12.
+
+## Step 5 - Read me the three manifests
+
+For each of the three modules, print its module.json and then, in plain English, four
+lines:
+
+  Tables it creates:      <list>
+  Routes it mounts:       <list>
+  Document zones it asks for:  <list>
+  Other modules it depends on: <list | none>
+
+Then answer one question for each, in one sentence: if this module were written by
+somebody I do not know, what is the worst thing this manifest is asking me for?
+
+That question is the point of having a manifest at all. A module you have to read the
+source of to evaluate has not been declared, it has been shipped.
+
+## Step 6 - Show me every migration, unrun
+
+Print every .sql file the three modules ship, in the order the host would run them, with
+the module name above each.
+
+For each, one line: what it creates, and whether it touches anything outside its own
+prefix. Anything touching a table without its module's prefix - say so loudly and name
+the line number.
+
+Do not run any of them. Do not offer to. At the end print:
+
+  <N> migrations, unrun. We read them in class and I run them myself.
+
+## Step 7 - The dry-run registry check
+
+The pack ships the host's manifest validator and a set of deliberately broken manifests.
+Run only the offline checker:
+
+  node check-registry.mjs
+
+It touches no database, mounts no route and loads no module. It feeds every manifest -
+the three real ones and the broken ones - through the validator and prints a table.
+
+Four things must be true, and it prints each explicitly at the bottom:
+
+  - all three shipped manifests validate
+  - a manifest declaring a table without its own prefix is REFUSED
+  - a manifest declaring a dependency cycle is REFUSED, naming both modules
+  - a manifest declaring a host API version we do not implement is REFUSED
+
+If any line says FAIL, stop and show me which. A validator that accepts a bad manifest is
+worse than no validator, because it produces a document that looks like a guarantee.
+
+## Step 8 - Stop here
+
+Print this and stop:
+
+  Class 12 pack installed and verified. Nothing has been run.
+
+  Ready for class:
+    class 10 zones      <present | ABSENT - segment at 30 has nothing to bind>
+    table collisions    <none | listed above>
+    route collisions    <none | listed above>
+    dashboard role      <not superuser | SUPERUSER - isolation will be decorative>
+    n8n shares db       <no | yes>
+    migrations found    <N>, unrun
+    npm packages needed <none | listed above>
+    registry dry-run    <4/4 pass | FAILURES, listed above>
+
+  Nothing has been migrated. No role has been created. Both happen in class, at minutes
+  11 and 20, and both are things I want to watch happen to my own database.
+
+Do not proceed past this. Do not run anything. Do not offer to.

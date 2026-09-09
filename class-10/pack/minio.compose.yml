@@ -1,0 +1,51 @@
+# minio.compose.yml -- standalone compose fragment for Class 10. This file is NOT
+# merged into your existing docker-compose.yml by anything in this pack. You read it,
+# you paste it in yourself, in class, at minute 10.
+#
+# If the volumes: section below is missing, every file you ever upload lives only in
+# the container's writable layer, and the first `docker compose down -v` -- or even a
+# container recreate -- deletes it permanently, with no warning and no error, while
+# Postgres keeps every row pointing at an object that no longer exists. `docker compose
+# down` alone stops and removes the containers but leaves named volumes on disk, so
+# your files survive it; `docker compose down -v` additionally deletes every named
+# volume the compose file declares, files included. The one you are likely to type
+# at 1am, half asleep, cleaning up a stuck container, is `down -v` -- it is the one
+# that "feels more thorough."
+
+services:
+  minio:
+    # Pinned exact tag. MinIO does not use semver on its release tags, and "latest"
+    # on this image has changed its default startup behaviour between releases before.
+    # A class of people running different tags on different days is a class where
+    # nobody's terminal matches nobody else's, for a reason nobody can see.
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: brain-minio
+    command: server /data --console-address ":9001"
+    environment:
+      # No defaults, anywhere in this file. An environment variable with no value and
+      # no fallback makes the container refuse to start rather than start quietly with
+      # minioadmin/minioadmin -- the exact credential the official quickstart ships,
+      # and the one Trap 2 in TROUBLESHOOT.md is built around. You set these in class.
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER is not set. Set it in .env before starting this service -- there is no default on purpose.}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is not set. Set it in .env before starting this service -- there is no default on purpose.}
+    ports:
+      # Bound to loopback only. A published MinIO port with a default or weak password
+      # is a public file server; on a home box or a cheap VPS that is a client contract
+      # sitting behind a password everyone already knows.
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      # NAMED volume, not a bind mount, not the container's own writable layer. This
+      # is the line the member reads out loud in class -- see the comment block above.
+      - brain_files_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  brain_files_data:
+    name: brain_files_data

@@ -1,0 +1,11 @@
+{
+  "id": "invoices",
+  "title": "Invoices",
+  "version": "1.0.0",
+  "hostApi": "1.0.0",
+  "tables": ["m_invoices_invoices", "m_contacts_people"],
+  "routes": ["/api/m/invoices/list"],
+  "zones": ["clients", "business"],
+  "dependsOn": ["contacts"],
+  "permissions": ["db.read", "db.write"]
+}

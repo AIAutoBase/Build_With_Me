@@ -1,0 +1,28 @@
+# allowed.txt -- commands the guard MUST allow.
+#
+# A guard that refuses everything passes refusals.txt perfectly and is a brick. This
+# file is the other half of the claim, and it is the shorter one on purpose: fifteen
+# commands is the whole point.
+#
+# Format: <command>   # mode, either READ or WRITE
+
+ls                                                  # READ
+ls -la                                              # READ
+pwd                                                 # READ
+cat README.md                                       # READ
+head -n 20 README.md                                # READ
+wc -l README.md                                     # READ
+grep -rn cockpit .                                  # READ
+find . -name "*.json"                               # READ
+du -sh .                                            # READ
+date                                                # READ
+git status                                          # READ
+git status --short                                  # READ
+git log --oneline                                   # READ
+git diff --stat                                     # READ
+git ls-files                                        # READ
+docker ps                                           # READ
+docker logs --tail 20 postgres                      # READ
+node --version                                      # READ
+mkdir newdir                                        # WRITE
+touch newfile                                       # WRITE

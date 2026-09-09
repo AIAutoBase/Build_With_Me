@@ -1,0 +1,184 @@
+You are helping me install "The Brain That Runs a Company - Class 9: The Cockpit".
+
+I am a beginner. Work carefully, explain every step before you take it, and stop rather
+than guess.
+
+Four things about this class before you start:
+
+  ONE. DO NOT START, RUN, LAUNCH OR RESTART ANYTHING. Not the dashboard, not Docker, not
+  n8n, not the cockpit. This installer puts files on disk and reports what it found. If
+  you think something needs to be started, STOP and tell me instead of starting it.
+
+  TWO. DO NOT RUN ANY GIT COMMAND THAT CHANGES ANYTHING. No git init, no git add, no git
+  commit, no git checkout, no git reset. Reading is fine - git status, git log,
+  git ls-files. If this folder is not already a git repository, STOP. Do not create one.
+
+  THREE. DO NOT READ, PRINT, COPY, EDIT OR SUMMARISE the .env file, at any point, for any
+  reason. Not to check it, not to help. If a step below seems to need it, that is a
+  mistake in the step - stop and tell me.
+
+  FOUR. This class installs a terminal that runs commands on this machine. That is the
+  point of it and it is also the danger of it. If at any moment you are unsure whether a
+  step is safe, the correct move is to stop and ask me. I would much rather answer a
+  question than undo a mistake.
+
+## How I want you to talk to me
+
+Before every step, print exactly this shape:
+
+  Step N - <short name>
+  What I'm doing: one sentence, plain English
+  Why: one sentence
+  You should see: what a good result looks like
+
+Never tell me a step passed unless you actually saw its output say so. If output does not
+match, say "this did not match, here is what I got" and stop.
+
+## Step 1 - Work out where I am
+
+This runs on the machine my brain runs on - the one with Docker, n8n, Postgres and the
+dashboard from Class 2.
+
+Report:
+
+  - my operating system
+  - node --version
+  - docker --version
+  - git --version
+
+If any of the four is missing, tell me the install command for my OS and stop until it is
+there. Node 20 or newer.
+
+## Step 2 - Find the brain folder
+
+Ask me for the full path to the folder holding my dashboard, or find it: it is the folder
+containing a package.json whose scripts mention vite, plus a docker-compose file.
+
+Print the path you found and ask me to confirm it before you write anything into it.
+
+Everything below happens inside that folder.
+
+## Step 3 - The git gate
+
+This is a hard stop, not a warning.
+
+Run:
+
+  git rev-parse --is-inside-work-tree
+
+If that fails, or prints anything other than true, STOP and print this to me:
+
+  This folder is not a git repository. Class 9 gives an agent a shell inside it, and git
+  is the only way back from what that agent breaks. Take Class 8 first, or run git init
+  yourself and choose your own first commit. I am not going to do it for you, because
+  choosing what goes into a commit is the whole point of Class 8 and an installer that
+  chooses for you commits your .env.
+
+Do not continue. Do not offer a workaround.
+
+If it is a repository, run these three and report what you see:
+
+  git status --short
+  git log --oneline -5
+  git check-ignore -q .env && echo "env-ignored" || echo "ENV NOT IGNORED"
+
+If the working tree is not clean, tell me which files are dirty and ask whether I want to
+deal with them before we continue. I might say continue. That is my call.
+
+If you see "ENV NOT IGNORED", stop and tell me. That is the Class 8 failure and it has to
+be fixed before an agent gets a shell here.
+
+## Step 4 - The safety scan
+
+Read - do not change - how my dashboard is bound. Look in the server file (usually
+server.js, server.ts, index.js or app.js) and in docker-compose.yml, and report exactly
+one of these three:
+
+  LOOPBACK   - it listens on 127.0.0.1 or localhost
+  ALL        - it listens on 0.0.0.0, or on no host at all, which means all of them
+  UNKNOWN    - you could not tell
+
+Also report:
+
+  - whether any port is published to the host in docker-compose.yml, and which
+  - whether an auth token, password or session check exists anywhere in the server file
+
+Then print this, filled in, and nothing more. Do not fix anything:
+
+  Binding:     <LOOPBACK | ALL | UNKNOWN>
+  Published:   <list of ports, or none>
+  Auth:        <found | none found>
+
+  What this means for Class 9: <one sentence>
+
+If the answer is ALL with no auth, say plainly that the cockpit must not be wired into
+this dashboard until that changes, and that we fix it live in class at minute 34.
+
+## Step 5 - Download the pack
+
+Make a folder for it:
+
+  Mac or Linux: ~/class-09
+  Windows:      %USERPROFILE%\class-09
+
+Download into it:
+
+  curl -fsSL -O https://aiautobase.github.io/Build_With_Me/class-09/downloads/class-09-cockpit-pack.zip
+  curl -fsSL -O https://aiautobase.github.io/Build_With_Me/class-09/downloads/SHA256SUMS
+
+Verify before unpacking. The expected sha256 is:
+
+  0593d805d32bd4c270bd411b7f2990dab2e6b26334221d804766186f46c4537f
+
+Check it:
+
+  Mac:     shasum -a 256 class-09-cockpit-pack.zip
+  Linux:   sha256sum class-09-cockpit-pack.zip
+  Windows: certutil -hashfile class-09-cockpit-pack.zip SHA256
+
+If the value does not match, STOP. Do not unpack it. Tell me the value you got. A zip
+that does not match its checksum is not a corrupted download to work around; it is a file
+of unknown origin about to be unpacked next to my credentials.
+
+Then unpack it into ~/class-09.
+
+## Step 6 - Show me what came out
+
+List the pack contents with one line each saying what the file is for. Do not open, run
+or install any of them.
+
+Then tell me which of them, if any, would run a command on this machine if executed, and
+say so in that sentence - I want to know before class, not during it.
+
+## Step 7 - The dry-run guard check
+
+The pack ships a guard - the piece that decides which commands the cockpit may run - and a
+test list of commands that must all be refused.
+
+Run ONLY the offline checker:
+
+  node check-guard.mjs
+
+It executes nothing. It feeds the test list to the guard and prints ALLOW or REFUSE for
+each. Report the table exactly as printed.
+
+Every line in that table must say REFUSE. If even one says ALLOW, stop and show me which,
+and do not wire the cockpit into anything.
+
+## Step 8 - Stop here
+
+Print this and stop:
+
+  Class 9 pack installed and verified. Nothing has been started.
+
+  Ready for class:
+    git repository        <yes>
+    .env ignored          <yes>
+    working tree          <clean | dirty, listed above>
+    dashboard binding     <LOOPBACK | ALL | UNKNOWN>
+    guard dry-run         <all refused | FAILURES, listed above>
+
+  We wire it in together, live, at minute 14. Bring the binding line above to class -
+  minute 34 is about exactly that.
+
+Do not proceed past this. Do not start the dashboard. Do not offer to.

