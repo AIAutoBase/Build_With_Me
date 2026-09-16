@@ -7,6 +7,16 @@ communities it forms on its own, the hub documents everything else hangs off, an
 honest audit trail of what was **extracted** from your documents versus what was
 **inferred**.
 
+> ### Updated — read [`UPDATE.md`](UPDATE.md) first
+>
+> This pack has been run start to finish on a clean **Debian 13** machine. A new release
+> of graphify broke three things in the previous version, including one that draws a
+> **blank page while the server still answers 200**. All three are fixed here.
+>
+> `UPDATE.md` also has the fastest way to install this: hand the zip to Claude Code and
+> let it read the pack, install it, and fix what breaks. Translations are in
+> [`i18n/`](i18n/) — Spanish, Portuguese, Urdu, Hindi, Italian, Thai.
+
 ---
 
 ## 1. What this actually does

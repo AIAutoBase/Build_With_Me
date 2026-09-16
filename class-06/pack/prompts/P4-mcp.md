@@ -23,16 +23,37 @@ retrieval finds passages and has no idea what the corpus looks like from above.
 ```text
 Register my graphify graph as an MCP server so I can query it from Claude Code.
 
-## Step 1 - Find the server
+## Step 1 - Find the server, and prove it can actually start
 
 graphify ships `graphify-mcp` as its own executable. Confirm it exists and find its full
 path - it will be inside the venv:
 
   which graphify-mcp
+
+Now the part that matters, because this is the class's own lesson pointed at itself.
+
+`pip install graphifyy` installs that executable WITHOUT the library it needs to serve.
+The wrapper is there, it is executable, and it dies on its first import. Worse,
+
   graphify-mcp --help
 
-Show me what it says. If it is not there, stop and tell me; do not improvise a different
-MCP server.
+still prints usage, because argparse runs before the import does. It is a check that
+cannot fail. The only symptom you ever see is `claude mcp list` saying
+**"Failed to connect"**, in Step 3, with nothing to explain it.
+
+So test the import, with the interpreter that will run the server:
+
+  <the venv>/bin/python -c "import mcp.server.stdio" && echo "MCP DEPS OK"
+
+If that fails, install the extra:
+
+  pip install "graphifyy[mcp]"
+
+Then run the import check again. Do not continue until it prints MCP DEPS OK.
+
+Tell me back why `--help` was not evidence. This is Step 7 of the install prompt in
+different clothes, and it is the third time in this class that the obvious check has
+been the useless one.
 
 ## Step 2 - Explain MCP to me in three lines
 

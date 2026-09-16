@@ -73,7 +73,7 @@ Now the only step that uses a model - giving the clusters human names.
 
 Run it with the backend named EXPLICITLY:
 
-  graphify update <the folder> --backend=claude-cli
+  graphify label <the folder> --backend=claude-cli
 
 Do not leave the backend to auto-detection. claude-cli is not in graphify's detection
 list and will never be chosen for me, and if OPENAI_API_KEY is exported it will silently

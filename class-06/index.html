@@ -176,6 +176,7 @@
   <nav class="toc">
     <div class="toc-t">Follow along</div>
     <ul>
+      <li><a href="#updated">Updated — read this</a></li>
       <li><a href="#install">The one command</a></li>
       <li><a href="#recap">Classes 1–5</a></li>
       <li><a href="#today">Where today sits</a></li>
@@ -189,6 +190,70 @@
       <li><a href="#breaks">What breaks</a></li>
     </ul>
   </nav>
+
+  <!-- ══════════ UPDATED ══════════ -->
+  <section class="section" id="updated">
+    <h2>Updated — the pack changed, and so did graphify</h2>
+    <p class="lead">This pack has been run start to finish on a clean <strong>Debian 13</strong> machine. graphify shipped a new version since the pack was measured, and it broke three things. All three are fixed here.</p>
+
+    <div class="danger">
+      <div class="danger-t">If you downloaded before today, download again</div>
+      <p>One of the three draws a <strong>completely blank graph while the server still answers 200</strong>. Every check this class taught you still passes. The only evidence is one line in the browser console.</p>
+    </div>
+
+    <div class="install">
+      <h3>The fastest way to install it now</h3>
+      <p>Put the zip in a folder, open Claude Code in that folder, and hand it the whole thing. It reads the pack, installs it, hits the traps and fixes them with you watching.</p>
+      <div class="code"><div class="code-label">paste into Claude Code</div><button class="cp" type="button">copy</button>
+<pre class="wrap">Read class-06-graph-pack.zip in this folder. Unzip it, read every file in it, and then
+install it on this machine following PREWORK.md and prompts/P1-install.md.
+
+Rules:
+- Explain each step before you run it, and stop rather than guess.
+- Never tell me a step passed unless you saw its output say so.
+- This tool READS my documents. Do not modify my database, my workflows or my containers.
+- Pass --backend=claude-cli explicitly on anything that uses a model. The free path is
+  never selected for me automatically.
+- If something fails, read the error, check TROUBLESHOOT.md, and fix it. Tell me what
+  you changed and why.
+- Finish by running verify.sh and reading me its output.</pre></div>
+      <p style="margin-bottom:0">If it gets stuck on the same thing twice, stop it and post the exact command and the exact error in the community. The wording of an error is the diagnosis.</p>
+    </div>
+
+    <h3>What changed</h3>
+    <table>
+      <thead><tr><th>What broke</th><th>What it looked like</th><th>Fixed by</th></tr></thead>
+      <tbody>
+        <tr><td>The naming pass moved to its own command</td><td><code>error: unknown update option: --backend</code></td><td><code>graphify label &lt;folder&gt; --backend=claude-cli</code></td></tr>
+        <tr><td>Installing graphify does not install the MCP server it installs</td><td><code>claude mcp list</code> says <strong>Failed to connect</strong>, and <code>graphify-mcp --help</code> prints usage anyway</td><td><code>pip install "graphifyy[mcp]"</code></td></tr>
+        <tr><td>The vendored library was blocked by a leftover CDN hash</td><td>A blank page that returns <strong>200</strong>. Console says <code>vis is not defined</code></td><td><code>vendor-vis.sh</code> now recomputes the hash and refuses if a stale one survives</td></tr>
+      </tbody>
+    </table>
+
+    <div class="warn">
+      <div class="warn-t">The money trap survived the rename</div>
+      <p><code>label</code> auto-detects a backend from your API keys exactly as <code>update</code> used to, and <code>claude-cli</code> is still not in that list. Free and paid look identical on screen. Pass <code>--backend=claude-cli</code> every time.</p>
+    </div>
+
+    <h3>Verified on</h3>
+    <table>
+      <tbody>
+        <tr><td>Operating system</td><td><strong>Debian 13 (trixie)</strong>, x86-64, no GPU</td></tr>
+        <tr><td>Python · graphify · Claude Code</td><td>3.13.5 · <strong>0.9.62</strong> · 2.1.258</td></tr>
+        <tr><td>Structural pass</td><td>1.7 s · 69 nodes · 57 edges · 12 communities · <strong>0 tokens</strong></td></tr>
+        <tr><td>Audit trail</td><td><strong>100% EXTRACTED</strong> · 0% INFERRED · 0% AMBIGUOUS</td></tr>
+        <tr><td>Naming pass</td><td>11.5 s · 58,301 in / 655 out · <strong>$0.00</strong></td></tr>
+        <tr><td>Graph over HTTP</td><td><strong>200 in 2.3 ms</strong>, from another machine on the network</td></tr>
+        <tr><td><code>verify.sh</code></td><td><strong>12 passed · 0 failed</strong></td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:13.5px;color:var(--muted)">Your numbers will differ. Those are one corpus on one box, not a target.</p>
+
+    <a class="big" href="pack/UPDATE.md"><span class="go">→</span>
+      <div class="t">UPDATE.md — the whole thing</div>
+      <div class="d">What changed, why, and what it looked like when it was broken · also in Spanish, Portuguese, Urdu, Hindi, Italian and Thai inside the pack</div>
+    </a>
+  </section>
 
   <!-- ══════════ INSTALL ══════════ -->
   <section class="section" id="install">
@@ -226,7 +291,7 @@
 
     <a class="big" href="downloads/class-06-graph-pack.zip"><span class="go">↓</span>
       <div class="t">class-06-graph-pack.zip</div>
-      <div class="d">The pack, if you would rather download it by hand · 32,532 bytes</div>
+      <div class="d">The pack, if you would rather download it by hand · 63,777 bytes</div>
     </a>
     <p style="font-size:13.5px;color:var(--muted);margin-top:9px">Check you got the real file: <code>cd downloads &amp;&amp; sha256sum -c SHA256SUMS</code> — <a href="downloads/SHA256SUMS">SHA256SUMS</a></p>
     <a class="big" href="setup-gate.html"><span class="go">→</span>
@@ -343,7 +408,7 @@
 <pre>gemini → kimi → claude → openai → deepseek → azure → bedrock → ollama</pre></div>
       <p><strong><code>claude-cli</code> — the free one we use — is not in that list.</strong> It is never selected for you. You ask for it by name, every time:</p>
       <div class="code"><div class="code-label">always</div><button class="cp" type="button">copy</button>
-<pre>graphify update . --backend=claude-cli</pre></div>
+<pre>graphify label . --backend=claude-cli</pre></div>
       <p>You have an OpenRouter key from Class 1. If it is exported as <code>OPENAI_API_KEY</code>, auto-detection reaches <code>openai</code>, finds it, and takes the <strong>paid</strong> path.</p>
       <div class="tw">
         <table>

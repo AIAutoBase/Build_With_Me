@@ -175,7 +175,7 @@ python -m pip install --upgrade pip</pre></div>
 
     <p><strong><code>claude-cli</code> — the free one we are going to use — is not in that list.</strong> It is never selected for you. You have to ask for it by name, every time:</p>
     <div class="code"><div class="code-label">always</div><button class="cp" type="button">copy</button>
-<pre>graphify update . --backend=claude-cli</pre></div>
+<pre>graphify label . --backend=claude-cli</pre></div>
 
     <p>You have an OpenRouter key from Class 1. If it is exported as <code>OPENAI_API_KEY</code>, auto-detection reaches <code>openai</code>, finds it, and takes the <strong>paid</strong> path.</p>
 
@@ -201,7 +201,7 @@ python -m pip install --upgrade pip</pre></div>
       <p>Just know that you must pass <code>--backend=claude-cli</code> explicitly. If you want to prove the free path really needs no credentials, strip them for one run:</p>
       <div class="code" style="margin-top:8px"><div class="code-label">tested, not assumed</div><button class="cp" type="button">copy</button>
 <pre>env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u GEMINI_API_KEY \
-  graphify update . --backend=claude-cli</pre></div>
+  graphify label . --backend=claude-cli</pre></div>
     </div>
   </div>
 

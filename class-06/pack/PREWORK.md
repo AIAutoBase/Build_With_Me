@@ -145,7 +145,7 @@ gemini → kimi → claude → openai → deepseek → azure → bedrock → oll
 selected for you. You have to ask for it by name, every time:
 
 ```bash
-graphify update . --backend=claude-cli
+graphify label . --backend=claude-cli
 ```
 
 Now here is why it matters. You have an OpenRouter key from Class 1. If it is exported as

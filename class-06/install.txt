@@ -66,7 +66,7 @@ If the gate fails, say so and carry on. It is a convenience, not a dependency.
 
 The zip must have this SHA-256:
 
-  12e06b4900b230905b83ab09c2d599ea264a689f63faa12e3ae76c9a01cd8a3e
+  3451ad643f53159a3fc8749b3b95c3426c5d625a6a08730f15764c4997a7b6d2
 
 Mac / Linux / WSL:   sha256sum class-06-graph-pack.zip
 Mac (if missing):    shasum -a 256 class-06-graph-pack.zip
@@ -85,7 +85,7 @@ Mac / Linux / WSL:
 Windows PowerShell:
   Expand-Archive -Path class-06-graph-pack.zip -DestinationPath class-06-graph-pack -Force
 
-Twelve files should come out. List them.
+Nineteen files should come out. List them.
 
 ## Step 6 - Read the pack, and ATTRIBUTION.md properly
 

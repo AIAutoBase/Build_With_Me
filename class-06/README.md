@@ -123,7 +123,7 @@ from Class 1 is exported as `OPENAI_API_KEY`, auto-detection finds it and silent
 the paid path.
 
 ```bash
-graphify update . --backend=claude-cli    # every time
+graphify label . --backend=claude-cli    # every time
 ```
 
 Free and paid produce identical output, identical timing and identical names. The only
@@ -139,9 +139,9 @@ cd downloads && sha256sum -c SHA256SUMS
 
 | File | SHA-256 |
 |---|---|
-| `class-06-graph-pack.zip` | `12e06b4900b230905b83ab09c2d599ea264a689f63faa12e3ae76c9a01cd8a3e` |
+| `class-06-graph-pack.zip` | `3451ad643f53159a3fc8749b3b95c3426c5d625a6a08730f15764c4997a7b6d2` |
 
-32,532 bytes · 12 files. This pack pins its zip timestamps, so the same sources always
+63,777 bytes · 19 files. This pack pins its zip timestamps, so the same sources always
 produce the same hash — a mismatch means the sources moved, not that the clock did.
 
 ---

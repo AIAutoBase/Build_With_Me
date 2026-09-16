@@ -77,8 +77,32 @@ else
   fi
 fi
 
+# `command -v graphify-mcp` is a check that cannot fail: pip installs the executable
+# whether or not the `mcp` extra came with it. The wrapper exists, is executable, and
+# dies on its first import. Measured 2026-09-16 on graphify 0.9.62 - present on PATH,
+# and `claude mcp list` still said "Failed to connect".
+#
+# `graphify-mcp --help` is ALSO a check that cannot fail: argparse prints usage and
+# exits before serve() ever imports mcp. It passes on a venv with no extra at all.
+# (We know because we wrote that check first and the negative control passed it.)
+#
+# So import the module the server needs, with the interpreter that will run it.
 if command -v graphify-mcp >/dev/null 2>&1; then
-  ok "graphify-mcp present ($(command -v graphify-mcp))"
+  MCP_BIN="$(command -v graphify-mcp)"
+  MCP_PY="$(dirname "$MCP_BIN")/python"
+  [ -x "$MCP_PY" ] || MCP_PY="$(dirname "$MCP_BIN")/python3"
+  if [ -x "$MCP_PY" ]; then
+    if "$MCP_PY" -c "import mcp.server.stdio" >/dev/null 2>&1; then
+      ok "graphify-mcp present, and its 'mcp' dependency imports ($MCP_BIN)"
+    else
+      warn "graphify-mcp is installed but cannot serve: the 'mcp' extra is missing.
+        Fix:  pip install \"graphifyy[mcp]\"
+        Without it P4 fails at 'claude mcp list' with 'Failed to connect',
+        and 'graphify-mcp --help' still prints usage as if all were well."
+    fi
+  else
+    warn "graphify-mcp found but its interpreter was not next to it - check P4 by hand"
+  fi
 else
   warn "graphify-mcp not on PATH - needed for P4 only"
 fi

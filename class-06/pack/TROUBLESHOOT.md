@@ -37,7 +37,7 @@ your billing page.
 Always:
 
 ```bash
-graphify update . --backend=claude-cli
+graphify label . --backend=claude-cli
 ```
 
 Check what is exported before you start:
@@ -50,7 +50,7 @@ Prove the free path really needs no credentials by stripping them for one run:
 
 ```bash
 env -u OPENAI_API_KEY -u ANTHROPIC_API_KEY -u GEMINI_API_KEY \
-  graphify update . --backend=claude-cli
+  graphify label . --backend=claude-cli
 ```
 
 If that works, the "no credentials" claim is tested rather than assumed. That is the whole
@@ -248,3 +248,50 @@ activated.
 
 **Graphify bugs go upstream** to `Graphify-Labs/graphify` — see `ATTRIBUTION.md`. Class
 questions come to us.
+
+---
+
+## `error: unknown update option: --backend` (or `--no-label`)
+
+**You are on graphify 0.9.62 or newer, and the naming pass moved.** Measured on the
+teaching box 2026-09-16: `update` no longer takes either flag.
+
+| What you want | 0.9.49 | 0.9.62 |
+|---|---|---|
+| Structure only, no model | `graphify update <folder> --no-label` | `graphify update <folder>` |
+| Name the communities | `graphify update <folder> --backend=claude-cli` | **`graphify label <folder> --backend=claude-cli`** |
+
+The structural pass is unchanged and still costs zero tokens. **`--backend=claude-cli`
+still has to be passed explicitly** - `label` auto-detects from API keys exactly like
+`update` used to, and `claude-cli` is still not in the detection list.
+
+---
+
+## `claude mcp list` says "Failed to connect", and nothing explains why
+
+**The `mcp` extra is missing.** `pip install graphifyy` installs the `graphify-mcp`
+executable without the library it imports to serve.
+
+```bash
+pip install "graphifyy[mcp]"
+```
+
+**`graphify-mcp --help` does not catch this** - argparse prints usage and exits before
+the import ever runs. Check the import instead:
+
+```bash
+<your venv>/bin/python -c "import mcp.server.stdio" && echo "MCP DEPS OK"
+```
+
+---
+
+## The graph is a blank page, but the server returns 200
+
+**Look at the browser console.** If it says the script was blocked over `integrity`,
+`vendor-vis.sh` repointed the `src` at your local file and left the CDN's hash behind.
+The hash belongs to a different build, so the browser refuses to run the library and
+`vis is not defined`.
+
+A `grep` for `https://` cannot see this: the src IS local, the file IS on disk, and the
+server IS answering. **Re-run the current `vendor-vis.sh`** - it recomputes the hash of
+the file it downloaded and refuses if a stale one survives.

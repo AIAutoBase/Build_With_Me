@@ -8,6 +8,12 @@
 #
 # This downloads the library next to the HTML and repoints the script tag at it.
 #
+# It also RECOMPUTES the Subresource Integrity hash. graphify's template carries an
+# `integrity` attribute for the exact CDN build. Repointing only the `src` leaves that
+# hash behind, it does not match the file you just downloaded, and the browser BLOCKS
+# the script. The page then loads, returns 200, and renders nothing - `vis is not
+# defined` in the console is the only sign. A grep for `https://` cannot see this.
+#
 # RE-RUN THIS AFTER EVERY `graphify update`. Rebuilding the graph rewrites graph.html
 # and the CDN link comes back. Your offline page quietly becomes an online page, and
 # you find out somewhere without internet - which is exactly when you wanted it.
@@ -81,14 +87,36 @@ fi
 
 mv "$LIB.tmp" "$LIB"
 
+# ── 3b. hash the file we actually got ──────────────────────────────────────────
+#
+# The integrity attribute in the template is the hash of a specific CDN build. We
+# downloaded "latest", so it is a different file and the old hash can never match.
+# Hash what is on disk, so SRI keeps protecting against the file changing under us.
+if command -v openssl >/dev/null 2>&1; then
+  SRI="sha384-$(openssl dgst -sha384 -binary "$LIB" | openssl base64 -A)"
+elif command -v python3 >/dev/null 2>&1; then
+  SRI="sha384-$(python3 -c "import hashlib,base64,sys;print(base64.b64encode(hashlib.sha384(open(sys.argv[1],'rb').read()).digest()).decode())" "$LIB")"
+else
+  fail "neither openssl nor python3 is available to hash the library"
+fi
+say "recomputed integrity: $SRI"
+
 # ── 4. back up, then rewrite ───────────────────────────────────────────────────
 cp -p "$HTML" "$HTML.cdn-backup"
 say "backed up original to $BASE.cdn-backup"
 
-# Match any remote vis-network src and point it at the local file. Uses | as the
-# delimiter because the thing being replaced is a URL full of slashes.
-sed -i.sedbak -E 's|src="https?://[^"]*vis-network[^"]*"|src="vis-network.min.js"|g' "$HTML"
-rm -f "$HTML.sedbak"
+# The script tag spans several lines, so this is a whole-file rewrite rather than a
+# line-at-a-time sed: point src at the local file, replace integrity with the hash of
+# that local file, and drop crossorigin, which means nothing for a same-origin file.
+SRI="$SRI" perl -0777 -i -pe '
+  s{<script\s+src="https?://[^"]*vis-network[^"]*"(.*?)></script>}{
+     my $attrs = $1;
+     $attrs =~ s/\s*integrity="[^"]*"//g;
+     $attrs =~ s/\s*crossorigin="[^"]*"//g;
+     qq{<script src="vis-network.min.js"
+        integrity="$ENV{SRI}"$attrs></script>}
+  }gse;
+' "$HTML"
 
 # ── 5. verify, rather than assume ──────────────────────────────────────────────
 say ""
@@ -102,10 +130,30 @@ if grep -q 'src="https\?://' "$HTML"; then
   fail "not self-contained. Vendor the remaining file(s) too."
 fi
 
+# The failure that looks like success: a local src next to a hash of a different file.
+# The browser blocks the script, the page still returns 200, and nothing renders.
+if grep -q 'integrity=' "$HTML"; then
+  if ! grep -qF "integrity=\"$SRI\"" "$HTML"; then
+    say "integrity attributes present in $BASE:"
+    grep -o 'integrity="[^"]*"' "$HTML" | sed 's/^/    /'
+    fail "an integrity hash survived that is not the hash of the file we vendored.
+       A browser will BLOCK the script and the graph will render as a blank page,
+       while the server still answers 200. Fix the attribute or remove it."
+  fi
+  say "integrity matches the vendored file"
+fi
+
+if grep -q 'crossorigin=' "$HTML"; then
+  say "note: a crossorigin attribute remains - harmless same-origin, but unnecessary"
+fi
+
 say "Done. $BASE is self-contained."
 say ""
 say "Verify it yourself:"
 say "    grep -o 'src=\"[^\"]*\"' $BASE      # every result must be a local path"
 say "    ls -l vis-network.min.js            # about 700 KB"
+say ""
+say "Then OPEN it, and look at the browser console. A blocked script leaves the src"
+say "local, the file on disk and the server answering 200 - and draws nothing."
 say ""
 say "Re-run this after every 'graphify update' - rebuilding restores the CDN link."
