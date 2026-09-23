@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Class 7 — A Clock It Can Read · Student Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141c24; --ink-2:#1c2733; --ink-3:#26343f;
+  --paper:#f4eee2; --paper-dim:#c8bfae; --paper-mute:#8e8676;
+  --rust:#d3552b; --rust-soft:#f2a37f; --moss:#4fb38a; --amber:#e8b64a; --sky:#6fb2e0;
+  --mono:"JetBrains Mono",Consolas,"Cascadia Mono",monospace;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--ink);color:var(--paper);font:400 clamp(16px,1.35vw,22px)/1.5 var(--serif);overflow:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 8% 0%,rgba(211,85,43,.10),transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 100%,rgba(111,178,224,.07),transparent 60%);
+}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+
+/* ---------- deck ---------- */
+#deck{position:fixed;inset:0}
+.slide{position:absolute;inset:0;padding:clamp(28px,4.5vh,64px) clamp(28px,6vw,110px) clamp(70px,9vh,96px);
+  display:none;flex-direction:column;opacity:0;transform:translateX(24px)}
+.slide.on{display:flex;animation:in .42s cubic-bezier(.2,.7,.2,1) forwards}
+.slide.back{transform:translateX(-24px)}
+@keyframes in{to{opacity:1;transform:none}}
+.slide>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+.slide>*:nth-child(2){animation-delay:.06s}.slide>*:nth-child(3){animation-delay:.12s}.slide>*:nth-child(4){animation-delay:.18s}.slide>*:nth-child(5){animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.kicker{font:600 .62em/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--rust);margin:0 0 .9em;display:flex;gap:1.2em;align-items:center}
+.kicker b{color:var(--paper-mute);font-weight:400}
+h1{font-weight:800;font-size:clamp(34px,4.6vw,78px);line-height:1.02;margin:0 0 .35em;letter-spacing:-.02em;font-variation-settings:"opsz" 144}
+h2{font-weight:600;font-size:clamp(26px,3vw,50px);line-height:1.08;margin:0 0 .5em;letter-spacing:-.015em;font-variation-settings:"opsz" 96}
+h2 em,h1 em{font-style:italic;font-weight:300;color:var(--rust-soft)}
+p{margin:.35em 0}
+.lede{font-size:1.18em;max-width:30em;color:var(--paper-dim);font-weight:300}
+.cols{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(20px,3vw,48px);flex:1;min-height:0;align-items:start}
+.cols.eq{grid-template-columns:1fr 1fr}
+.cols.wide{grid-template-columns:1.5fr 1fr;align-items:stretch;grid-template-rows:minmax(0,1fr)}
+.cols.wide .stack{overflow:auto;min-height:0}
+.stack{display:flex;flex-direction:column;gap:.6em;min-height:0}
+.fill{flex:1;min-height:0;height:100%;display:flex;flex-direction:column}
+.small{font-size:.86em;color:var(--paper-dim)}
+.mute{color:var(--paper-mute)}
+ul.pts{list-style:none;padding:0;margin:.3em 0}
+ul.pts li{position:relative;padding-left:1.35em;margin:.42em 0;color:var(--paper-dim)}
+ul.pts li::before{content:"";position:absolute;left:0;top:.62em;width:.55em;height:.55em;background:var(--rust);transform:rotate(45deg)}
+ul.pts li strong{color:var(--paper);font-weight:600}
+ul.pts.moss li::before{background:var(--moss)}
+.rule{border:0;border-top:1px solid rgba(244,238,226,.16);margin:.8em 0}
+
+/* ---------- code / commands ---------- */
+.cmd{position:relative;background:var(--ink-2);border:1px solid rgba(244,238,226,.13);border-left:4px solid var(--rust);
+  font:400 .78em/1.5 var(--mono);color:#eae4d6;padding:.9em 1em .9em 1.1em;margin:.35em 0;white-space:pre-wrap;word-break:break-word;
+  overflow:auto;max-height:100%}
+.cmd.big{font-size:.95em}
+.cmd.tall{max-height:none;flex:1;min-height:0}
+.cmd .c{color:var(--paper-mute)}
+.cmd .k{color:var(--amber)}
+.cmd .s{color:var(--moss)}
+.cmd .u{color:var(--sky);text-decoration:underline dotted}
+.cmd .x{color:var(--rust-soft)}
+.cmd .label{position:absolute;top:0;right:0;font-size:.72em;letter-spacing:.14em;text-transform:uppercase;color:var(--paper-mute);padding:.35em .8em;background:rgba(0,0,0,.25)}
+.copy{position:absolute;right:.5em;bottom:.5em;font:600 .72em var(--mono);letter-spacing:.08em;background:var(--paper);color:var(--ink);border:0;padding:.42em .7em;cursor:pointer;opacity:.75;transition:.15s}
+.copy:hover{opacity:1}.copy.ok{background:var(--moss);color:#fff}
+.cmd.has-label{padding-top:1.6em}
+.tabs{display:flex;gap:.4em;margin:.4em 0 0}
+.tabs button{font:600 .7em var(--mono);letter-spacing:.1em;text-transform:uppercase;background:transparent;color:var(--paper-mute);border:1px solid rgba(244,238,226,.18);padding:.45em .9em;cursor:pointer}
+.tabs button.on{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.pane{display:none}.pane.on{display:block}
+.prompt{font-size:.7em;flex:1;min-height:0;max-height:none;overflow:auto}
+.prompt.has-label{padding-top:2em}
+
+/* ---------- callouts ---------- */
+.call{border:1px solid rgba(244,238,226,.16);padding:.9em 1.1em;margin:.5em 0;background:rgba(0,0,0,.18);border-radius:2px}
+.call.warn{border-color:var(--amber);background:rgba(232,182,74,.07)}
+.call.bad{border-color:var(--rust);background:rgba(211,85,43,.09)}
+.call.good{border-color:var(--moss);background:rgba(79,179,138,.08)}
+.call .t{font:600 .66em var(--mono);letter-spacing:.16em;text-transform:uppercase;display:block;margin-bottom:.4em}
+.call.warn .t{color:var(--amber)}.call.bad .t{color:var(--rust-soft)}.call.good .t{color:var(--moss)}
+.quote{font-size:1.25em;font-weight:300;font-style:italic;line-height:1.35;max-width:26em;color:var(--paper);border-left:3px solid var(--rust);padding-left:.8em;margin:.6em 0}
+.big-quote{font-size:clamp(28px,3.4vw,58px);font-weight:300;font-style:italic;line-height:1.15;letter-spacing:-.01em;max-width:18em}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%;font-size:.82em}
+th,td{text-align:left;padding:.5em .7em;border-bottom:1px solid rgba(244,238,226,.12);vertical-align:top}
+th{font:600 .8em var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--paper-mute)}
+td code{font:inherit;font-family:var(--mono);font-size:.9em;color:var(--amber)}
+td.now{color:var(--rust-soft);font-weight:600}
+tr.today td{background:rgba(211,85,43,.12)}
+
+/* ---------- diagram ---------- */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:.6em;margin:.6em 0}
+.flow .n{border:1px solid rgba(244,238,226,.2);padding:.7em .8em;font:600 .72em var(--mono);letter-spacing:.06em;position:relative;background:var(--ink-2)}
+.flow .n small{display:block;font-weight:400;color:var(--paper-mute);margin-top:.35em;letter-spacing:0}
+.flow .n.c3{border-color:var(--sky);color:var(--sky)}
+.flow .n.new{border-color:var(--rust);border-width:2px}
+.flow .n::after{content:"→";position:absolute;right:-.85em;top:38%;color:var(--paper-mute);font-family:var(--serif);font-size:1.3em}
+.flow .n:last-child::after,.flow .n.stop::after{content:""}
+.arrow-back{grid-column:1/-1;text-align:center;color:var(--paper-mute);font:400 .7em var(--mono);letter-spacing:.2em}
+
+/* ---------- step number ---------- */
+.step-n{font:800 clamp(80px,12vw,200px)/0.8 var(--serif);font-variation-settings:"opsz" 144;color:transparent;-webkit-text-stroke:1.5px rgba(244,238,226,.25);position:absolute;right:clamp(28px,6vw,110px);top:clamp(20px,4vh,50px);pointer-events:none;letter-spacing:-.05em}
+.milestone{display:inline-flex;align-items:center;gap:.6em;font:600 .7em var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--moss);border:1px solid var(--moss);padding:.5em .9em;margin-top:.5em}
+
+/* ---------- chrome ---------- */
+#bar{position:fixed;left:0;bottom:0;height:4px;background:var(--rust);width:0;transition:width .35s;z-index:5}
+#hud{position:fixed;left:0;right:0;bottom:0;padding:14px clamp(28px,6vw,110px) 16px;display:flex;justify-content:space-between;align-items:center;font:400 .62em var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--paper-mute);z-index:4}
+#hud .sect{color:var(--paper-dim)}
+#hud button{font:inherit;background:transparent;color:var(--paper-mute);border:1px solid rgba(244,238,226,.18);padding:.45em .9em;cursor:pointer;margin-left:.5em}
+#hud button:hover{color:var(--paper);border-color:var(--paper)}
+.hit{position:fixed;top:0;bottom:60px;width:clamp(24px,4.5vw,80px);z-index:3;cursor:pointer}
+.hit.l{left:0}.hit.r{right:0}
+#notes{position:fixed;left:0;right:0;bottom:0;transform:translateY(100%);transition:.25s;background:var(--paper);color:var(--ink);padding:18px clamp(28px,6vw,110px) 22px;font-size:.92em;max-height:42vh;overflow:auto;z-index:6;border-top:4px solid var(--rust);box-shadow:0 -20px 60px rgba(0,0,0,.5)}
+#notes.on{transform:none}
+#notes .t{font:600 .66em var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--rust);margin-bottom:.4em}
+#notes p{margin:.3em 0}
+#help{position:fixed;inset:0;background:rgba(20,28,36,.92);display:none;place-items:center;z-index:7}
+#help.on{display:grid}
+#help div{background:var(--ink-2);border:1px solid rgba(244,238,226,.2);padding:28px 36px;font:400 .85em/1.8 var(--mono)}
+#help kbd{background:var(--paper);color:var(--ink);padding:.05em .5em;font-weight:600;margin-right:.6em}
+#grid{position:fixed;inset:0;background:var(--ink);display:none;overflow:auto;padding:40px clamp(28px,6vw,110px);z-index:7;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;align-content:start}
+#grid.on{display:grid}
+#grid a{display:block;border:1px solid rgba(244,238,226,.16);padding:12px 14px;color:var(--paper-dim);text-decoration:none;font-size:.8em;min-height:90px}
+#grid a:hover,#grid a.cur{border-color:var(--rust);color:var(--paper)}
+#grid a b{display:block;font:600 .7em var(--mono);letter-spacing:.14em;color:var(--rust);margin-bottom:.3em}
+.aside{display:none}
+
+/* section divider slides */
+.divider{justify-content:center}
+.divider h1{font-size:clamp(48px,7vw,120px);font-weight:300;font-style:italic}
+.divider .kicker{font-size:.8em}
+.divider .num{font:800 clamp(120px,22vw,360px)/0.8 var(--serif);color:transparent;-webkit-text-stroke:2px rgba(211,85,43,.5);position:absolute;right:6vw;bottom:10vh;letter-spacing:-.06em;pointer-events:none}
+
+@media (max-width:900px){.cols,.cols.eq,.cols.wide{grid-template-columns:1fr}.step-n{display:none}body{overflow:auto}.slide{position:relative;padding-bottom:90px}}
+@media print{body{overflow:visible;background:#fff;color:#000}.slide{display:flex!important;position:relative;opacity:1!important;transform:none!important;page-break-after:always;animation:none!important;color:#000}.slide>*{animation:none!important}#hud,#bar,.hit,#notes,#help,.copy,.tabs{display:none!important}.cmd{background:#f2f2f2;color:#000;border-color:#999}.pane{display:block!important}.aside{display:block;border-top:1px dashed #999;margin-top:1em;padding-top:.5em;font-size:.8em}}
+</style>
+</head>
+<body>
+<div id="deck">
+<!-- ═══════════════ 1 · TITLE ═══════════════ -->
+<section class="slide divider" data-sect="Open">
+  <p class="kicker">The Brain That Runs a Company <b>· Part 7 · Wednesday 23 September 2026 · 11:00 AM ET</b></p>
+  <h1>A clock it can <em>read</em></h1>
+  <p class="lede">Your brain already knew. Now it tells you on the day it matters. Class 3 taught it to answer <em>what</em>; today it learns <em>when</em> — from your own calendar, and from dates that have been sitting in your documents for weeks.</p>
+  <div class="num">7</div>
+  <div class="aside"><p><strong>What this guide is for.</strong> Read it before class so nothing on the day is a surprise, or follow along with it open while we build live — either way it's yours to keep. Press <strong>N</strong> on any slide for the fuller reasoning behind it; the slide gives you the short version, this panel gives you the "why."</p></div>
+</section>
+
+<!-- ═══════════════ 2 · THE SENTENCE ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">The line the whole hour turns on</p>
+  <p class="big-quote">It has known since Class 3 that the insurance policy renews on <em>March 1st.</em> It has never once mentioned that on <em>February 28th.</em></p>
+  <hr class="rule">
+  <p class="small mute">That is not a memory problem. The information went in weeks ago and it is still there. What is missing is <strong>arrival at the moment it matters</strong> — and that is a calendar's entire job.</p>
+  <div class="aside"><p>Say this sentence to yourself about your own business before class. A lease, a warranty, an insurance renewal, a filing deadline, a contract with a notice period. Whatever comes to mind is the thing this hour is for — and if you have it in Class 3 already, it is the thing we turn into an invite live in P2.</p></div>
+</section>
+
+<!-- ═══════════════ 3 · WHAT'S DIFFERENT TODAY ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">Before we start</p>
+  <h2>It perceives, remembers, reasons, talks, acts, and can draw its own map — <em>and it still does not know what day it is.</em></h2>
+  <div class="cols">
+    <ul class="pts">
+      <li><strong>Class 1</strong> gave it a terminal it could act in.</li>
+      <li><strong>Class 2</strong> gave it eyes on your inbox.</li>
+      <li><strong>Class 3</strong> gave it memory — documents it can search, and the honesty to say "I don't have that."</li>
+      <li><strong>Class 4</strong> gave it ears and a voice.</li>
+      <li><strong>Class 5</strong> gave it hands and <strong>a clock it obeys</strong> — a 7am digest that fires whether or not anything happened.</li>
+      <li><strong>Class 6</strong> gave it self-knowledge — a graph of everything you fed it.</li>
+    </ul>
+    <div class="stack">
+      <div class="call warn"><span class="t">The gap, and what closes it today</span>A schedule trigger is a clock the brain <strong>obeys</strong>. It knows that it is 7am. It does not know that you have three things on today, or that something you signed in March expires on Friday. Today it gets <strong>the other kind of clock — one it reads</strong>: your actual commitments.</div>
+      <p class="quote">Stored is not the same as timely.</p>
+    </div>
+  </div>
+  <div class="aside"><p>Two different things are both called "a clock" and it is worth keeping them apart. Class 5's clock makes things happen on a rhythm you set. Today's clock is a source of <em>information</em> — it tells the brain what your week actually contains, which is the one thing a schedule trigger can never know.</p></div>
+</section>
+
+<!-- ═══════════════ 4 · WHAT'S PROVEN, WHAT ISN'T ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">Read this before you build anything</p>
+  <h2>This class is <em>designed.</em> It has not been <em>run.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="call"><span class="t">What was measured, and what was not</span>The reader was built and run on the teaching box on <strong>23 September 2026</strong>, against n8n 2.32.6. The parser passes <strong>38 of 38</strong> checks there, and the same checks against a parser that ignores repeat rules pass <strong>23 of 38</strong> &mdash; that second number is the one the recurring-events segment is built on. The proposer ran too: it found a real renewal date in a Class 3 document and emailed it as an invite, <strong>with no model in the workflow</strong>. <strong>What was not observed:</strong> a mail client opening that invite, and anybody's real calendar. Where a number is missing on these slides, it is missing because nobody took it.</div>
+      <div class="call good"><span class="t">What <em>was</em> verified, and how</span>The secret iCal URL exists, is read-only and is resettable — checked against Google's own documentation. And the pack's <code>verify.sh</code> feed detection was <strong>run</strong>, against a real 317-event public feed and a crafted feed containing a recurring event, an all-day event and timezone-carrying events. It found all four correctly.</div>
+    </div>
+    <div class="stack">
+      <p class="small mute">Running that check found two real bugs in the script, both fixed before it shipped: <code>grep -c</code> prints <code>0</code> <em>and</em> exits non-zero, so a <code>|| echo 0</code> fallback produced <code>0\n0</code> and every later numeric test died; and the <code>SUMMARY</code> pattern never matched the plain <code>SUMMARY:Title</code> form. Neither would have errored on the day. Both would have quietly mis-reported your feed.</p>
+      <p class="small mute">Why you are being told this before anything else: the whole class is about whether you can trust what the brain says about your day. That starts with being told which claims in front of you were tested and which were reasoned.</p>
+    </div>
+  </div>
+  <div class="aside"><p>The habit this series keeps repeating is "designed" versus "run," and this is the first class in a while that is honestly on the "designed" side of it going in. The build happens live, with you. If something takes longer than the run-of-hour says, that is the cost of not having rehearsed it — and it will be said out loud rather than skipped over.</p></div>
+</section>
+
+<!-- ═══════════════ 5 · HOW THE HOUR RUNS ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">How the hour runs</p>
+  <h2>Two prompts. <em>P1 alone is a complete, useful thing.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <ul class="pts">
+        <li><strong>You don't watch a demo.</strong> The prompts are on the slides and in the pack. You paste them into Claude Code on the machine your brain runs on.</li>
+        <li><strong>Two prompts, P1 and P2.</strong> P1 <em>reads</em> your calendar. P2 <em>proposes</em> an event out of a document you already uploaded.</li>
+        <li><strong>Stop after P1 and you still have the useful half</strong> — a brain that can tell you what is on today, and if you did Class 5, a digest that opens with it.</li>
+        <li><strong>Nothing is written.</strong> No new table, no schema change, no migration — and nothing gets write access to your week.</li>
+      </ul>
+    </div>
+    <table>
+      <tr><th>Min</th><th>Segment</th></tr>
+      <tr><td>0–4</td><td>Cold open · this morning's digest, then the calendar it came from</td></tr>
+      <tr><td>4–9</td><td>The map · Class 3 solved <em>what</em>, this solves <em>when</em></td></tr>
+      <tr><td>9–14</td><td>The secret URL, and the trade it makes</td></tr>
+      <tr><td>14–28</td><td><code>P1</code> — read · "what is on today?"</td></tr>
+      <tr class="today"><td>28–34</td><td><strong>Recurring events and timezones</strong> — the segment that earns the hour</td></tr>
+      <tr><td>34–46</td><td><code>P2</code> — propose · a document's date becomes an <code>.ics</code></td></tr>
+      <tr><td>46–52</td><td>Why not just write to the calendar?</td></tr>
+      <tr><td>52–57</td><td>The payoff · stored and timely, together</td></tr>
+      <tr><td>57–60</td><td>Where the series ends, and what is still missing</td></tr>
+    </table>
+  </div>
+  <div class="aside"><p>Notice the highlighted row. Six minutes in the middle of the hour go to a parsing detail, which sounds like a poor trade until you see what it costs to get wrong: a calendar view that shows two thirds of your day, perfectly, with no error anywhere. That segment is the reason this class is worth an hour instead of a post.</p></div>
+</section>
+
+<!-- ═══════════════ 6 · THE MAP ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">The map</p>
+  <h2>Your calendar gets <em>read.</em> Never written.</h2>
+  <div class="flow">
+    <div class="n">Your calendar<small>secret iCal URL · read-only</small></div>
+    <div class="n">n8n fetches it<small>we poll Google, not the reverse</small></div>
+    <div class="n new">Code node<small>parse · expand the RRULE</small></div>
+    <div class="n new stop">"what is on today"<small>your real day, in time order</small></div>
+    <div class="n c3">Class 3 documents<small>already ingested, weeks ago</small></div>
+    <div class="n c3">dates extracted<small>verbatim · never generated</small></div>
+    <div class="n new">an .ics is built<small>stable UID · the sentence in the body</small></div>
+    <div class="n new stop">your inbox<small>you click it. Only then is it in your week</small></div>
+  </div>
+  <div class="call good"><span class="t">The line every class in this series has held</span>No new table. No schema change. No migration. <strong>And no new signup — not even the free kind.</strong> If today's build breaks, one question splits the problem: <strong>does the Class 3 Ask tab still answer about your documents?</strong> Yes — the fault is here, today. No — it was already broken, and fixing it isn't this class's job.</div>
+  <div class="aside"><p>Two independent halves, drawn on two rows. The top row is a fetch and a parse; the bottom row reads rows and files that already exist and sends mail. Neither one touches Class 2, 3 or 5 — which is why either half can fail without taking the other down with it, and why you can stop after the top row and still have something you use.</p></div>
+</section>
+
+<!-- ═══════════════ 7 · ORGANS ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">Where this sits in your brain</p>
+  <h2>Seven organs, <em>and today it gets the second kind of clock.</em></h2>
+  <table>
+    <tr><th>Organ</th><th>Tool</th><th>Class</th></tr>
+    <tr><td>Brain</td><td>Claude Code / Codex</td><td>1</td></tr>
+    <tr><td>Senses</td><td>n8n</td><td>2</td></tr>
+    <tr><td>Memory</td><td>Postgres</td><td>3 — <strong>the dates come out of here</strong></td></tr>
+    <tr><td>Eyes</td><td>Dashboard</td><td>3</td></tr>
+    <tr><td>Ears and voice</td><td>Telegram</td><td>4</td></tr>
+    <tr><td>Hands, and a clock it <strong>obeys</strong></td><td>Schedules + drafts</td><td>5 — <strong>the digest gains a line</strong></td></tr>
+    <tr><td>Self-knowledge</td><td>Graphify</td><td>6</td></tr>
+    <tr class="today"><td><strong>A clock it <em>reads</em></strong></td><td><strong>Your calendar</strong></td><td class="now">today</td></tr>
+  </table>
+  <p class="small mute"><strong>Class 2 and Class 3 are required</strong> — n8n, the mailbox, and real documents with dates in them. <strong>Class 5 is optional:</strong> if you did it, your 7am digest gains a line about today; if you skipped it, P1 still answers on demand. Classes 4 and 6 are not needed here at all.</p>
+  <div class="aside"><p>Class 5 being optional is deliberate. A series that sells each hour as complete should not quietly accumulate hard dependencies between them. The only genuine requirement today is Class 3 with documents that actually contain dates — and if yours do not, P2's first step tells you so before anything gets built.</p></div>
+</section>
+
+<!-- ═══════════════ 8 · FOUR DECISIONS, DIVIDER ═══════════════ -->
+<section class="slide divider" data-sect="Open">
+  <p class="kicker">Decided 2026-08-27 · before this hour existed</p>
+  <h1>Four calls, <em>explained</em></h1>
+  <p class="lede">Four questions had to be settled before this class could be outlined: how it reads, how it writes, what it does about the events that repeat, and who is allowed to produce a date. None of them are yours to make today — but you are about to build on top of them, so you deserve to know what was rejected and why.</p>
+  <div class="aside"><p>Being shown the rejected options is worth as much as being shown the chosen one. If you ever wonder "why doesn't it just connect to Google Calendar properly," the next four slides are the answer — with the costs of doing that written down rather than implied.</p></div>
+</section>
+
+<!-- ═══════════════ 9 · DECISION 1 · THE SECRET URL ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">Decision 1 of 4 · how it reads your calendar</p>
+  <h2>A secret iCal URL. <em>No account, no OAuth, no consent screen.</em></h2>
+  <div class="cols">
+    <table>
+      <tr><th></th><th>Secret iCal URL · chosen</th><th>Calendar API · rejected</th></tr>
+      <tr><td>Auth</td><td><strong>none</strong> — the URL <em>is</em> the credential</td><td>OAuth consent screen</td></tr>
+      <tr><td>Direction</td><td><strong>read-only</strong></td><td>whatever scope you grant</td></tr>
+      <tr><td>New signup</td><td><strong>none</strong></td><td>a Google Cloud project</td></tr>
+      <tr><td>Works with</td><td>Google, iCloud, Outlook, Fastmail — anything serving iCal</td><td>Google</td></tr>
+      <tr><td>Revoking it</td><td><strong>one Reset button</strong></td><td>unpick the app, withdraw consent</td></tr>
+      <tr><td>Expiry</td><td>never</td><td><strong>7 days</strong> if the app is left in Testing</td></tr>
+    </table>
+    <div class="stack">
+      <div class="call good"><span class="t">And it inverts a problem this series already hit</span>Content Mate's calendar work ran into Google refreshing a <em>subscribed</em> feed only every 8 to 24 hours, uncontrollably. <strong>That limit does not apply here, because the direction is reversed.</strong> We are not asking Google to poll us — we fetch Google. The interval is whatever your n8n schedule says.</div>
+      <p class="small mute">Same shape as every "cheap" call in this series: the boring option was chosen on purpose, and the expensive one ships as a documented upgrade rather than being pretended away.</p>
+    </div>
+  </div>
+  <div class="aside"><p>This is the decision that keeps the series' promise. Six classes of "your stack, your data, no rented dependencies" would be an odd thing to end by asking everyone to stand up a Google Cloud project and click through a consent screen for a permission we then deliberately refuse to use.</p></div>
+</section>
+
+<!-- ═══════════════ 10 · DECISION 2 · .ICS, NOT WRITE ACCESS ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">Decision 2 of 4 · how it puts something <em>in</em> your week</p>
+  <h2>It emails you a file. <em>You click it.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <table>
+        <tr><th>Approach</th><th>Cost</th><th>Why not</th></tr>
+        <tr class="today"><td><strong><code>.ics</code> by email</strong></td><td><strong>nothing</strong></td><td class="now">← chosen</td></tr>
+        <tr><td>Google Calendar API</td><td>a consent screen; tokens expire in 7 days if the app stays in Testing</td><td>The first class in the series to need one. Ships as an upgrade doc instead</td></tr>
+        <tr><td>CalDAV</td><td>an app-specific password</td><td>Fine for iCloud and Fastmail; Google's CalDAV still wants OAuth. Not universal enough to be the default</td></tr>
+      </table>
+      <p class="small mute">Want it automatic anyway? <code>docs/UPGRADE-write-access.md</code> ships in the pack and is honest about both the consent screen and the seven-day trap.</p>
+    </div>
+    <div class="stack">
+      <div class="call bad"><span class="t">This is Class 5's draft-don't-send, applied to time</span>Class 5 built drafts it never sends. Today builds invites it never accepts. Same rule, different organ: <strong>the automation prepares, you commit.</strong></div>
+      <p class="quote">An <code style="font-family:var(--mono);color:var(--amber)">.ics</code> you click is a proposal. You still say yes.</p>
+    </div>
+  </div>
+  <div class="aside"><p>There is a version of this class that is more impressive on camera — the brain reads your lease and the event simply appears in your calendar. It is also the version you would switch off within a month, the first time it put something in your week that you would not have agreed to. The full argument gets a slide of its own near the end of the hour, because it is worth saying out loud rather than implying.</p></div>
+</section>
+
+<!-- ═══════════════ 11 · DECISION 3 · RRULE ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">Decision 3 of 4 · the events that repeat</p>
+  <h2>We expand the <em>RRULE</em> in the Code node.</h2>
+  <div class="cols">
+    <div class="stack">
+      <table>
+        <tr><th>Option</th><th>Verdict</th></tr>
+        <tr class="today"><td><strong>Expand the <code>RRULE</code> in a Code node</strong></td><td class="now">chosen — the real answer</td></tr>
+        <tr><td>Use an iCal library inside the n8n container</td><td>easier, <em>if</em> one is available where you need it. Not guaranteed on every install</td></tr>
+        <tr><td>Show only non-recurring events, and say so</td><td>honest, and disappointing. Rejected as a default</td></tr>
+      </table>
+      <p class="small mute">This was open when the class was designed and it is now settled. It is settled because the third option quietly becomes the first one in everybody's head: "it mostly works" is how a calendar you cannot trust survives in your life.</p>
+    </div>
+    <div class="call bad"><span class="t">Any of the three is acceptable. Doing the third while implying the first is not.</span>If your own build ends up with recurrence unhandled — a library missing, a rule shape nobody supports — that is a result, not a failure. <strong>Write the limitation down somewhere you will see it again.</strong> What is not acceptable is a day view that silently omits half your week.</div>
+  </div>
+  <div class="aside"><p>Expanding a recurrence rule properly is genuinely harder than it looks — weekly is easy, "the third Thursday of every month" is not, and then there are exceptions, moved occurrences and rules with an end date. The class builds the common cases correctly and says plainly which shapes it has not covered, rather than implying a completeness nobody has tested.</p></div>
+</section>
+
+<!-- ═══════════════ 12 · DECISION 4 · EXTRACTED, NOT GENERATED ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">Decision 4 of 4 · who is allowed to produce a date</p>
+  <h2>The date is <em>extracted.</em> Never generated.</h2>
+  <div class="cols">
+    <div class="stack">
+      <ul class="pts moss">
+        <li><strong>Chosen: template the event, and let a model only choose which dates matter.</strong> The date itself, and the sentence it came from, are pulled verbatim out of the document.</li>
+        <li><strong>A model may</strong> rank candidates and write a readable title.</li>
+        <li><strong>A model may not</strong> decide what a plausible renewal date would be.</li>
+        <li>An ambiguous date — <em>"the first of the month," "30 days after signing"</em> — is <strong>flagged, not resolved.</strong></li>
+      </ul>
+      <p class="small mute">Templating is also the reason this class's expected cost is zero. Generating prose would cost a fraction of a cent per event — small, and still not worth it.</p>
+    </div>
+    <div class="call bad"><span class="t">A wrong reminder is worse than no reminder</span>An invented renewal date does not look invented. It arrives in your inbox looking exactly like a real one, you put it in your calendar, you relax — <strong>and you miss the actual date.</strong> This is Class 3's extracted-versus-inferred rule applied to time, and it is why P2 will not ship a date it cannot show you the sentence for.</div>
+  </div>
+  <div class="aside"><p>Class 3 made refusal a feature: the brain says "I don't have that" instead of producing something plausible. Time is the place where that discipline pays the most, because a date is short, confident and unfalsifiable at a glance — you cannot look at "1 March 2027" and tell whether it was read or imagined.</p></div>
+</section>
+
+<!-- ═══════════════ 13 · SETUP DIVIDER ═══════════════ -->
+<section class="slide divider" data-sect="Setup">
+  <p class="kicker">Part 1 · about five minutes · nothing to sign up for</p>
+  <h1>Setup, <em>at your pace</em></h1>
+  <p class="lede">One URL, which your calendar already generates for you. That is genuinely the whole of the pre-work — but read Step 2 before you copy it, because that URL is more powerful than it looks and the hour will not be the moment to find that out.</p>
+  <div class="num">1</div>
+  <div class="aside"><p>This is the shortest setup in the series and the one with the sharpest edge in it. Everything else you have installed this series lives behind a login. This is a single string that needs none, and it does not expire.</p></div>
+</section>
+
+<!-- ═══════════════ 14 · STEP 1 · GET THE URL ═══════════════ -->
+<section class="slide" data-sect="Setup">
+  <div class="step-n">01</div>
+  <p class="kicker">Step 1 <b>· the one thing you need</b></p>
+  <h2>The address meant for <em>machines</em> — not the one you'd send a colleague.</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="cmd big has-label"><span class="label">Google Calendar</span>Settings
+  → Settings for my calendars
+    → pick the calendar
+      → Secret address in iCal format
+        → copy</div>
+      <ul class="pts">
+        <li><strong>Apple iCloud, Outlook and Fastmail</strong> all have an equivalent — each one calls it something different and hides it somewhere different. The paths are in <code style="font-family:var(--mono);color:var(--amber)">docs/CALENDARS.md</code>.</li>
+        <li><strong>Pick the calendar with your actual commitments in it.</strong> If work and personal are separate, take the work one. Start with one, so that when the output looks wrong you know which calendar to compare it against.</li>
+      </ul>
+    </div>
+    <div class="stack">
+      <div class="call warn"><span class="t">If Google does not show you one</span>Some Workspace policies disable it and some personal accounts do not display it. <code>TROUBLESHOOT.md</code> carries a fallback — and that fallback has <strong>not been tested against an account where it is genuinely absent.</strong> If that is you, say so in the thread early rather than at 11:14.</div>
+      <p class="small mute">Write down which calendar you took it from. You will want that later, when a day looks emptier than you expected.</p>
+    </div>
+  </div>
+  <div class="aside"><p>Two links look almost identical in Google's settings and only one of them is the right one. The public HTML link opens a web page; the secret iCal link returns a text file starting <code>BEGIN:VCALENDAR</code>. Step 3 exists solely so that you find out which one you copied before the hour rather than during it.</p></div>
+</section>
+
+<!-- ═══════════════ 15 · STEP 2 · WHAT YOU'RE HOLDING ═══════════════ -->
+<section class="slide" data-sect="Setup">
+  <div class="step-n">02</div>
+  <p class="kicker">Step 2 <b>· the only genuinely sharp edge in the class</b></p>
+  <h2>That string is <em>your whole calendar,</em> to anyone who has it.</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="call bad"><span class="t">Not scoped. Not expiring. Not logged.</span>Not scoped to today. Not scoped to titles. Anyone holding that URL can fetch <strong>every event you have — past, present and future — without logging in as you, and without you ever knowing they did.</strong></div>
+      <ul class="pts">
+        <li>It goes into an <strong>n8n credential</strong>, and nowhere else.</li>
+        <li><strong>Never</strong> into a node parameter, a prompt, a screenshot, or the class thread.</li>
+        <li>Not into a note-taking app you sync, either.</li>
+      </ul>
+    </div>
+    <div class="stack">
+      <div class="call good"><span class="t">And this is the upside of the design</span>If it gets out, <strong>Google has a Reset button</strong> next to the secret address. Click it and the old URL dies instantly. No OAuth app to unpick, no consent to withdraw — and <strong>nothing that could write to your week in the first place.</strong></div>
+      <p class="small mute">If you post it by accident: <strong>reset it, then delete the message.</strong> In that order. Deleting first just means you feel better while the URL still works.</p>
+    </div>
+  </div>
+  <div class="aside"><p>The pack's own build script refuses to produce a zip if anything resembling a real secret calendar address reaches it — a Google <code>/private-…</code> path, a <code>webcal://</code> link with a real host, an iCloud CalDAV endpoint, a published Outlook calendar. It refuses; it does not warn. That guard was tested by planting one, and it caught a false positive on the first run because one of the docs legitimately mentions <code>webcal://</code> in prose. A guard that blocks its own pack is a guard people delete, so the pattern now requires a real host and a path.</p></div>
+</section>
+
+<!-- ═══════════════ 16 · STEP 3 · PROVE IT'S A CALENDAR ═══════════════ -->
+<section class="slide" data-sect="Setup">
+  <div class="step-n">03</div>
+  <p class="kicker">Step 3 <b>· do not wait until the hour to find out it's wrong</b></p>
+  <h2>Fetch it once, <em>with your own eyes on what comes back.</em></h2>
+  <div class="cols wide">
+    <div class="stack">
+      <div class="cmd big has-label"><span class="label">quote it — this is not optional advice</span>curl -s "&lt;your secret URL&gt;" | head -5<button class="copy">copy</button></div>
+      <div class="cmd has-label"><span class="label">what a good answer looks like</span><span class="s">BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:...</span></div>
+      <div class="cmd has-label"><span class="label">how many of your events repeat</span>curl -s "&lt;your secret URL&gt;" | grep -c "^RRULE"<button class="copy">copy</button></div>
+    </div>
+    <div class="stack">
+      <table>
+        <tr><th>What you get instead</th><th>What it means</th></tr>
+        <tr><td>HTML, or <code>&lt;!DOCTYPE</code></td><td>You copied the <em>web page</em> link, not the iCal one</td></tr>
+        <tr><td><code>404</code> / Not Found</td><td>The address was reset, or mistyped</td></tr>
+        <tr><td>Nothing at all</td><td>Check the quotes — secret URLs routinely contain characters your shell treats as syntax</td></tr>
+        <tr><td><code>401</code> / <code>403</code></td><td>Not the <em>secret</em> address. The public one needs the calendar to be public</td></tr>
+      </table>
+      <p class="small mute"><strong>Write down that <code>RRULE</code> count.</strong> It is the number the whole middle of the hour is about.</p>
+    </div>
+  </div>
+  <div class="aside"><p>Note what the second command is really for. It is not a health check — it is you finding out, before anyone tells you, how much of your calendar is stored as repeat rules rather than as events. If that number is large, the recurrence segment is not an interesting detour for you; it is the class.</p></div>
+</section>
+
+<!-- ═══════════════ 17 · STEP 4 · ONE RECURRING EVENT ═══════════════ -->
+<section class="slide" data-sect="Setup">
+  <div class="step-n">04</div>
+  <p class="kicker">Step 4 <b>· the step that seems pointless and is not</b></p>
+  <h2>Write down one thing that <em>repeats</em> — and the date it next happens.</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="cmd big has-label"><span class="label">bring this to the hour · on paper is fine</span>Recurring event: ____________________
+
+Next occurs on: ____________________</div>
+      <ul class="pts">
+        <li>A weekly standup. A monthly invoice. A Tuesday school run. <strong>Something you know repeats and you know when it is next.</strong></li>
+        <li>In the feed, that is stored as <strong>one event plus a repeat rule</strong> — not one event per week.</li>
+        <li>When P1 lists your day, <strong>that is the line you check.</strong> Not the whole list. That one line.</li>
+      </ul>
+    </div>
+    <div class="call warn"><span class="t">Why one line beats the whole list</span>Scanning a list for "does this look right" is how you approve a broken parse. Your one-off events will all be there, in the right order, at the right times — so the list <em>looks</em> right. Checking a single event you already know the answer for is a check that <strong>can fail</strong>, and that is the only kind worth running.</div>
+  </div>
+  <div class="aside"><p>This is the same lesson Class 6 taught with its venv probe, in different clothes: a check that cannot fail is not a check, it is a feeling. "The output looks plausible" cannot fail. "My Tuesday standup appears on Tuesday the 29th" can.</p></div>
+</section>
+
+<!-- ═══════════════ 18 · STEP 5 · TIMEZONE ═══════════════ -->
+<section class="slide" data-sect="Setup">
+  <div class="step-n">05</div>
+  <p class="kicker">Step 5 <b>· "what is on today" is a timezone question first</b></p>
+  <h2>If n8n is on UTC, <em>"today" is the wrong day</em> for part of every day.</h2>
+  <div class="cols wide">
+    <div class="stack">
+      <div class="cmd big has-label"><span class="label">on the brain machine</span>docker compose exec -T n8n printenv GENERIC_TIMEZONE
+date<button class="copy">copy</button></div>
+      <ul class="pts">
+        <li><strong>Empty output means UTC.</strong> Not "probably fine" — UTC.</li>
+        <li><strong>Class 5 already proved this one.</strong> A 7am digest fired at 2am, for exactly this reason. Same cause here, different symptom: your evening events show up on the wrong date.</li>
+        <li><strong>n8n reads environment variables when the container starts and never again.</strong> Changing it needs a restart.</li>
+      </ul>
+    </div>
+    <div class="stack">
+      <div class="call warn"><span class="t">Two different timezone bugs, and they look different</span><strong>Everything out by the same amount</strong> → <code>GENERIC_TIMEZONE</code>. One fix, one restart.<br><br><strong>Only some events out</strong> → the harder one. A <code>DTSTART</code> can carry a <code>TZID</code>, or end in <code>Z</code> for UTC, or have neither — a <em>floating</em> time, meaning "local, wherever you are." Three shapes, three behaviours.</div>
+      <p class="small mute">Tell the difference before you start changing things. Fixing the easy one when you have the hard one just moves the error.</p>
+    </div>
+  </div>
+  <div class="aside"><p>Worth sitting with: "what is on today" contains a question the computer cannot answer on its own. Today according to whom — the server, the feed, the event, or you? Four answers, and they are only the same answer if somebody made them so.</p></div>
+</section>
+
+<!-- ═══════════════ 19 · STEP 6 · THE COMMAND ═══════════════ -->
+<section class="slide" data-sect="Setup">
+  <div class="step-n">06</div>
+  <p class="kicker">Step 6 <b>· the front door</b></p>
+  <h2>One command. It downloads, checks, and <em>stops.</em></h2>
+  <div class="tabs"><button class="on" data-pane="mac">macOS · Linux · WSL</button><button data-pane="win">Windows PowerShell</button></div>
+  <div class="pane on" data-pane="mac"><div class="cmd has-label"><span class="label">on the machine your brain runs on</span>curl -fsSL -o install.txt https://aiautobase.github.io/Build_With_Me/class-07/install.txt &amp;&amp; claude "Read install.txt in this folder and follow it exactly, from the top."<button class="copy">copy</button></div></div>
+  <div class="pane" data-pane="win"><div class="cmd has-label"><span class="label">on the machine your brain runs on</span>Invoke-WebRequest -Uri "https://aiautobase.github.io/Build_With_Me/class-07/install.txt" -OutFile install.txt; claude "Read install.txt in this folder and follow it exactly, from the top."<button class="copy">copy</button></div></div>
+  <ul class="pts">
+    <li>Works out which machine it is on, makes a workspace folder, downloads the pack, <strong>checks it against the published checksum</strong>, unzips it and has Claude Code read the README back to you.</li>
+    <li>Then it stops. <strong>It does not build the workflow.</strong> If it finishes and there is no calendar workflow, that is exactly right — the build happens live, in P1 and P2.</li>
+    <li>It never asks you for the secret URL. That goes into an n8n credential, by your own hand, during P1's first step.</li>
+  </ul>
+  <p class="small mute">Read <span style="font-family:var(--mono)">install.txt</span> before you run it — the same rule Class 2 taught you, and it applies to anything handed to you, including this. Everything is readable first at <span style="font-family:var(--mono);color:var(--sky)">aiautobase.github.io/Build_With_Me/class-07</span>.</p>
+  <div class="aside"><p>The installer stopping short of the build is the same choice Class 6 made. Installing a tool and pointing it at your data are different kinds of mistake, and mixing them makes both harder to debug — with the extra wrinkle today that pointing it at your data means handing over a permanent read key, which is not a thing a script should do for you while you watch.</p></div>
+</section>
+
+<!-- ═══════════════ 20 · STEP 7 · CHECKSUM ═══════════════ -->
+<section class="slide" data-sect="Setup">
+  <div class="step-n">07</div>
+  <p class="kicker">Step 7 <b>· prove you got the real file</b></p>
+  <h2>Never unzip a file <em>whose hash does not match.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <table>
+        <tr><th>Zip</th><td><code>class-07-calendar-pack.zip</code></td></tr>
+        <tr><th>Size</th><td>39,606 bytes · 11 files</td></tr>
+        <tr><th>sha256</th><td style="word-break:break-all"><code>0f4a091287b802ec4a303251c5ef671ab9d55e4add82a5008a768f6114fbd9ea</code></td></tr>
+      </table>
+      <div class="cmd has-label"><span class="label">macOS · Linux · WSL</span>sha256sum -c SHA256SUMS<button class="copy">copy</button></div>
+      <div class="cmd has-label"><span class="label">Windows PowerShell · compare by eye</span>Get-FileHash class-07-calendar-pack.zip -Algorithm SHA256<button class="copy">copy</button></div>
+    </div>
+    <div class="stack">
+      <div class="call"><span class="t">What's in the eleven files</span>Two prompts (<span style="font-family:var(--mono)">P1-read</span>, <span style="font-family:var(--mono)">P2-propose</span>), README, PREWORK, VERIFY, TROUBLESHOOT, <span style="font-family:var(--mono)">verify.sh</span>, <span style="font-family:var(--mono)">ical.js</span> and its 36-assertion test <span style="font-family:var(--mono)">test-ical.js</span>, and two docs — <span style="font-family:var(--mono)">docs/CALENDARS.md</span> for where the secret URL lives on each provider, and <span style="font-family:var(--mono)">docs/UPGRADE-write-access.md</span> for the day you decide you want the real thing.</div>
+      <p class="small mute">Every file is readable without downloading anything, at <span style="font-family:var(--mono)">github.com/AIAutoBase/Build_With_Me/tree/main/class-07/pack</span> — check it against what is on this slide any time you like.</p>
+    </div>
+  </div>
+  <div class="aside"><p>The pack's build script refuses to produce a zip that contains a credential, and refuses one that contains anything shaped like a real secret calendar URL. Both refuse; neither warns. That is this class's own risk taken seriously — the whole thing runs on a string that is exactly the kind of value somebody pastes into a doc while writing an example.</p></div>
+</section>
+
+<!-- ═══════════════ 21 · STEP 8 · READY ═══════════════ -->
+<section class="slide" data-sect="Setup">
+  <div class="step-n">08</div>
+  <p class="kicker">Step 8 <b>· what to have ready</b></p>
+  <h2>Six boxes checked. <em>Then</em> the prompts.</h2>
+  <div class="cols">
+    <ul class="pts moss">
+      <li>The secret URL, somewhere safe — <strong>not pasted into anything yet</strong></li>
+      <li><code style="font-family:var(--mono);color:var(--amber)">curl</code> on it returned <code style="font-family:var(--mono);color:var(--amber)">BEGIN:VCALENDAR</code></li>
+      <li>You know <strong>which</strong> calendar it came from</li>
+      <li><strong>One recurring event written down</strong>, with the date it next occurs</li>
+      <li>n8n's timezone is yours, not UTC</li>
+      <li>Class 3 has real documents, <strong>at least one with a date in it</strong> — a lease, a warranty, an invoice with terms</li>
+    </ul>
+    <div class="stack">
+      <div class="call"><span class="t">Cost — nothing, and you can count the nodes</span>Fetching the URL: free. Parsing it: free, it is a Code node. The <code>.ics</code>: free, it is a file. <strong>No new signup, not even a free tier — the first class in the series where that is literally true.</strong> The only way this costs anything is if the proposal text is generated rather than templated, and Decision 4 says it is templated.</div>
+      <span class="milestone">✓ Ready for P1</span>
+    </div>
+  </div>
+  <div class="aside"><p>For the reader, the cost claim is structural rather than estimated: the workflow is three nodes &mdash; a trigger, an HTTP request and a Code node &mdash; and not one of them is a model. You can count them. The proposal half is the part where a cost could appear, and that depends on whether the text is generated or templated; it is templated here.</p></div>
+</section>
+
+<!-- ═══════════════ 22 · BUILD DIVIDER ═══════════════ -->
+<section class="slide divider" data-sect="Build">
+  <p class="kicker">Part 2 · two prompts · P1 alone is worth the hour</p>
+  <h1>The build, <em>from prompts</em></h1>
+  <p class="lede">You paste each prompt into Claude Code yourself, on the brain machine. P1 teaches it to read your day. P2 teaches it to hand you back something it read in a document weeks ago. The prompt files live in <span style="font-family:var(--mono);font-size:.85em">class-07-calendar-pack/prompts/</span>.</p>
+  <div class="num">2</div>
+  <div class="aside"><p>Read the page around each prompt in the pack, not just the prompt itself — the traps on the next slides are written next to the exact line in the prompt that would otherwise catch you out. And both prompts end with the same ground rule the series has used since Class 2: never claim something worked without output showing it worked.</p></div>
+</section>
+
+<!-- ═══════════════ 23 · P1 SHAPE ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P1 <b>· Read · eight steps</b></p>
+  <h2>It fetches, it parses, <em>and it tells you how it handled the hard parts.</em></h2>
+  <table>
+    <tr><th>Step</th><th>What happens</th><th>Why it's built this way</th></tr>
+    <tr><td>1 · Take the URL safely</td><td>You put it into an n8n credential yourself. It is never pasted into the chat, written to a file, or echoed back — not even in an error</td><td>It is read access to your whole calendar, and errors are where secrets leak</td></tr>
+    <tr><td>2 · Fetch it once, look at it</td><td>Status, first 20 lines, byte count, <code>VEVENT</code> count — before anything is built</td><td>If it is HTML you copied the wrong link, and you stop here rather than debugging a parser</td></tr>
+    <tr><td>3 · Parse it, honestly</td><td>All-day vs timed, timezones, <strong>and recurrence</strong> — and it must say out loud how it handled each</td><td>Three different ways to be quietly wrong, so three explicit answers</td></tr>
+    <tr><td>4 · Answer "what is on today"</td><td>Today's events, in time order, readable — <strong>marked with whether they repeat</strong></td><td>You need to see at a glance that the recurring ones were found</td></tr>
+    <tr class="today"><td>5 · The check that catches the lie</td><td>It asks you for the recurring event you wrote down, and looks for it on that date</td><td class="now">Stops rather than saying "mostly working"</td></tr>
+    <tr><td>6 · Compare with your own eyes</td><td>Your real calendar, open beside the output</td><td>Only you can confirm the brain sees your real day</td></tr>
+    <tr><td>7 · Make it askable</td><td>A webhook or the dashboard — whichever matches what you already have</td><td>Follow your existing pattern rather than inventing a new one</td></tr>
+    <tr><td>8 · If you did Class 5</td><td>One short line near the top of the 7am digest: "3 things on today, first at 09:30"</td><td>The digest always sends, even when the answer is nothing</td></tr>
+  </table>
+  <span class="milestone">✓ It lists your real day, including the things that repeat</span>
+  <div class="aside"><p>Step 5 is the one that makes this prompt different from a tutorial. Most calendar walkthroughs end at step 4 — output appeared, it looks like a day, done. The prompt is written so that the brain has to go and look for a specific event you already know the answer for, and stop if it is not there.</p></div>
+</section>
+
+<!-- ═══════════════ 24 · THE RECURRENCE TRAP ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">0:28 · the segment that earns the hour</p>
+  <h2>A weekly standup is <em>one event and a rule</em> — not fifty-two events.</h2>
+  <div class="cols wide">
+    <div class="stack">
+      <div class="cmd has-label"><span class="label">what is actually in the feed</span>BEGIN:VEVENT
+SUMMARY:Standup
+DTSTART;TZID=America/New_York:<span class="k">20240108</span>T093000
+<span class="x">RRULE:FREQ=WEEKLY;BYDAY=MO</span>
+END:VEVENT</div>
+      <div class="call bad"><span class="t">What a parser that ignores that line shows you</span>The standup, <strong>once</strong> — on 8 January 2024. And nothing today. Your one-off events all appear correctly, on the right day, at the right time. <strong>Nothing errors. Nothing looks wrong.</strong></div>
+    </div>
+    <div class="stack">
+      <p class="quote">Today shows two meetings instead of five. The two that showed up are correct. You will believe it, and you will miss the standup.</p>
+      <div class="call warn"><span class="t">The same failure family, for the fifth time</span>Class 3's base64 stored as text. Class 4's audio file of exactly the right size, full of static. Class 5's digest that only spoke when it had news. Class 6's communities all called <code>Community 1</code>. <strong>A plausible artifact from a broken step.</strong></div>
+    </div>
+  </div>
+  <div class="aside"><p>If you remember one thing from this hour a year from now, make it the shape of this failure rather than the syntax of an <code>RRULE</code>. The pattern is: a step breaks, the output still looks like the kind of thing the output is supposed to look like, and nothing anywhere reports an error. Every class in this series has produced one, and they were all found by checking a specific thing the answer was already known for.</p></div>
+</section>
+
+<!-- ═══════════════ 25 · THE OTHER HARD PART ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">0:28 · the other half of that segment</p>
+  <h2>All-day is a <em>date.</em> Timed is a <em>timestamp.</em> They are not the same shape.</h2>
+  <div class="cols wide">
+    <div class="stack">
+      <div class="cmd has-label"><span class="label">three shapes, three behaviours</span>DTSTART;VALUE=DATE:20260923          <span class="c">all-day — a date, no time at all</span>
+DTSTART;TZID=America/New_York:20260923T140000   <span class="c">timed, with a zone</span>
+DTSTART:20260923T140000Z             <span class="c">timed, UTC</span>
+DTSTART:20260923T140000              <span class="c">floating — "local, wherever you are"</span></div>
+      <div class="cmd has-label"><span class="label">what your feed actually uses</span>curl -s "$BRAIN_ICAL_URL" | grep -c "TZID="<button class="copy">copy</button></div>
+    </div>
+    <div class="stack">
+      <div class="call warn"><span class="t">The symptom, and what it tells you</span>Treat an all-day <code>VALUE=DATE</code> as a timestamp and <strong>every all-day event lands at 00:00</strong> and sorts before your early meeting. It is on the right day. It is just pretending to be midnight, and it will keep doing that quietly forever.</div>
+      <p class="small mute"><strong>The hour check is the timezone check.</strong> If everything is out by the same number of hours, that is <code>GENERIC_TIMEZONE</code>. If only <em>some</em> events are out, that is <code>TZID</code> versus floating — and that is the harder bug.</p>
+    </div>
+  </div>
+  <div class="aside"><p>An invoice due date and a 2pm call are different kinds of thing and iCal is right to store them differently. Where it gets painful is that both arrive as a line beginning <code>DTSTART</code>, and code that does not look at the parameters will happily treat one as the other and produce something that sorts, renders and reads perfectly.</p></div>
+</section>
+
+<!-- ═══════════════ 26 · WHAT P1 LOOKS LIKE WHEN IT WORKS ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P1 <b>· what "it worked" looks like</b></p>
+  <h2>Your actual day, <em>in time order,</em> with the repeats marked.</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="cmd big has-label"><span class="label">readable, not raw JSON</span>09:30    Standup <span class="s">(repeats weekly)</span>
+14:00    Call with the insurance broker
+all day  Invoice due — SupplyCo</div>
+      <ul class="pts">
+        <li><strong>The "repeats weekly" mark is not decoration.</strong> It is how you see, at a glance, that recurrence is being expanded at all.</li>
+        <li><strong>Then the reverse test:</strong> pick a day with nothing on it. It should say so — not show you yesterday's.</li>
+      </ul>
+    </div>
+    <div class="stack">
+      <div class="call good"><span class="t">Level 3 · and no amount of green output replaces it</span>Open your real calendar <strong>side by side</strong> with the output. Is anything missing? Is anything on the wrong day, or at the wrong hour? Are all-day events reading as all-day rather than as midnight?</div>
+      <p class="small mute">This is in <code>VERIFY.md</code> as a level, with checkboxes, because it is the level people skip. Code that looks right is not evidence. Your Tuesday appearing on Tuesday is.</p>
+    </div>
+  </div>
+  <div class="aside"><p>There is a reason the output is a list of lines and not a JSON blob. You are the check here, and you cannot spot a missing meeting in a structure you have to decode first. Making the output readable is not a nicety — it is what makes the verification step possible at all.</p></div>
+</section>
+
+<!-- ═══════════════ 27 · THE DIGEST LINE ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P1 · step 8 <b>· optional, and only if you did Class 5</b></p>
+  <h2>The 7am digest gains <em>one line.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="cmd big has-label"><span class="label">near the top · a summary you'll actually read</span>3 things on today, first at 09:30.</div>
+      <ul class="pts">
+        <li><strong>Not a full listing.</strong> A digest that reprints your calendar is a digest you stop reading, and then it may as well not run.</li>
+        <li><strong>The digest always sends</strong> — even when the answer is "nothing on today." That was Class 5's rule and it still holds.</li>
+        <li><strong>Skipped Class 5?</strong> The prompt says so and moves on. It does not build you a digest here.</li>
+      </ul>
+    </div>
+    <div class="call good"><span class="t">"Nothing on today" is the heartbeat</span>A digest that only speaks when it has news is indistinguishable from a digest that has silently died. Class 5 learned that the hard way. <strong>Being told there is nothing on is useful, and it is also the proof the thing still runs.</strong></div>
+  </div>
+  <div class="aside"><p>This is the whole payoff of the series being built in order. Class 5's digest already lands in your inbox every morning and you already read it. One line at the top of something you already read costs nothing to adopt — whereas a new daily calendar email is another notification you will mute by Thursday.</p></div>
+</section>
+
+<!-- ═══════════════ 28 · P2 SHAPE ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P2 <b>· Propose · eight steps</b></p>
+  <h2>A date out of a document you uploaded weeks ago, <em>in your inbox.</em></h2>
+  <table>
+    <tr><th>Step</th><th>What happens</th><th>Why it's built this way</th></tr>
+    <tr><td>1 · What your documents say</td><td><strong>Five real excerpts</strong> containing dates, with the filename each came from. Not a schema — actual text</td><td>If your documents have no dates, this has nothing to propose, and you find out now</td></tr>
+    <tr class="today"><td>2 · Extract, never generate</td><td>The date <strong>and the sentence it came from</strong>, verbatim. Ambiguous dates are flagged, not resolved</td><td class="now">The most important instruction in the prompt</td></tr>
+    <tr><td>3 · You pick which ones matter</td><td>It shows candidates and asks. Then asks whether you want the reminder on the date or some days before</td><td>A lease renewal is useless on the morning it renews</td></tr>
+    <tr><td>4 · Build a real <code>.ics</code></td><td><code>UID</code>, <code>DTSTAMP</code>, <code>DTSTART</code>, <code>SUMMARY</code>, and the source sentence in <code>DESCRIPTION</code></td><td>In four months you will not remember why it fired</td></tr>
+    <tr><td>5 · Email it as an attachment</td><td>Your existing Class 2 mailbox credential. Short body: what it found, which document, and that nothing has been added yet</td><td>No new credential, no new service</td></tr>
+    <tr><td>6 · You open it in a real mail client</td><td>On your phone or in your laptop's mail app — <strong>not in n8n</strong></td><td>"n8n says success" is not "the attachment opened as an invite"</td></tr>
+    <tr><td>7 · Check it doesn't repeat itself</td><td>Run it again. No second email — or if there is one, the <code>UID</code> matches</td><td>Duplicate reminders are how you end up switching it off</td></tr>
+    <tr><td>8 · <em>Then</em> put it on a schedule</td><td>Weekly is plenty. And: how would you know if it silently stopped?</td><td>Class 5's question, asked again</td></tr>
+  </table>
+  <span class="milestone">✓ An invite in your inbox, built from a lease you uploaded weeks ago</span>
+  <div class="aside"><p>Step 8 coming last is the point. Everything before it is you watching the thing work with your own eyes, once. Putting an unverified workflow on a schedule is how you get an automation that has been wrong every week for two months and nobody noticed, because nobody was ever going to look again.</p></div>
+</section>
+
+<!-- ═══════════════ 29 · THE .ICS ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P2 · step 4 <b>· two details that decide whether you keep it</b></p>
+  <h2>A stable <em>UID,</em> and the sentence <em>in the body.</em></h2>
+  <div class="cols wide">
+    <div class="stack">
+      <div class="cmd has-label"><span class="label">the shape it has to have</span>BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:...
+BEGIN:VEVENT
+<span class="k">UID</span>:<span class="c">stable for this document + date</span>
+<span class="k">DTSTAMP</span>:<span class="c">when it was generated</span>
+<span class="k">DTSTART</span>:<span class="c">the reminder date — all-day is usually right</span>
+<span class="k">SUMMARY</span>:Insurance policy renews (1 Mar)
+<span class="k">DESCRIPTION</span>:<span class="c">the exact sentence, and the filename</span>
+END:VEVENT
+END:VCALENDAR</div>
+    </div>
+    <div class="stack">
+      <div class="call bad"><span class="t">The UID must be stable</span>Same document, same date → <strong>same UID</strong>. Otherwise every run creates a second copy of the same reminder, and you will turn the whole thing off inside a fortnight. Then you have nothing.</div>
+      <div class="call warn"><span class="t">CRLF, and folded long lines</span><code>.ics</code> line endings are CRLF and long lines are folded. <strong>If a calendar client refuses the file, that is usually why</strong> — and the symptom is that the attachment opens as plain text instead of offering to add an event.</div>
+      <p class="small mute">The sentence in the <code>DESCRIPTION</code> is what makes this trustworthy in four months. "Because your lease says so, and here is the line" is the difference between accepting it and deleting it.</p>
+    </div>
+  </div>
+  <div class="aside"><p>Both of these are unglamorous and both decide whether the thing survives contact with your actual life. Nobody abandons an automation because it was architecturally impure; they abandon it because it emailed them the same reminder five weeks running, or because the attachment opened as a wall of text on their phone.</p></div>
+</section>
+
+<!-- ═══════════════ 30 · IT PROPOSES ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P2 · step 6 <b>· the check that proves it is only a proposal</b></p>
+  <h2>Look at your calendar <em>before</em> you click. It should be empty.</h2>
+  <div class="cols">
+    <ul class="pts">
+      <li><strong>Check the calendar first, then click.</strong> In that order. That is what proves nothing was added behind you.</li>
+      <li>The attachment <strong>offers to add an event</strong> — it does not open as text. If it opens as text, the file or the MIME type is wrong.</li>
+      <li>The date is correct, and <strong>the date exists in the document.</strong> Open the file and find it.</li>
+      <li>The title still makes sense <strong>read cold in four months.</strong></li>
+      <li>The description carries <strong>the sentence and the filename.</strong></li>
+    </ul>
+    <div class="stack">
+      <div class="call bad"><span class="t">If the date is not in the document — stop</span>Something is <strong>generating rather than extracting</strong>, and everything downstream of it is now untrustworthy. Fix that before you trust any of it. A reminder you believe and a fabrication you believe look identical in an inbox.</div>
+      <p class="quote">Nothing was in your calendar before you clicked. That is not a technicality — it is the design.</p>
+    </div>
+  </div>
+  <div class="aside"><p>The order of that first check matters more than it sounds. If you click and then look, you have proved only that clicking works. Looking first and finding an empty slot is the evidence that the automation genuinely has no write access — which is a claim about your setup, not about your intentions, and claims about setups are checkable.</p></div>
+</section>
+
+<!-- ═══════════════ 31 · THE ETHICAL SPINE ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">0:46 · said out loud, not implied</p>
+  <p class="big-quote">A calendar you did not agree to is <em>worse</em> than no calendar.</p>
+  <div class="cols">
+    <div class="stack">
+      <p class="lede">Give an automation write access to your week and it can quietly put things in it — and you find out when you are somewhere you never agreed to be.</p>
+      <p class="quote">An <code style="font-family:var(--mono);color:var(--amber)">.ics</code> you click is a proposal. You still say yes.</p>
+    </div>
+    <div class="stack">
+      <div class="call good"><span class="t">Same rule, third class running</span>Class 4 gave it a voice and would not let it speak unprompted. Class 5 gave it hands and made it write drafts it never sends. Class 7 gives it a clock and <strong>will not let it book your week.</strong> The pattern is not caution for its own sake — it is where the line sits between an assistant and something you have to supervise.</div>
+      <p class="small mute">Want it automatic anyway? That is a real position, and <code>docs/UPGRADE-write-access.md</code> is in the pack — honest about the consent screen, and about tokens that expire in seven days if the OAuth app is left in Testing. <strong>Decide it with the costs in front of you</strong>, not because a demo looked smoother.</p>
+    </div>
+  </div>
+  <div class="aside"><p>This is the slide worth remembering after you have forgotten the file format. Every organ this series added could have been built with more autonomy and less friction, and each time the friction was kept on purpose at the exact point where a mistake would cost you something you cannot undo. A sent email, a booked afternoon. The brain prepares; you commit.</p></div>
+</section>
+
+<!-- ═══════════════ 32 · THE PAYOFF ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">0:52 · stored and timely, together</p>
+  <h2>Ask it something your documents answer <em>and</em> date.</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="cmd big has-label"><span class="label">the question that needs both halves</span>"What do I need to deal with this month?"</div>
+      <ul class="pts">
+        <li><strong>Class 3 alone</strong> could tell you what the lease says — if you asked about the lease.</li>
+        <li><strong>Class 5 alone</strong> could tell you it is the 28th.</li>
+        <li><strong>Together</strong>, it can tell you that the thing it read in March matters on Friday, without you having remembered to ask.</li>
+      </ul>
+    </div>
+    <div class="stack">
+      <div class="call good"><span class="t">The check that proves it was worth building</span><strong>Something appeared in your day that you had forgotten about</strong> — and it came out of a document you uploaded weeks ago. That is the whole class. If it never happens, either your documents have no dates in them, or you already had perfect recall. One of those is much more likely.</div>
+      <p class="small mute">And the honest limit: the dates come out of your documents. If a document is wrong, you get an accurate reminder of the wrong thing.</p>
+    </div>
+  </div>
+  <div class="aside"><p>Six weeks of feeding a brain and it has been answering questions you thought to ask. This is the first hour where it brings you something you did not ask for and were going to miss. That is a different relationship with the thing, and it is worth noticing the moment it first happens to you.</p></div>
+</section>
+
+<!-- ═══════════════ 33 · VERIFY ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">What "it worked" has to mean today</p>
+  <h2>Every check on this list <em>can fail.</em> That is the point.</h2>
+  <div class="cols">
+    <ul class="pts">
+      <li>Nothing here fails loudly. A missing <code>RRULE</code> expansion shows you a tidy, correct, incomplete day. A timezone error shows you real events on the wrong date. A generated date arrives looking exactly like an extracted one.</li>
+      <li>So the verification is not "did it run" — it is <strong>"what would this print if it were broken, and did I check for that?"</strong></li>
+    </ul>
+    <table>
+      <tr><th>Level</th><th>Proves</th></tr>
+      <tr><td>0 · the feed</td><td>HTTP 200, first line <code>BEGIN:VCALENDAR</code>, and you were told <strong>how many events repeat</strong></td></tr>
+      <tr><td>1 · today</td><td>Events in time order, each marked as repeating or not</td></tr>
+      <tr class="today"><td>2 · <strong>the lie</strong></td><td class="now">Your written-down recurring event appears <strong>on the date you wrote down</strong></td></tr>
+      <tr><td>3 · your own eyes</td><td>Real calendar side by side. Nothing missing, wrong day or wrong hour</td></tr>
+      <tr><td>4 · the proposal</td><td>The <code>.ics</code> opens as an invite · the date <strong>exists in the document</strong> · nothing was in your calendar before you clicked</td></tr>
+      <tr><td>5 · no twins</td><td>Second run: no duplicate, or a matching <code>UID</code></td></tr>
+      <tr><td>Your invoice</td><td>Unchanged</td></tr>
+    </table>
+  </div>
+  <div class="aside"><p>Level 2 is the one people skip, which is why it has a file of its own to skip it in. What <code>verify.sh</code> covers is levels 0 and 1; everything from 2 onwards needs you, and one of them needs your own calendar open beside it. A script cannot check whether the brain sees your real day.</p></div>
+</section>
+
+<!-- ═══════════════ 34 · WHAT YOU'LL HAVE ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">By the end of this hour</p>
+  <h2>What you'll actually walk away with.</h2>
+  <div class="cols">
+    <ul class="pts moss">
+      <li>A brain that can tell you <strong>what is on today</strong> — from your real calendar, including the things that repeat</li>
+      <li>A written-down answer to <strong>how your recurring events are handled</strong>, including "not yet" if that is the truth</li>
+      <li>An <code style="font-family:var(--mono);color:var(--amber)">.ics</code> in your inbox, built from a date inside a document you uploaded weeks ago</li>
+      <li>If you did Class 5: <strong>one line at the top of your 7am digest</strong></li>
+      <li>And nothing anywhere with write access to your week</li>
+    </ul>
+    <div class="stack">
+      <span class="milestone">✓ One organ added, nothing written</span>
+      <p class="small mute">No new signup — <strong>not even a free tier.</strong> No new table, no schema change, no migration. Reset the secret URL and delete the workflow and you are exactly where you started. That is not an accident; it is the constraint this class was designed under.</p>
+    </div>
+  </div>
+  <div class="aside"><p>Worth keeping the "not yet" bullet honestly. A calendar view you know is missing recurring events is a usable tool — you compensate. A calendar view you believe is complete and is not will cost you a meeting, and it will do it months from now when you have long stopped thinking about how it works.</p></div>
+</section>
+
+<!-- ═══════════════ 35 · HOMEWORK + WHAT'S STILL MISSING ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">Before next time</p>
+  <h2>Homework, and <em>what is still missing.</em></h2>
+  <div class="cols">
+    <ul class="pts">
+      <li><strong>Post the one thing it told you that you had forgotten.</strong> That is the result of this class — not the workflow.</li>
+      <li><strong>Check your recurring event again in a week.</strong> A rule that expands correctly today can still be wrong on a month boundary or across a DST change.</li>
+      <li><strong>Ask it "what do I need to deal with this month?"</strong> — a question it could not have answered last week.</li>
+    </ul>
+    <div class="stack">
+      <div class="call warn"><span class="t">Deferred, on the record</span><strong>Real calendar write access</strong> — a consent screen and the seven-day token trap; it ships as a doc. <strong>Two-way sync</strong> — nothing here edits your calendar, so there is nothing to sync back. <strong>Meeting prep</strong>, pulling the documents relevant to today's meeting — genuinely good, and it needs Class 6's graph to be more than keyword matching. A different class.</div>
+      <p class="small mute">And still optional, still standing alone: <strong>Content Mate</strong> — the public voice, in the classroom rather than on the calendar. Its own calendar work is Airtable-specific and stays there.</p>
+    </div>
+  </div>
+  <div class="aside"><p>The homework is the actual product. Building the workflow takes an hour; noticing that the brain surfaced something you would have missed — and deciding whether you now trust it enough to stop keeping that date in your head — is the thing only you can do, and it takes a few weeks rather than an hour.</p></div>
+</section>
+
+<!-- ═══════════════ 36 · COMMON QUESTIONS ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">Common questions</p>
+  <h2>Worth asking <em>before</em> you build, not just after.</h2>
+  <table>
+    <tr><th>Question</th><th>Straight answer</th></tr>
+    <tr><td>Do I need a Google Cloud project?</td><td>No. Reading uses the secret iCal URL, which needs no authentication at all. Writing is an email attachment. <strong>No new signup, not even a free tier.</strong></td></tr>
+    <tr><td>Is the secret URL safe?</td><td>It is read-only and revocable with one click — and it is read access to your <em>entire</em> calendar for anyone holding it. Both are true. It goes in an n8n credential and nowhere else.</td></tr>
+    <tr><td>Google doesn't show me a secret address</td><td>Workspace admins can disable it and some personal accounts hide it. <code>docs/CALENDARS.md</code> has the fallback — which has <strong>not</strong> been tested against an account where it is genuinely absent.</td></tr>
+    <tr><td>Today looks emptier than my real day</td><td>Recurrence is not being expanded. The classic. Count your <code>RRULE</code> lines; if that number is above zero and none show today, that is the bug.</td></tr>
+    <tr><td>Everything is out by an hour or a day</td><td>All of it by the same amount → <code>GENERIC_TIMEZONE</code>, then restart the container. Only some → <code>TZID</code> versus floating times, and that is the harder one.</td></tr>
+    <tr><td>Why won't it just add the event for me?</td><td>Because then it can add events you did not agree to. <code>docs/UPGRADE-write-access.md</code> is in the pack if you want it — with the consent screen and the seven-day expiry written down.</td></tr>
+    <tr><td>Do I need Classes 4, 5 and 6?</td><td>No. Class 2 and Class 3 are required. Class 5 is optional and only adds the digest line.</td></tr>
+    <tr><td>What does it cost?</td><td><strong>Expected: zero</strong> — a URL fetch, a parse in a Code node, and mail that already works. Not yet measured against the teaching box, and said plainly rather than rounded to "free."</td></tr>
+  </table>
+</section>
+
+
+</div>
+
+<div id="bar"></div>
+<div class="hit l" title="previous"></div><div class="hit r" title="next"></div>
+<div id="hud"><span><span class="sect" id="sect"></span> &nbsp;·&nbsp; <span id="count"></span></span><span>Class 7 · A Clock It Can Read · Student Guide <button id="bNotes" title="N">why this matters</button><button id="bGrid" title="O">overview</button><button id="bFull" title="F">fullscreen</button><button id="bHelp" title="?">?</button></span></div>
+<div id="notes"><div class="t">Why this matters</div><div id="notesBody"></div></div>
+<div id="grid"></div>
+<div id="help"><div>
+<kbd>→</kbd><kbd>space</kbd> next &nbsp;&nbsp; <kbd>←</kbd> previous &nbsp;&nbsp; <kbd>Home</kbd><kbd>End</kbd> first / last<br>
+<kbd>N</kbd> why this matters &nbsp;&nbsp; <kbd>O</kbd> overview &nbsp;&nbsp; <kbd>F</kbd> fullscreen &nbsp;&nbsp; <kbd>1</kbd><kbd>2</kbd> tabs on a slide<br>
+<kbd>Esc</kbd> close &nbsp;&nbsp; URL <span style="color:var(--amber)">#12</span> jumps to a slide &nbsp;&nbsp; <kbd>Ctrl+P</kbd> prints every slide, "why this matters" included
+</div></div>
+
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const bar=document.getElementById('bar'),count=document.getElementById('count'),sect=document.getElementById('sect');
+  const notes=document.getElementById('notes'),notesBody=document.getElementById('notesBody'),grid=document.getElementById('grid'),help=document.getElementById('help');
+  let i=0,dir=1;
+  function go(n,d){
+    n=Math.max(0,Math.min(slides.length-1,n)); if(d===undefined)d=n>=i?1:-1; dir=d;
+    slides.forEach(s=>{s.classList.remove('on','back')});
+    const s=slides[n]; if(dir<0)s.classList.add('back'); void s.offsetWidth; s.classList.add('on');
+    i=n; bar.style.width=((i+1)/slides.length*100)+'%'; count.textContent=(i+1)+' / '+slides.length; sect.textContent=s.dataset.sect||'';
+    const a=s.querySelector('.aside'); notesBody.innerHTML=a?a.innerHTML:'<p class="mute">Nothing extra for this slide — it already says what it needs to.</p>';
+    history.replaceState(null,'','#'+(i+1)); document.querySelectorAll('#grid a').forEach((g,k)=>g.classList.toggle('cur',k===i));
+  }
+  // overview grid
+  slides.forEach((s,k)=>{const a=document.createElement('a');a.href='#'+(k+1);const h=s.querySelector('h1,h2,.big-quote');a.innerHTML='<b>'+(k+1)+' · '+(s.dataset.sect||'')+'</b>'+(h?h.textContent.slice(0,90):'');a.onclick=e=>{e.preventDefault();grid.classList.remove('on');go(k)};grid.appendChild(a)});
+  // tabs
+  document.querySelectorAll('.tabs').forEach(t=>{const sl=t.closest('.slide');t.querySelectorAll('button').forEach(b=>b.onclick=()=>{t.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));sl.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.dataset.pane===b.dataset.pane))})});
+  // copy — file:// rejects navigator.clipboard, execCommand works
+  function copyText(t){return new Promise(res=>{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity=0;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);if(ok)return res(true);if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>res(true),()=>res(false));else res(false)})}
+  document.querySelectorAll('.copy').forEach(b=>b.onclick=e=>{e.stopPropagation();const box=b.closest('.cmd').cloneNode(true);box.querySelectorAll('.copy,.label').forEach(x=>x.remove());const t=box.textContent.replace(/^\n+|\n+$/g,'');copyText(t).then(ok=>{b.textContent=ok?'copied':'select + ctrl+c';b.classList.toggle('ok',ok);setTimeout(()=>{b.textContent=b.textContent.startsWith('copied')&&b.dataset.l||b.dataset.l||'copy';b.classList.remove('ok')},1400)});});
+  document.querySelectorAll('.copy').forEach(b=>b.dataset.l=b.textContent);
+  // keys
+  document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')return;
+    if(e.key==='Escape'){grid.classList.remove('on');help.classList.remove('on');notes.classList.remove('on');return}
+    if(help.classList.contains('on')||grid.classList.contains('on')){if(e.key==='o'||e.key==='O'||e.key==='?')toggle(e.key);return}
+    switch(e.key){
+      case 'ArrowRight':case ' ':case 'PageDown':case 'Enter':e.preventDefault();go(i+1,1);break;
+      case 'ArrowLeft':case 'PageUp':case 'Backspace':e.preventDefault();go(i-1,-1);break;
+      case 'Home':go(0,-1);break;case 'End':go(slides.length-1,1);break;
+      case 'n':case 'N':notes.classList.toggle('on');break;
+      case 'o':case 'O':grid.classList.toggle('on');break;
+      case 'f':case 'F':full();break;
+      case '?':help.classList.toggle('on');break;
+      case '1':case '2':case '3':{const t=slides[i].querySelectorAll('.tabs button')[+e.key-1];if(t)t.click();break}
+    }
+  });
+  function toggle(k){if(k==='?')help.classList.toggle('on');else grid.classList.toggle('on')}
+  function full(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
+  document.querySelector('.hit.l').onclick=()=>go(i-1,-1);document.querySelector('.hit.r').onclick=()=>go(i+1,1);
+  document.getElementById('bNotes').onclick=()=>notes.classList.toggle('on');document.getElementById('bGrid').onclick=()=>grid.classList.toggle('on');
+  document.getElementById('bFull').onclick=full;document.getElementById('bHelp').onclick=()=>help.classList.toggle('on');
+  help.onclick=e=>{if(e.target===help)help.classList.remove('on')};
+  // touch
+  let tx=null;document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});document.addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>60)go(i+(dx<0?1:-1));tx=null});
+  window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1))-1;if(!isNaN(n)&&n!==i)go(n)});
+  const start=parseInt(location.hash.slice(1))-1;go(isNaN(start)?0:start,1);
+})();
+</script>
+</body>
+</html>
