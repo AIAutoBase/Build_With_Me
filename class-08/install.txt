@@ -77,7 +77,7 @@ Windows PowerShell:
 
 The zip must have this SHA-256:
 
-  783c9032cd8e076163087b2df014113c5b5ec6ac46ab883361def972d4ac2fd3
+  85fb9905a79341c8e3d3c4e8542eb6f1e552b9e2086992f615361d7699649740
 
 Mac / Linux / WSL:   sha256sum class-08-project-pack.zip
 Mac (if missing):    shasum -a 256 class-08-project-pack.zip

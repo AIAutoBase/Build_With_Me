@@ -152,7 +152,7 @@ cd downloads && sha256sum -c SHA256SUMS
 
 | File | SHA-256 |
 |---|---|
-| `class-08-project-pack.zip` | `783c9032cd8e076163087b2df014113c5b5ec6ac46ab883361def972d4ac2fd3` |
+| `class-08-project-pack.zip` | `85fb9905a79341c8e3d3c4e8542eb6f1e552b9e2086992f615361d7699649740` |
 
 13 files. This pack pins its zip timestamps, so the same sources always produce the same
 hash — a mismatch means the sources moved, not that the clock did.

@@ -163,7 +163,17 @@ fi
 # ── 6. size ───────────────────────────────────────────────────────────────────
 head_ "6. Size"
 
-BIG=$(find . -type f -size +10M -not -path './.git/*' 2>/dev/null | head -5)
+# Inside a repo, ask git what it would actually track - a Class 6 box has a 238 MB
+# .graphify-venv that git already ignores (venv writes its own .gitignore), and
+# warning about it is noise. Outside a repo, skip the usual rebuildable folders.
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  BIG=$(git ls-files -co --exclude-standard 2>/dev/null \
+        | while IFS= read -r f; do [ -f "$f" ] && [ "$(wc -c < "$f")" -gt 10485760 ] && printf './%s\n' "$f"; done \
+        | head -5)
+else
+  BIG=$(find . -type f -size +10M -not -path './.git/*' -not -path '*/node_modules/*' \
+        -not -path '*venv/*' 2>/dev/null | head -5)
+fi
 if [ -n "$BIG" ]; then
   warn "files over 10 MB here - git is bad at these and they are not source:"
   printf '%s\n' "$BIG" | sed 's/^/          /'

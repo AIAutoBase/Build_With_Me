@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Class 8 — Make It a Project · Student Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141c24; --ink-2:#1c2733; --ink-3:#26343f;
+  --paper:#f4eee2; --paper-dim:#c8bfae; --paper-mute:#8e8676;
+  --rust:#d3552b; --rust-soft:#f2a37f; --moss:#4fb38a; --amber:#e8b64a; --sky:#6fb2e0;
+  --mono:"JetBrains Mono",Consolas,"Cascadia Mono",monospace;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--ink);color:var(--paper);font:400 clamp(16px,1.35vw,22px)/1.5 var(--serif);overflow:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 8% 0%,rgba(211,85,43,.10),transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 100%,rgba(111,178,224,.07),transparent 60%);
+}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+
+/* ---------- deck ---------- */
+#deck{position:fixed;inset:0}
+.slide{position:absolute;inset:0;padding:clamp(28px,4.5vh,64px) clamp(28px,6vw,110px) clamp(70px,9vh,96px);
+  display:none;flex-direction:column;opacity:0;transform:translateX(24px)}
+.slide.on{display:flex;animation:in .42s cubic-bezier(.2,.7,.2,1) forwards}
+.slide.back{transform:translateX(-24px)}
+@keyframes in{to{opacity:1;transform:none}}
+.slide>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+.slide>*:nth-child(2){animation-delay:.06s}.slide>*:nth-child(3){animation-delay:.12s}.slide>*:nth-child(4){animation-delay:.18s}.slide>*:nth-child(5){animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.kicker{font:600 .62em/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--rust);margin:0 0 .9em;display:flex;gap:1.2em;align-items:center}
+.kicker b{color:var(--paper-mute);font-weight:400}
+h1{font-weight:800;font-size:clamp(34px,4.6vw,78px);line-height:1.02;margin:0 0 .35em;letter-spacing:-.02em;font-variation-settings:"opsz" 144}
+h2{font-weight:600;font-size:clamp(26px,3vw,50px);line-height:1.08;margin:0 0 .5em;letter-spacing:-.015em;font-variation-settings:"opsz" 96}
+h2 em,h1 em{font-style:italic;font-weight:300;color:var(--rust-soft)}
+p{margin:.35em 0}
+.lede{font-size:1.18em;max-width:30em;color:var(--paper-dim);font-weight:300}
+.cols{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(20px,3vw,48px);flex:1;min-height:0;align-items:start}
+.cols.eq{grid-template-columns:1fr 1fr}
+.cols.wide{grid-template-columns:1.5fr 1fr;align-items:stretch;grid-template-rows:minmax(0,1fr)}
+.cols.wide .stack{overflow:auto;min-height:0}
+.stack{display:flex;flex-direction:column;gap:.6em;min-height:0}
+.fill{flex:1;min-height:0;height:100%;display:flex;flex-direction:column}
+.small{font-size:.86em;color:var(--paper-dim)}
+.mute{color:var(--paper-mute)}
+ul.pts{list-style:none;padding:0;margin:.3em 0}
+ul.pts li{position:relative;padding-left:1.35em;margin:.42em 0;color:var(--paper-dim)}
+ul.pts li::before{content:"";position:absolute;left:0;top:.62em;width:.55em;height:.55em;background:var(--rust);transform:rotate(45deg)}
+ul.pts li strong{color:var(--paper);font-weight:600}
+ul.pts.moss li::before{background:var(--moss)}
+.rule{border:0;border-top:1px solid rgba(244,238,226,.16);margin:.8em 0}
+
+/* ---------- code / commands ---------- */
+.cmd{position:relative;background:var(--ink-2);border:1px solid rgba(244,238,226,.13);border-left:4px solid var(--rust);
+  font:400 .78em/1.5 var(--mono);color:#eae4d6;padding:.9em 1em .9em 1.1em;margin:.35em 0;white-space:pre-wrap;word-break:break-word;
+  overflow:auto;max-height:100%}
+.cmd.big{font-size:.95em}
+.cmd.tall{max-height:none;flex:1;min-height:0}
+.cmd .c{color:var(--paper-mute)}
+.cmd .k{color:var(--amber)}
+.cmd .s{color:var(--moss)}
+.cmd .u{color:var(--sky);text-decoration:underline dotted}
+.cmd .x{color:var(--rust-soft)}
+.cmd .label{position:absolute;top:0;right:0;font-size:.72em;letter-spacing:.14em;text-transform:uppercase;color:var(--paper-mute);padding:.35em .8em;background:rgba(0,0,0,.25)}
+.copy{position:absolute;right:.5em;bottom:.5em;font:600 .72em var(--mono);letter-spacing:.08em;background:var(--paper);color:var(--ink);border:0;padding:.42em .7em;cursor:pointer;opacity:.75;transition:.15s}
+.copy:hover{opacity:1}.copy.ok{background:var(--moss);color:#fff}
+.cmd.has-label{padding-top:1.6em}
+.tabs{display:flex;gap:.4em;margin:.4em 0 0}
+.tabs button{font:600 .7em var(--mono);letter-spacing:.1em;text-transform:uppercase;background:transparent;color:var(--paper-mute);border:1px solid rgba(244,238,226,.18);padding:.45em .9em;cursor:pointer}
+.tabs button.on{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.pane{display:none}.pane.on{display:block}
+.prompt{font-size:.7em;flex:1;min-height:0;max-height:none;overflow:auto}
+.prompt.has-label{padding-top:2em}
+
+/* ---------- callouts ---------- */
+.call{border:1px solid rgba(244,238,226,.16);padding:.9em 1.1em;margin:.5em 0;background:rgba(0,0,0,.18);border-radius:2px}
+.call.warn{border-color:var(--amber);background:rgba(232,182,74,.07)}
+.call.bad{border-color:var(--rust);background:rgba(211,85,43,.09)}
+.call.good{border-color:var(--moss);background:rgba(79,179,138,.08)}
+.call .t{font:600 .66em var(--mono);letter-spacing:.16em;text-transform:uppercase;display:block;margin-bottom:.4em}
+.call.warn .t{color:var(--amber)}.call.bad .t{color:var(--rust-soft)}.call.good .t{color:var(--moss)}
+.quote{font-size:1.25em;font-weight:300;font-style:italic;line-height:1.35;max-width:26em;color:var(--paper);border-left:3px solid var(--rust);padding-left:.8em;margin:.6em 0}
+.big-quote{font-size:clamp(28px,3.4vw,58px);font-weight:300;font-style:italic;line-height:1.15;letter-spacing:-.01em;max-width:18em}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%;font-size:.82em}
+th,td{text-align:left;padding:.5em .7em;border-bottom:1px solid rgba(244,238,226,.12);vertical-align:top}
+th{font:600 .8em var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--paper-mute)}
+td code{font:inherit;font-family:var(--mono);font-size:.9em;color:var(--amber)}
+td.now{color:var(--rust-soft);font-weight:600}
+tr.today td{background:rgba(211,85,43,.12)}
+
+/* ---------- diagram ---------- */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:.6em;margin:.6em 0}
+.flow .n{border:1px solid rgba(244,238,226,.2);padding:.7em .8em;font:600 .72em var(--mono);letter-spacing:.06em;position:relative;background:var(--ink-2)}
+.flow .n small{display:block;font-weight:400;color:var(--paper-mute);margin-top:.35em;letter-spacing:0}
+.flow .n.c3{border-color:var(--sky);color:var(--sky)}
+.flow .n.new{border-color:var(--rust);border-width:2px}
+.flow .n::after{content:"→";position:absolute;right:-.85em;top:38%;color:var(--paper-mute);font-family:var(--serif);font-size:1.3em}
+.flow .n:last-child::after,.flow .n.stop::after{content:""}
+.arrow-back{grid-column:1/-1;text-align:center;color:var(--paper-mute);font:400 .7em var(--mono);letter-spacing:.2em}
+
+/* ---------- step number ---------- */
+.step-n{font:800 clamp(80px,12vw,200px)/0.8 var(--serif);font-variation-settings:"opsz" 144;color:transparent;-webkit-text-stroke:1.5px rgba(244,238,226,.25);position:absolute;right:clamp(28px,6vw,110px);top:clamp(20px,4vh,50px);pointer-events:none;letter-spacing:-.05em}
+.milestone{display:inline-flex;align-items:center;gap:.6em;font:600 .7em var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--moss);border:1px solid var(--moss);padding:.5em .9em;margin-top:.5em}
+
+/* ---------- chrome ---------- */
+#bar{position:fixed;left:0;bottom:0;height:4px;background:var(--rust);width:0;transition:width .35s;z-index:5}
+#hud{position:fixed;left:0;right:0;bottom:0;padding:14px clamp(28px,6vw,110px) 16px;display:flex;justify-content:space-between;align-items:center;font:400 .62em var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--paper-mute);z-index:4}
+#hud .sect{color:var(--paper-dim)}
+#hud button{font:inherit;background:transparent;color:var(--paper-mute);border:1px solid rgba(244,238,226,.18);padding:.45em .9em;cursor:pointer;margin-left:.5em}
+#hud button:hover{color:var(--paper);border-color:var(--paper)}
+.hit{position:fixed;top:0;bottom:60px;width:clamp(24px,4.5vw,80px);z-index:3;cursor:pointer}
+.hit.l{left:0}.hit.r{right:0}
+#notes{position:fixed;left:0;right:0;bottom:0;transform:translateY(100%);transition:.25s;background:var(--paper);color:var(--ink);padding:18px clamp(28px,6vw,110px) 22px;font-size:.92em;max-height:42vh;overflow:auto;z-index:6;border-top:4px solid var(--rust);box-shadow:0 -20px 60px rgba(0,0,0,.5)}
+#notes.on{transform:none}
+#notes .t{font:600 .66em var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--rust);margin-bottom:.4em}
+#notes p{margin:.3em 0}
+#help{position:fixed;inset:0;background:rgba(20,28,36,.92);display:none;place-items:center;z-index:7}
+#help.on{display:grid}
+#help div{background:var(--ink-2);border:1px solid rgba(244,238,226,.2);padding:28px 36px;font:400 .85em/1.8 var(--mono)}
+#help kbd{background:var(--paper);color:var(--ink);padding:.05em .5em;font-weight:600;margin-right:.6em}
+#grid{position:fixed;inset:0;background:var(--ink);display:none;overflow:auto;padding:40px clamp(28px,6vw,110px);z-index:7;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;align-content:start}
+#grid.on{display:grid}
+#grid a{display:block;border:1px solid rgba(244,238,226,.16);padding:12px 14px;color:var(--paper-dim);text-decoration:none;font-size:.8em;min-height:90px}
+#grid a:hover,#grid a.cur{border-color:var(--rust);color:var(--paper)}
+#grid a b{display:block;font:600 .7em var(--mono);letter-spacing:.14em;color:var(--rust);margin-bottom:.3em}
+.aside{display:none}
+
+/* section divider slides */
+.divider{justify-content:center}
+.divider h1{font-size:clamp(48px,7vw,120px);font-weight:300;font-style:italic}
+.divider .kicker{font-size:.8em}
+.divider .num{font:800 clamp(120px,22vw,360px)/0.8 var(--serif);color:transparent;-webkit-text-stroke:2px rgba(211,85,43,.5);position:absolute;right:6vw;bottom:10vh;letter-spacing:-.06em;pointer-events:none}
+
+@media (max-width:900px){.cols,.cols.eq,.cols.wide{grid-template-columns:1fr}.step-n{display:none}body{overflow:auto}.slide{position:relative;padding-bottom:90px}}
+@media print{body{overflow:visible;background:#fff;color:#000}.slide{display:flex!important;position:relative;opacity:1!important;transform:none!important;page-break-after:always;animation:none!important;color:#000}.slide>*{animation:none!important}#hud,#bar,.hit,#notes,#help,.copy,.tabs{display:none!important}.cmd{background:#f2f2f2;color:#000;border-color:#999}.pane{display:block!important}.aside{display:block;border-top:1px dashed #999;margin-top:1em;padding-top:.5em;font-size:.8em}}
+</style>
+</head>
+<body>
+<div id="deck">
+<!-- ═══════════════ 1 · TITLE ═══════════════ -->
+<section class="slide divider" data-sect="Open">
+  <p class="kicker">The Brain That Runs a Company <b>· Part 8 · Wednesday 30 September 2026 · 11:00 AM ET</b></p>
+  <h1>Make it a <em>project</em></h1>
+  <p class="lede">Seven weeks of organs, and not one commit. Today gives the brain nothing at all — it gives you a safety net, before the next class hands an agent a shell in your dashboard.</p>
+  <div class="num">8</div>
+  <div class="aside"><p><strong>What this guide is for.</strong> Read it before class so nothing on the day is a surprise, or follow along with it open while we build live — either way it's yours to keep. Press <strong>N</strong> on any slide for the fuller reasoning behind it; the slide gives you the short version, this panel gives you the "why."</p></div>
+</section>
+
+<!-- ═══════════════ 2 · THE UNCOMFORTABLE PITCH ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">The line the whole hour turns on</p>
+  <p class="big-quote">You have seven weeks of work on one box, with no history, no versions, and no documentation. Change something, break it, and there is no way back.</p>
+  <hr class="rule">
+  <p class="small mute">That is not a missing organ. It is a missing habit — and in three months you will not remember why any of it looks the way it does.</p>
+  <div class="aside"><p>Every class so far handed the brain something new to do. This is the first one that hands nothing to the brain at all. It is aimed at you, the operator, and the pitch is deliberately uncomfortable — because the alternative is finding out the hard way, mid-fix, that there was never a way back.</p></div>
+</section>
+
+<!-- ═══════════════ 3 · THE FIRST CLASS THAT GIVES THE BRAIN NOTHING ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">Before we start</p>
+  <h2>It perceives, remembers, reasons, talks, acts, knows itself and reads a clock — <em>and none of that has a history.</em></h2>
+  <div class="cols">
+    <ul class="pts">
+      <li><strong>Class 1</strong> gave it a terminal it could act in.</li>
+      <li><strong>Class 2</strong> gave it eyes on your inbox.</li>
+      <li><strong>Class 3</strong> gave it memory — documents it can search.</li>
+      <li><strong>Class 4</strong> gave it ears and a voice.</li>
+      <li><strong>Class 5</strong> gave it hands and a clock it obeys.</li>
+      <li><strong>Class 6</strong> gave it self-knowledge — a graph of everything you fed it.</li>
+      <li>And most recently, it gained a second clock — one it reads instead of obeys.</li>
+    </ul>
+    <div class="stack">
+      <div class="call warn"><span class="t">The gap, and what closes it today</span>Seven classes of organs, and every one of them lives in a folder with no history. Break something on purpose or by accident and there is no way back — not because git is hard, but because nobody has run <code>git init</code> yet.</div>
+      <p class="quote">A missing organ is a missing feature. A missing habit is a missing floor.</p>
+    </div>
+  </div>
+  <div class="aside"><p>This class is aimed at the operator, not the brain, and that is worth saying plainly at the top so nobody spends the hour waiting for a new capability to show up. The capability being added today belongs to you, not to the assistant.</p></div>
+</section>
+
+<!-- ═══════════════ 4 · WHY BEFORE THE COCKPIT ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">0:04 · why now, and why before the terminal</p>
+  <h2>Next time, an agent gets shell access to everything you've built. <em>You want history before you hand it a shell.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <p class="lede">The next class puts a Claude or Codex terminal directly in the dashboard — an agent with shell access to the whole box. That is genuinely exciting, and it is also the reason this hour has to come first.</p>
+      <p class="quote">Teaching the terminal first would be teaching skydiving and mentioning parachutes afterwards.</p>
+    </div>
+    <div class="call bad"><span class="t">What "no way back" actually means</span>When an agent with shell access breaks something — and it will, eventually, the same way any of us would — <code>git diff</code> is how you see what changed, and <code>git checkout</code> is how you get it back. Without a repo, there is no diff and nothing to check out. There is just the file, changed, with no record of what it used to be.</div>
+  </div>
+  <div class="aside"><p>Nobody should walk out of this hour thinking the exciting class got postponed for a boring one. The ordering is the argument: a safety net installed after the thing it was meant to catch has already fallen is not a safety net.</p></div>
+</section>
+
+<!-- ═══════════════ 5 · WHAT WAS ACTUALLY RUN ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">Read this before you build anything</p>
+  <h2>This was <em>run.</em> On a copy, deliberately, not on the real thing.</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="call"><span class="t">What was measured, and how</span>Run on <strong>2026-09-29</strong>, on the teaching box, against a copy of the real brain folder. The real folder itself was not touched, and stays that way on purpose — the first prompt turns it into a repo live, in front of you.</div>
+      <div class="call good"><span class="t">What was verified</span>The versioning script ran end to end against scratch repos: an empty index refuses, a multi-line message refuses, a dry run prints the version it will create, the docs-only case warns, and the CHANGELOG-marker trap was reproduced and fixed on both its halves. Separately, a repo was built that committed a secrets file and then removed it from tracking — <code>git status</code> came back clean, and the history scanner still found it.</div>
+    </div>
+    <div class="stack">
+      <p class="small mute">Testing the pack's own build guard by deliberately breaking the versioning script found two bugs in the guard itself, both fixed before anything shipped. A guard that has never refused anything is just a print statement.</p>
+      <p class="small mute">Why you are being told this before anything else: the whole hour is about trusting a safety net you have not needed yet. That trust starts with being told plainly what was tested and what was only reasoned through.</p>
+    </div>
+  </div>
+  <div class="aside"><p>The habit this series keeps returning to is "designed" versus "run." This class earns the harder half of that: not a dry run, but a real repo, a real commit, a real break-and-restore, measured on the actual box the class is taught from.</p></div>
+</section>
+
+<!-- ═══════════════ 6 · HOW THE HOUR RUNS ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">How the hour runs</p>
+  <h2>Three prompts. <em>The first one alone is worth the hour.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <ul class="pts">
+        <li><strong>You don't watch a demo.</strong> The prompts are on the slides and in the pack. You paste them into Claude Code on the machine your brain runs on.</li>
+        <li><strong>Three prompts.</strong> Track it, Version it, Document it — in that order, each one building on the last.</li>
+        <li><strong>Stop after the first and you still have the useful half</strong> — history, and your credentials out of a loose folder.</li>
+        <li><strong>Nothing new is given to the brain.</strong> No organ, no model call, nothing that touches n8n or your data.</li>
+      </ul>
+    </div>
+    <table>
+      <tr><th>Min</th><th>Segment</th></tr>
+      <tr><td>0–4</td><td>Cold open · break the dashboard, <code>git diff</code>, <code>git checkout</code>, back</td></tr>
+      <tr><td>4–8</td><td>Why now, and why before the terminal class</td></tr>
+      <tr><td>8–14</td><td>git is not GitHub</td></tr>
+      <tr><td>14–26</td><td>P1 — Track it · <code>git init</code>, the <code>.gitignore</code>, the first commit</td></tr>
+      <tr class="today"><td>26–34</td><td><strong>The secrets-file segment</strong> — the beat the hour is built around</td></tr>
+      <tr><td>34–44</td><td>P2 — Version it · conventional commits, SemVer, CHANGELOG</td></tr>
+      <tr><td>44–50</td><td>The five traps, from real incidents with dates</td></tr>
+      <tr><td>50–56</td><td>P3 — Document it · a README a stranger could follow</td></tr>
+      <tr><td>56–60</td><td>git is not backup, and what's next</td></tr>
+    </table>
+  </div>
+  <div class="aside"><p>Notice the highlighted row. Everything before it sets up the habit; that row is the reason the habit exists at all. Four earlier classes warned you never to overwrite one particular file. None of them warned you not to commit it — and that gap is what minute 26 closes.</p></div>
+</section>
+
+<!-- ═══════════════ 7 · ORGAN TABLE ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">Where this sits in your brain</p>
+  <h2>Seven classes deep, and none of them left a history behind. <em>Today isn't an organ.</em></h2>
+  <table>
+    <tr><th>Organ</th><th>Tool</th><th>Class</th></tr>
+    <tr><td>Brain</td><td>Claude Code / Codex</td><td>1</td></tr>
+    <tr><td>Senses</td><td>n8n</td><td>2</td></tr>
+    <tr><td>Memory</td><td>Postgres</td><td>3</td></tr>
+    <tr><td>Eyes</td><td>Dashboard</td><td>3</td></tr>
+    <tr><td>Ears and voice</td><td>Telegram</td><td>4</td></tr>
+    <tr><td>Hands, and a clock it obeys</td><td>Schedules + drafts</td><td>5</td></tr>
+    <tr><td>Self-knowledge</td><td>Graphify</td><td>6</td></tr>
+    <tr class="today"><td><strong>— (none)</strong></td><td><strong>git</strong></td><td class="now">today</td></tr>
+  </table>
+  <p class="small mute">This row is different from every one above it. It does not give the brain a new sense or a new ability. It gives <strong>you</strong> a way back when any of the organs above break — including the ones an agent will soon be able to touch directly.</p>
+  <div class="aside"><p>Six weeks of organs, one after another, and not one of them touched version history. Today isn't the seventh organ. It's the floor every one of the first six has been standing on without knowing it.</p></div>
+</section>
+
+<!-- ═══════════════ 8 · GIT IS NOT GITHUB ═══════════════ -->
+<section class="slide" data-sect="Open">
+  <p class="kicker">0:08 · before you touch a terminal</p>
+  <h2>Local repos. <em>No remote, no account, nothing published.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <ul class="pts">
+        <li><strong>No remote required, and none gets set up.</strong> This is a repository on your own machine and nowhere else.</li>
+        <li>Full undo, full diff, full history — <strong>with no account and no network call.</strong></li>
+        <li>A member who does not want their business documents' filenames sitting on someone else's server never has to have them there.</li>
+      </ul>
+      <p class="small mute">This is the portability pillar held harder than anything since Class 6: your history lives exactly where your data already lives.</p>
+    </div>
+    <div class="call bad"><span class="t">Say this now, before it needs saying later</span>Local history is not backup. A repo on a box that dies, dies with it. That is named here on purpose, and again at the close — a safety net for mistakes is not a safety net for hardware failure, and pretending otherwise is how people lose everything twice.</div>
+  </div>
+  <div class="aside"><p>It would be an odd way to end a series that has sold "your stack, your data, no rented dependencies" for six classes running by asking everyone to push their business up to somebody else's server in the name of version control. This class draws that line on purpose.</p></div>
+</section>
+
+<!-- ═══════════════ 9 · PRE-WORK DIVIDER ═══════════════ -->
+<section class="slide divider" data-sect="Setup">
+  <p class="kicker">Part 1 · about five minutes · nothing to sign up for</p>
+  <h1>Setup, <em>at your pace</em></h1>
+  <p class="lede">Two commands and one honest look at what you already have. This is the cheapest pre-work in the whole series — no account, no service, no card.</p>
+  <div class="num">1</div>
+  <div class="aside"><p>Nothing here touches a container, a workflow or a database. It is entirely local, and it is entirely about you finding out what you are sitting on before the hour starts.</p></div>
+</section>
+
+<!-- ═══════════════ 10 · PRE-WORK CONTENT ═══════════════ -->
+<section class="slide" data-sect="Setup">
+  <div class="step-n">01</div>
+  <p class="kicker">Before the hour</p>
+  <h2>Is git installed. Does it know who you are. <em>What would you hate to lose.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="cmd big has-label"><span class="label">two commands</span>git --version
+git config user.name
+git config user.email<button class="copy">copy</button></div>
+      <p class="small mute">If either is blank, your first commit fails with "Please tell me who you are." Set them with <code>git config --global user.name</code> and <code>user.email</code> — <strong>these go into every commit permanently</strong>, so use the ones you want on the record.</p>
+    </div>
+    <div class="stack">
+      <div class="call warn"><span class="t">Run the preflight before class, not during it</span>The pack's checker looks at what you have, and — if your folder is already a repo — searches its <strong>history</strong> for secrets. If it finds something, that is the one thing to read up on before the hour rather than during it.</div>
+      <div class="cmd has-label"><span class="label">bring this to the hour</span>The thing I would most hate to lose: ____________________</div>
+    </div>
+  </div>
+  <div class="aside"><p>The last of the preflight checks is the one worth sitting with. If you have ever committed a secrets file, deleting it and cleaning up afterward does not make it disappear from history — and "clean" in <code>git status</code> is not the same thing as "gone."</p></div>
+</section>
+
+<!-- ═══════════════ 11 · BUILD DIVIDER ═══════════════ -->
+<section class="slide divider" data-sect="Build">
+  <p class="kicker">Part 2 · three prompts · the first alone is worth the hour</p>
+  <h1>The build, <em>from prompts</em></h1>
+  <p class="lede">You paste each prompt into Claude Code yourself, on the brain machine. Track it, Version it, Document it — each one ends somewhere visible, and each one can stand alone.</p>
+  <div class="num">2</div>
+  <div class="aside"><p>Read the page around each prompt in the pack, not just the prompt itself — the traps on the next slides are written next to the exact line that would otherwise catch you out. Both prompts end with the same ground rule the series has used for classes now: never claim something worked without output showing it worked.</p></div>
+</section>
+
+<!-- ═══════════════ 12 · P1 SHAPE ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P1 <b>· Track it · nine steps</b></p>
+  <h2>Look before you touch. <em>Then explain the trap back before anything is built.</em></h2>
+  <table>
+    <tr><th>Step</th><th>What happens</th><th>Why it's built this way</th></tr>
+    <tr><td>1 · Look first</td><td>Find the brain folder, list files and size, anything over 10 MB, is there a secrets file, anything else with a credential in it</td><td>The decision about what to track gets made with eyes open, not assumed</td></tr>
+    <tr class="today"><td>2 · Explain the trap back</td><td>The agent has to say, in its own words: committing once is permanent, deleting and recommitting does not remove it, the fix is to rotate, not rewrite</td><td class="now">The third fact is the one that surprises people</td></tr>
+    <tr><td>3 · <code>.gitignore</code> first</td><td>Before <code>git init</code>. Before anything is staged</td><td>Order matters — a file excluded after it's already tracked is still tracked</td></tr>
+    <tr><td>4 · <code>.env.example</code></td><td>Names only, copied from the real file. No value, ever, printed to the screen</td><td>A stranger needs the shape, never the contents</td></tr>
+    <tr><td>5 · <code>git init</code>, and identity</td><td>Ask for a real name and email — never invent one</td><td>Commits carry it forever</td></tr>
+    <tr><td>6 · Stage deliberately</td><td>Never <code>git add -A</code> or <code>git add .</code>. Show the list, walk it together</td><td>A real incident: one blanket add swept another session's half-finished work into a commit</td></tr>
+    <tr><td>7 · The first commit</td><td><code>git commit</code>, then <code>git log</code> and <code>git status</code></td><td>One commit, clean tree — the visible proof</td></tr>
+    <tr><td>8 · Prove the safety net</td><td>Break something visible, <code>git diff</code>, <code>git checkout --</code>, back</td><td>This is the reason it comes before shell access</td></tr>
+    <tr><td>9 · What you do from now on</td><td>Three commands, nothing more</td><td>Commit when something works, not when it's finished</td></tr>
+  </table>
+  <div class="aside"><p>Step 2 is not decoration. The prompt makes the agent say the surprising fact out loud — not overwriting is not the same rule as not committing — before a single file is staged, so the decision about what goes in is made with the trap already understood.</p></div>
+</section>
+
+<!-- ═══════════════ 13 · P1 MEASURED ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P1 <b>· what actually happened, on the box</b></p>
+  <h2>35 files. Zero copies of the secrets file. <em>Ninety-four milliseconds.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <table>
+        <tr><th>Measured</th><th>Result</th></tr>
+        <tr><td>Files the shipped template wants tracked</td><td><strong>35</strong></td></tr>
+        <tr><td><code>.env</code>, after the ignore line</td><td><code>git ls-files</code> count: <strong>0</strong></td></tr>
+        <tr><td>First commit</td><td><strong>94 ms</strong></td></tr>
+        <tr><td><code>.git/</code> afterward</td><td><strong>472 KB</strong></td></tr>
+        <tr><td>Preflight check after P1</td><td><strong>10 passed, 0 failed, 1 warning</strong> (the warning is git identity)</td></tr>
+      </table>
+    </div>
+    <div class="call warn"><span class="t">A 238 MB folder that stayed out, and why</span>The shipped ignore template excludes common virtual-environment folder names — and this one used a different name, so the template gets no credit. It stayed out because the Python version on the box writes its own internal ignore file into every environment it creates. <strong>Do not credit the template for what Python did.</strong> On an older Python, that folder would be offered for staging, and the "anything over 10 MB?" step and the no-blanket-add rule are what would catch it instead.</div>
+  </div>
+  <div class="aside"><p>This is the difference between "designed" and "run" made concrete. It would have been easy to claim the ignore template handles every large folder a member might have. It doesn't, on this box, for this reason — and saying so plainly is worth more than the tidier untrue version.</p></div>
+</section>
+
+<!-- ═══════════════ 14 · THE SECRETS-FILE BEAT ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">0:26 · the beat the hour is built around</p>
+  <p class="big-quote">Four times I told you never to <em>overwrite</em> this file, because it holds the key that decrypts every credential you have saved. I never once told you not to <em>commit</em> it.</p>
+  <hr class="rule">
+  <p class="small mute">That is not a memory problem. It is a gap nobody named out loud — until now.</p>
+  <div class="aside"><p>Say this sentence to yourself before class: which file on your box holds a key, a password, or a token, and have you ever run a blanket <code>git add</code> in that folder without checking first? Whatever comes to mind is the exact thing this segment is for.</p></div>
+</section>
+
+<!-- ═══════════════ 15 · WHY COMMITTING IS FOREVER ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">0:26 · what "permanent" actually means</p>
+  <h2>Commit it once and it is in history <em>forever.</em> Deleting the file changes nothing.</h2>
+  <div class="cols">
+    <div class="stack">
+      <ul class="pts">
+        <li>Commit it a single time → it is in history <strong>permanently</strong>.</li>
+        <li>Delete the file and commit again → it is <strong>still in every earlier commit</strong>, and in every copy of the repo anyone has made.</li>
+        <li><code>git status</code> going clean tells you nothing about what history already holds.</li>
+      </ul>
+    </div>
+    <div class="call bad"><span class="t">The fix is rotate, not rewrite</span>If it has already happened, the answer is to <strong>rotate the key</strong> — change the value everywhere it is used — not to try to rewrite history. Rewriting does not help once a repo has been copied anywhere, and a backup is a copy.</div>
+  </div>
+  <div class="aside"><p>This is the sentence worth remembering after the syntax is forgotten: history remembers what status forgets. A clean working tree is not evidence of a clean past — only the history itself can tell you that, which is exactly what the preflight check searches.</p></div>
+</section>
+
+<!-- ═══════════════ 16 · THE FIX ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">The fix, live</p>
+  <h2>A <em>.gitignore</em> that actually excludes it. An <em>.env.example</em> with names, no values.</h2>
+  <div class="cols">
+    <table>
+      <tr><th>Tracked</th><th>Not tracked</th></tr>
+      <tr><td>Exported workflows, credential IDs stripped</td><td>Any file holding a real value — the secrets file first</td></tr>
+      <tr><td>The prompts and docs from every class</td><td>Dependency folders, virtual environments, build output</td></tr>
+      <tr><td>The dashboard files</td><td>Database data directories</td></tr>
+      <tr><td>The compose file</td><td>Video renders and other large binaries</td></tr>
+      <tr><td>An example file — names, no values</td><td>Anything you would not read aloud</td></tr>
+    </table>
+    <div class="stack">
+      <div class="call good"><span class="t">The rule that matters more than the list</span>If it has a value in it, it does not go in git. Lists go stale; that sentence does not.</div>
+      <p class="small mute">The build guard for this pack refuses to ship if the ignore file stops excluding the secrets file, or if the example file gains a real value. Both are easy to "tidy" into uselessness without anyone noticing until it's too late.</p>
+    </div>
+  </div>
+  <div class="aside"><p>Two files, in the right order, before the first commit exists. That is the entire technical fix. The harder part is the habit of checking <code>git status</code> before every commit rather than after, and that habit is what step 6 of the first prompt is built to install.</p></div>
+</section>
+
+<!-- ═══════════════ 17 · THE SAFETY NET ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">0:00 · the cold open, and what it measured</p>
+  <h2>Break it. <em><code>git diff</code>.</em> <code>git checkout --</code>. Back.</h2>
+  <div class="cols wide">
+    <div class="stack">
+      <div class="cmd has-label"><span class="label">what was actually measured</span>dashboard file, before:  13,367 bytes
+truncated to:             4,000 bytes
+git diff --stat:          1 insertion, 188 deletions
+git checkout -- <file>
+dashboard file, after:    13,367 bytes · git status: clean</div>
+    </div>
+    <div class="stack">
+      <div class="call good"><span class="t">The machine versus the talking</span>Break, diff and restore, run as commands: <strong>16 milliseconds.</strong> "Back in ten seconds" is the talking, not the machine — the computer was never the slow part.</div>
+      <p class="small mute">This is the moment everything after it earns trust. Nobody has asked you to build a safety net yet — you have just watched one work, on a real file, with real numbers.</p>
+    </div>
+  </div>
+  <div class="aside"><p>This is done before anything is explained, on purpose. A demonstrated fact needs no argument attached to it — the argument for git shows up on its own, once you have seen a file come back byte-for-byte after being torn apart.</p></div>
+</section>
+
+<!-- ═══════════════ 18 · WHY A VERSION NUMBER IS WORTH ANYTHING ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P2 <b>· Version it · why bother</b></p>
+  <h2>"It broke last Tuesday" is useless. <em>"It broke in 0.4.2" is a place to look.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <ul class="pts">
+        <li>A changelog is the answer to "why does this look like this?" three months from now, when you have forgotten.</li>
+        <li>It forces one sentence about intent per change — the number is just the index into those sentences.</li>
+        <li>For a folder only you use, this is a fair thing to be suspicious of. The honest case has to be made, not assumed.</li>
+      </ul>
+    </div>
+    <div class="call"><span class="t">Why the tool ships as a plain shell script</span>Members run boxes without a heavier shell environment installed, so the versioned-commit wrapper ships as ordinary, dependency-free shell script — same conventional-commit, SemVer, changelog behavior, running where members actually are.</div>
+  </div>
+  <div class="aside"><p>Notice the order: the prompt asks the case to be made before a single tool gets installed. If the case can't be made honestly for a given folder, the right answer is to skip it there — ceremony that isn't earning its keep is exactly the kind of thing this series avoids.</p></div>
+</section>
+
+<!-- ═══════════════ 19 · READ THE COMMENT BLOCK FIRST ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P2 · step 2</p>
+  <h2>Read the comment block <em>before</em> you trust it.</h2>
+  <div class="cols">
+    <div class="stack">
+      <ul class="pts">
+        <li>The script's own header lists five real failures, each with a date, that it refuses to repeat.</li>
+        <li>Reading that block before relying on the tool is the point — you should know what it is protecting you from, not just that it exists.</li>
+      </ul>
+    </div>
+    <div class="call warn"><span class="t">What it never does</span>It never stages anything on your behalf, and it never accepts a multi-line commit message. Both refusals exist because both mistakes have already happened once, for real, in this same workspace.</div>
+  </div>
+  <div class="aside"><p>The five traps get their own dedicated slide shortly — this is the moment in the prompt where the agent is told to read them to you first, rather than you discovering them by hitting one.</p></div>
+</section>
+
+<!-- ═══════════════ 20 · PREFIX TABLE ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P2 · step 4 <b>· which prefix bumps what</b></p>
+  <h2>The prefix is a promise <em>about what changed.</em></h2>
+  <table>
+    <tr><th>Prefix</th><th>Meaning</th><th>Bump</th></tr>
+    <tr><td><code>feat:</code></td><td>a new capability</td><td>minor — 0.1.0 → 0.2.0</td></tr>
+    <tr><td><code>fix:</code></td><td>something was broken</td><td>patch — 0.1.0 → 0.1.1</td></tr>
+    <tr><td><code>perf:</code></td><td>same thing, faster</td><td>patch</td></tr>
+    <tr><td><code>docs:</code></td><td>documentation only</td><td>patch</td></tr>
+    <tr><td><code>refactor:</code></td><td>same behavior, different code</td><td>patch</td></tr>
+    <tr><td><code>chore:</code></td><td>housekeeping</td><td>patch</td></tr>
+    <tr class="today"><td><code>feat!:</code></td><td>breaks something</td><td class="now">MAJOR — 0.1.0 → 1.0.0</td></tr>
+  </table>
+  <p class="small mute">If you cannot pick one, the commit is probably two commits.</p>
+  <div class="aside"><p>The table is the easy half. The rule underneath it is the part worth keeping: the prefix is not a label applied after the fact, it is a decision made before you write the message, and it forces you to know what you actually changed.</p></div>
+</section>
+
+<!-- ═══════════════ 21 · THE DRY RUN ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P2 · step 5 <b>· the number it prints</b></p>
+  <h2>A dry run prints the version it <em>will</em> create — not the one you have.</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="cmd big has-label"><span class="label">what the dry run actually printed</span>0.1.0 -&gt; 0.2.0
+DRY RUN - nothing written</div>
+      <p class="small mute">Index untouched. Nothing committed. Just the number the real run would produce.</p>
+    </div>
+    <div class="call bad"><span class="t">Why that number matters more than it looks</span>If a version string lives inside the repo itself — an app footer, an about screen — it has to be written with the <strong>new</strong> number the dry run just printed, not the current one. Committing is what creates the new version; writing the current one just means the footer goes stale the instant the commit lands, and fixing that produces another commit, which produces another version.</div>
+  </div>
+  <div class="aside"><p>This is the kind of trap that looks obvious once it's named and is genuinely easy to fall into otherwise — the natural instinct is to write down the number you can see right now, which is always one step behind the number that is about to exist.</p></div>
+</section>
+
+<!-- ═══════════════ 22 · FIVE TRAPS DIVIDER ═══════════════ -->
+<section class="slide divider" data-sect="Build">
+  <p class="kicker">0:44 · the segment that earns the hour</p>
+  <h1>Five traps, <em>from this workspace's own history</em></h1>
+  <p class="lede">All real, all dated, all the same shape: a silent failure that produces a plausible artifact. Nothing here is a theory — each one has a cost attached to it.</p>
+  <div class="num">3</div>
+  <div class="aside"><p>This is the same failure family the series keeps returning to, one organ at a time — something that looks like it worked, produced no error, and was quietly wrong. Naming five instances of it from real work is worth more than one abstract warning.</p></div>
+</section>
+
+<!-- ═══════════════ 23 · FIVE TRAPS TABLE ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">All five, with dates</p>
+  <h2>The same shape, five times: <em>a silent failure that produces a plausible artifact.</em></h2>
+  <table>
+    <tr><th>#</th><th>The trap</th><th>What it cost</th></tr>
+    <tr><td>1</td><td>A blanket stage-everything sweeps another session's work into your commit</td><td>three commits under the wrong message, <strong>2026-08-25</strong></td></tr>
+    <tr><td>2</td><td>A multi-line message silently becomes housekeeping instead of a feature</td><td>a feature shipped as a patch, no error, <strong>2026-08-10</strong></td></tr>
+    <tr><td>3</td><td>Writing the current version into the app makes it instantly stale</td><td>three releases chasing a footer, <strong>2026-08-04</strong></td></tr>
+    <tr><td>4</td><td>Docs-only commits bump the version anyway</td><td>two releases for zero app change, <strong>2026-08-05</strong></td></tr>
+    <tr class="today"><td>5</td><td>Prose quoting the changelog marker gets a release section injected inside a bullet</td><td class="now">two version sections, one buried mid-list, <strong>2026-08-18</strong></td></tr>
+  </table>
+  <div class="aside"><p>Any of these five is a forgivable mistake the first time. What makes them worth an hour is that none of them announced themselves — every one produced output that looked completely normal.</p></div>
+</section>
+
+<!-- ═══════════════ 24 · TRAP 5 DEMO ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">0:44 · the one to demonstrate</p>
+  <h2>A dry run cannot show you this. <em>You have to read the file.</em></h2>
+  <div class="cols wide">
+    <div class="stack">
+      <div class="cmd has-label"><span class="label">run against the same change, on the box</span>Naive tool  (replaces every marker):  2 sections
+  — the second one landed inside the earlier
+    bullet, splitting it across lines 15-21
+
+Shipped tool (replaces only the first):  1 section</span></div>
+    </div>
+    <div class="stack">
+      <div class="call bad"><span class="t">Both printed the same dry run</span>Both tools would have printed the identical version summary on a dry run. <strong>That is the segment.</strong> A tool careful about one thing and blind to the next is the most teachable object in the hour.</div>
+      <p class="small mute">Which is exactly why the versioning prompt insists: read the changelog itself afterward. Don't just check the version number — check that there is exactly one new section, and that the old ones are still intact.</p>
+    </div>
+  </div>
+  <div class="aside"><p>The dry run exists to protect the version number. It says nothing about the file the version lives in. Trusting a dry run to mean "the changelog is fine" is a small leap that this exact bug punished, in this exact workspace.</p></div>
+</section>
+
+<!-- ═══════════════ 25 · P2 VERIFIED ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P2 <b>· what "it worked" looks like</b></p>
+  <h2>One new section. Under the title. <em>The old one intact.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="cmd big has-label"><span class="label">what running it produced</span>--init:     VERSION 0.1.0, CHANGELOG.md created
+             (commits nothing - you do)
+--dry-run:  0.1.0 -&gt; 0.2.0, nothing written
+real run:   Committed 0.1.0 -&gt; 0.2.0</div>
+    </div>
+    <div class="stack">
+      <div class="call good"><span class="t">Read the changelog properly, not just the version number</span>Is the new section at the top, under the title, and not above it? Is there exactly <strong>one</strong> new version section? Are the older entries still intact — no bullet split in half?</div>
+      <p class="small mute">A docs-only change — touching only documentation, nothing else — gets a plain warning instead: everything staged is documentation, and the suggestion is to use an ordinary commit with no version bump at all.</p>
+    </div>
+  </div>
+  <div class="aside"><p>The version number passing is necessary and not sufficient. The changelog file is the actual artifact people will read in six months; the number is just how they'll find the right entry in it.</p></div>
+</section>
+
+<!-- ═══════════════ 26 · P3 DIVIDER ═══════════════ -->
+<section class="slide divider" data-sect="Build">
+  <p class="kicker">Part 3 · the test this prompt is built around</p>
+  <h1>Document it, <em>for a stranger</em></h1>
+  <p class="lede">Not "is it documented?" — that question has no answer and everyone says yes. Could a competent stranger, given only this repo, get it running without asking you anything?</p>
+  <div class="num">3</div>
+  <div class="aside"><p>That question has an answer, and for most folders on most boxes the honest answer going in is no. The point of this prompt is closing that gap rather than papering over it with a template.</p></div>
+</section>
+
+<!-- ═══════════════ 27 · THE FOUR QUESTIONS ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P3 <b>· four questions, in order, nothing else required</b></p>
+  <h2>What is this. How do I run it. What do I need first. <em>What breaks, and what do I do.</em></h2>
+  <div class="cols">
+    <ul class="pts">
+      <li><strong>What is this?</strong> Two sentences. What it does, for whom — not how.</li>
+      <li><strong>How do I run it?</strong> The actual commands, in order, from a machine that has nothing. Every one copy-pasteable.</li>
+      <li><strong>What do I need first?</strong> Accounts, keys, versions — what has to exist before the previous step works.</li>
+      <li><strong>What breaks, and what do I do?</strong> The failures you have actually hit, and the fix.</li>
+    </ul>
+    <div class="call bad"><span class="t">Ask, don't invent</span>If something's purpose is not obvious from the file, the agent asks rather than guessing. A confident wrong sentence in a README is worse than a gap, because you will believe it in six months.</div>
+  </div>
+  <div class="aside"><p>Four questions, always in this order, and nothing else required. A README that tries to be a tutorial, a design doc and a changelog all at once ends up being none of them well; this one stays narrow on purpose.</p></div>
+</section>
+
+<!-- ═══════════════ 28 · SECTION 4 IS THE ONE THAT MATTERS ═══════════════ -->
+<section class="slide" data-sect="Build">
+  <p class="kicker">P3 · step 3 <b>· the section that gets skipped</b></p>
+  <h2>Your worst afternoons are the most valuable paragraphs — <em>and the ones you forget first.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <ul class="pts">
+        <li>Read the troubleshooting files from earlier class packs for real failures.</li>
+        <li>Look at what's recorded as fixed in the changelog.</li>
+        <li>Ask directly: what has gone wrong that took more than ten minutes?</li>
+      </ul>
+    </div>
+    <div class="call bad"><span class="t">What does not go in it</span>No keys, tokens, or URLs with a secret in them. No LAN addresses or personal paths — placeholders, clearly marked as placeholders. No screenshots of anything with a credential panel open. And no aspirational sections: if it is not built, it does not go in the README.</div>
+  </div>
+  <div class="aside"><p>This is the section almost everyone skips, and the only one anyone reads twice. Writing it down while the memory is fresh is cheap; reconstructing it from nothing six months later, after you've forgotten exactly what went wrong, is not.</p></div>
+</section>
+
+<!-- ═══════════════ 29 · THE FOUR UNDOS ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">Before you need it</p>
+  <h2>Git has a lot of ways to go backwards. <em>You need four.</em></h2>
+  <table>
+    <tr><th>Situation</th><th>Command</th><th>Safe?</th></tr>
+    <tr><td>Uncommitted changes you want gone</td><td><code>git checkout -- path</code></td><td>Loses work. No confirmation, no recovery.</td></tr>
+    <tr><td>Staged something by mistake</td><td><code>git restore --staged path</code></td><td>Safe. The file keeps your changes.</td></tr>
+    <tr><td>Last commit was wrong</td><td><code>git reset --soft HEAD~1</code></td><td>Safe. Commit disappears, work stays staged.</td></tr>
+    <tr><td>A commit already shared elsewhere</td><td><code>git revert &lt;commit&gt;</code></td><td>Safe. A new commit undoes the old one.</td></tr>
+  </table>
+  <p class="small mute">Finding what to go back to: <code>git log --oneline</code>, <code>git show &lt;commit&gt;</code>. "It broke in 0.4.2" gives you a place to start; "it broke last Tuesday" does not.</p>
+  <div class="aside"><p>Three of these four are safe by design. Knowing which one isn't, and why, is worth more than memorizing all four commands — the dangerous one is also the one you'll reach for most often, because it's the one from the cold open.</p></div>
+</section>
+
+<!-- ═══════════════ 30 · THE ONE THAT LOSES WORK ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">The one from the cold open</p>
+  <h2><code>git checkout --</code> <em>throws away</em> uncommitted changes. No confirmation. No undo.</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="cmd has-label"><span class="label">look before you run it</span>git diff path/to/file   <span class="c"># this is what you are about to destroy</span></div>
+      <div class="call warn"><span class="t">If you're not sure</span>Commit first. A messy commit you delete later beats work that no longer exists at all.</div>
+    </div>
+    <div class="call bad"><span class="t">What NOT to reach for</span><code>git reset --hard</code> throws away commits <strong>and</strong> uncommitted changes together — it is the one behind every git horror story. And rewriting history to remove a secret is never the first move: <strong>rotate the secret instead.</strong> Rewriting does not help once the repo has been copied anywhere, and a backup is a copy.</div>
+  </div>
+  <div class="aside"><p>The command that made the cold open look effortless is the same command that can erase an afternoon of uncommitted work with zero warning. Both things are true about it, and only one of them gets demonstrated on stage.</p></div>
+</section>
+
+<!-- ═══════════════ 31 · GIT IS NOT BACKUP ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">0:56 · said plainly, not implied</p>
+  <p class="big-quote">A repo on a box that dies <em>dies with it.</em></p>
+  <hr class="rule">
+  <p class="small mute">Deferred, on purpose: remotes and pushing elsewhere are the real backup conversation — a different one from today's. Nobody needs a remote to get the safety net this hour builds; they need one to survive the box itself failing, and that is the honest next thing this series has no answer for yet.</p>
+  <div class="aside"><p>It would be easy to let today's relief — a working safety net for the first time in seven weeks — blur into a false sense that everything is now protected. It isn't. This class protects you from your own mistakes on a box that keeps running. It does nothing for the box that doesn't.</p></div>
+</section>
+
+<!-- ═══════════════ 32 · WHAT YOU'LL HAVE ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">By the end of this hour</p>
+  <h2>What you'll actually walk away with.</h2>
+  <div class="cols">
+    <ul class="pts moss">
+      <li><code>git log</code> showing one commit, <code>git status</code> clean, and the secrets file nowhere near either</li>
+      <li>A feature commit that took the version from <code>0.1.0</code> to <code>0.2.0</code>, with a changelog that says why</li>
+      <li>A README somebody else — or you in six months — could stand your brain up from</li>
+      <li>And it cost nothing: no account, no remote, no service</li>
+    </ul>
+    <div class="stack">
+      <span class="milestone">✓ One habit added, nothing written to the brain itself</span>
+      <p class="small mute">Reset nothing, revoke nothing — there is nothing today that needs revoking. The only thing that changed is that mistakes now have a way back.</p>
+    </div>
+  </div>
+  <div class="aside"><p>Worth noticing what did not happen this hour: no new organ, no new model call, no new thing the brain can do. The only thing that changed is what happens after something goes wrong — which, until today, was nothing.</p></div>
+</section>
+
+<!-- ═══════════════ 33 · NEXT: THE COCKPIT ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">Next time</p>
+  <h2>Next time, an agent gets a shell in your dashboard. <em>Now there is a way back.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <p class="lede">The next class puts a Claude or Codex terminal directly in the dashboard — an agent with shell access to everything you've built across every class so far.</p>
+      <p class="quote">You wanted history before you handed it a shell. Now you have it.</p>
+    </div>
+    <div class="call good"><span class="t">Why the order was worth an hour</span>Every mistake that terminal makes from here on has a <code>git diff</code> to show what changed and a <code>git checkout</code> to undo it. That was true of nothing on your box before today.</div>
+  </div>
+  <div class="aside"><p>This is the payoff of building the series in order. The cockpit class gets to be exciting without also being reckless, because the boring class happened first.</p></div>
+</section>
+
+<!-- ═══════════════ 34 · WHERE TO GET THE PACK ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">Where to get it, and how to prove you got the real thing</p>
+  <h2>One command. It downloads, checks, and <em>stops.</em></h2>
+  <div class="cols">
+    <div class="stack">
+      <table>
+        <tr><th>Zip</th><td><code>class-08-project-pack.zip</code></td></tr>
+        <tr><th>Size</th><td>32,283 bytes · 13 files</td></tr>
+        <tr><th>sha256</th><td style="word-break:break-all"><code>85fb9905a79341c8e3d3c4e8542eb6f1e552b9e2086992f615361d7699649740</code></td></tr>
+      </table>
+      <div class="cmd has-label"><span class="label">macOS · Linux · WSL</span>sha256sum -c SHA256SUMS<button class="copy">copy</button></div>
+    </div>
+    <div class="stack">
+      <div class="call"><span class="t">Front door</span><span style="font-family:var(--mono);color:var(--sky)">aiautobase.github.io/Build_With_Me/class-08</span> — read every file before you run anything, same rule as every class since the mailbox one.</div>
+      <p class="small mute"><strong>Cost: nothing.</strong> No account, no card, nothing leaves the box.</p>
+    </div>
+  </div>
+  <div class="aside"><p>The pack's own build script refuses to ship if the safety-net files stop doing their job, or if the versioning script stops refusing what it's supposed to refuse. Both refuse rather than warn — this class takes its own advice about silent failures seriously.</p></div>
+</section>
+
+<!-- ═══════════════ 35 · COMMON QUESTIONS ═══════════════ -->
+<section class="slide" data-sect="Close">
+  <p class="kicker">Common questions</p>
+  <h2>Worth asking <em>before</em> you build, not just after.</h2>
+  <table>
+    <tr><th>Question</th><th>Straight answer</th></tr>
+    <tr><td>Do I need GitHub, or any account?</td><td>No. This is git-not-GitHub on purpose — a local repository, no remote, no signup. Nothing leaves the box.</td></tr>
+    <tr><td>Is git a backup?</td><td>No. A repo on a box that dies dies with it. That's the honest next class, not this one.</td></tr>
+    <tr><td>I already committed my secrets file — now what?</td><td><strong>Rotate the value it holds, don't rewrite history.</strong> The preflight check finds it in history even after <code>git status</code> looks clean.</td></tr>
+    <tr><td>One repo or several?</td><td>One is the recommendation — a member with one box does not need more, and it's a second concept in an already-full hour.</td></tr>
+    <tr><td>What does it cost?</td><td><strong>Nothing.</strong> git is free, local, and already installed on most boxes.</td></tr>
+    <tr><td>Do I need every earlier class for this one?</td><td>No. This class touches no container, no workflow, and no database — it only needs a folder with something in it.</td></tr>
+  </table>
+</section>
+
+
+</div>
+
+<div id="bar"></div>
+<div class="hit l" title="previous"></div><div class="hit r" title="next"></div>
+<div id="hud"><span><span class="sect" id="sect"></span> &nbsp;·&nbsp; <span id="count"></span></span><span>Class 8 · Make It a Project · Student Guide <button id="bNotes" title="N">why this matters</button><button id="bGrid" title="O">overview</button><button id="bFull" title="F">fullscreen</button><button id="bHelp" title="?">?</button></span></div>
+<div id="notes"><div class="t">Why this matters</div><div id="notesBody"></div></div>
+<div id="grid"></div>
+<div id="help"><div>
+<kbd>→</kbd><kbd>space</kbd> next &nbsp;&nbsp; <kbd>←</kbd> previous &nbsp;&nbsp; <kbd>Home</kbd><kbd>End</kbd> first / last<br>
+<kbd>N</kbd> why this matters &nbsp;&nbsp; <kbd>O</kbd> overview &nbsp;&nbsp; <kbd>F</kbd> fullscreen &nbsp;&nbsp; <kbd>1</kbd><kbd>2</kbd> tabs on a slide<br>
+<kbd>Esc</kbd> close &nbsp;&nbsp; URL <span style="color:var(--amber)">#12</span> jumps to a slide &nbsp;&nbsp; <kbd>Ctrl+P</kbd> prints every slide, "why this matters" included
+</div></div>
+
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const bar=document.getElementById('bar'),count=document.getElementById('count'),sect=document.getElementById('sect');
+  const notes=document.getElementById('notes'),notesBody=document.getElementById('notesBody'),grid=document.getElementById('grid'),help=document.getElementById('help');
+  let i=0,dir=1;
+  function go(n,d){
+    n=Math.max(0,Math.min(slides.length-1,n)); if(d===undefined)d=n>=i?1:-1; dir=d;
+    slides.forEach(s=>{s.classList.remove('on','back')});
+    const s=slides[n]; if(dir<0)s.classList.add('back'); void s.offsetWidth; s.classList.add('on');
+    i=n; bar.style.width=((i+1)/slides.length*100)+'%'; count.textContent=(i+1)+' / '+slides.length; sect.textContent=s.dataset.sect||'';
+    const a=s.querySelector('.aside'); notesBody.innerHTML=a?a.innerHTML:'<p class="mute">Nothing extra for this slide — it already says what it needs to.</p>';
+    history.replaceState(null,'','#'+(i+1)); document.querySelectorAll('#grid a').forEach((g,k)=>g.classList.toggle('cur',k===i));
+  }
+  // overview grid
+  slides.forEach((s,k)=>{const a=document.createElement('a');a.href='#'+(k+1);const h=s.querySelector('h1,h2,.big-quote');a.innerHTML='<b>'+(k+1)+' · '+(s.dataset.sect||'')+'</b>'+(h?h.textContent.slice(0,90):'');a.onclick=e=>{e.preventDefault();grid.classList.remove('on');go(k)};grid.appendChild(a)});
+  // tabs
+  document.querySelectorAll('.tabs').forEach(t=>{const sl=t.closest('.slide');t.querySelectorAll('button').forEach(b=>b.onclick=()=>{t.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));sl.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.dataset.pane===b.dataset.pane))})});
+  // copy — file:// rejects navigator.clipboard, execCommand works
+  function copyText(t){return new Promise(res=>{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity=0;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);if(ok)return res(true);if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>res(true),()=>res(false));else res(false)})}
+  document.querySelectorAll('.copy').forEach(b=>b.onclick=e=>{e.stopPropagation();const box=b.closest('.cmd').cloneNode(true);box.querySelectorAll('.copy,.label').forEach(x=>x.remove());const t=box.textContent.replace(/^\n+|\n+$/g,'');copyText(t).then(ok=>{b.textContent=ok?'copied':'select + ctrl+c';b.classList.toggle('ok',ok);setTimeout(()=>{b.textContent=b.textContent.startsWith('copied')&&b.dataset.l||b.dataset.l||'copy';b.classList.remove('ok')},1400)});});
+  document.querySelectorAll('.copy').forEach(b=>b.dataset.l=b.textContent);
+  // keys
+  document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')return;
+    if(e.key==='Escape'){grid.classList.remove('on');help.classList.remove('on');notes.classList.remove('on');return}
+    if(help.classList.contains('on')||grid.classList.contains('on')){if(e.key==='o'||e.key==='O'||e.key==='?')toggle(e.key);return}
+    switch(e.key){
+      case 'ArrowRight':case ' ':case 'PageDown':case 'Enter':e.preventDefault();go(i+1,1);break;
+      case 'ArrowLeft':case 'PageUp':case 'Backspace':e.preventDefault();go(i-1,-1);break;
+      case 'Home':go(0,-1);break;case 'End':go(slides.length-1,1);break;
+      case 'n':case 'N':notes.classList.toggle('on');break;
+      case 'o':case 'O':grid.classList.toggle('on');break;
+      case 'f':case 'F':full();break;
+      case '?':help.classList.toggle('on');break;
+      case '1':case '2':case '3':{const t=slides[i].querySelectorAll('.tabs button')[+e.key-1];if(t)t.click();break}
+    }
+  });
+  function toggle(k){if(k==='?')help.classList.toggle('on');else grid.classList.toggle('on')}
+  function full(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
+  document.querySelector('.hit.l').onclick=()=>go(i-1,-1);document.querySelector('.hit.r').onclick=()=>go(i+1,1);
+  document.getElementById('bNotes').onclick=()=>notes.classList.toggle('on');document.getElementById('bGrid').onclick=()=>grid.classList.toggle('on');
+  document.getElementById('bFull').onclick=full;document.getElementById('bHelp').onclick=()=>help.classList.toggle('on');
+  help.onclick=e=>{if(e.target===help)help.classList.remove('on')};
+  // touch
+  let tx=null;document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});document.addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>60)go(i+(dx<0?1:-1));tx=null});
+  window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1))-1;if(!isNaN(n)&&n!==i)go(n)});
+  const start=parseInt(location.hash.slice(1))-1;go(isNaN(start)?0:start,1);
+})();
+</script>
+</body>
+</html>
