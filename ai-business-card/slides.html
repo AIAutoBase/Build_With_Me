@@ -285,11 +285,24 @@ tr.today td{background:rgba(211,85,43,.12)}
 
 <section class="slide" data-sect="Build">
 
-  <p class="kicker">Step 2 · Prompt</p>
+  <p class="kicker">Step 2 · Prompt <b>· paste into Claude Code, in an empty folder</b></p>
   <h2>The master prompt, <em>and read what it writes</em></h2>
-  <p class="small mute">Paste into Claude Code in an empty folder. The full text is in 03-MASTER-PROMPT.txt in the kit.</p>
-  <ul class="pts"><li>Plain HTML, CSS and JavaScript. No framework.</li><li>Everything personal lives in <code>config.json</code>.</li><li>The chatbot runs as a Cloudflare Pages Function. The key never reaches the browser.</li><li>The bot answers only from your list, under 60 words, and says it is an AI.</li></ul>
-<div class="aside"><p>Reviewing the AI's code is the skill. Ask: what would you change before running this?</p></div>
+  <div class="cmd tall" style="font-size:.62em"><button class="copy">copy</button>Build a 3-page static website: Home (index.html), Chat (chat.html), About (about.html).
+
+Rules:
+- Plain HTML/CSS/JS only. No framework, no build step.
+- Everything personal lives in config.json: name, tagline, logo path, accent color,
+  about text + facts, contact links, and the chatbot (name, greeting, personality,
+  knowledge list). Pages read config.json at load time.
+- Chatbot: chat.html posts to /api/chat. Write it as a Cloudflare Pages Function
+  (functions/api/chat.js) that calls Google Gemini (gemini-2.5-flash) using
+  env.GEMINI_API_KEY. The server builds the system prompt from config.json: answer only
+  from the knowledge list, under 60 words, say it is an AI. Never expose the key to the browser.
+- Validate input in the function: last 10 messages, 500 chars each.
+- Mobile friendly, light/dark mode, accessible (labels, aria-live on the chat log).
+- Add a .gitignore that ignores .dev.vars, and a .dev.vars.example.
+Keep it as small as possible.</div>
+<div class="aside"><p>Reviewing the AI's code is the skill. Ask the room: what would you change before running this? The same text is in 03-MASTER-PROMPT.txt in the kit.</p></div>
 </section>
 
 <section class="slide" data-sect="Build">
@@ -336,12 +349,122 @@ npx wrangler pages secret put GEMINI_API_KEY --project-name my-business-card</di
 
 <section class="slide" data-sect="Upgrade">
 
-  <p class="kicker">Step 2 of the kit</p>
-  <h2>A hero video that does <em>not look broken</em></h2>
-  <div class="cols">
-    <ul class="pts"><li>Short: five to ten seconds, looped.</li><li>Small: under 5 MB.</li><li>Autoplay, muted, loop, playsinline, with a poster image.</li><li>A dark layer so the headline passes contrast.</li><li>Reduced-motion setting: poster only.</li></ul>
-    <div class="stack"><div class="call warn"><span class="t">Check it</span>Zoom in. Edges breaking up means the video is smaller than the space it fills. Fix the file, not the prompt.</div></div>
-  </div>
+  <p class="kicker">NexGen kit · Step 1</p>
+  <h2>Structure and content: <em>five sections from config.json</em></h2>
+  <div class="cmd tall" style="font-size:.5em"><button class="copy">copy</button>Read config.json and the existing pages first.
+
+Add a landing page section structure to index.html, in this order:
+hero, services, work, contact, footer.
+
+- Hero: headline and tagline from config.json, one primary button that scrolls to
+  the contact section, one secondary link to chat.html.
+- Services: 3 or 4 cards. Take the titles and one-line descriptions from a new
+  "services" array in config.json. Add that array, with placeholder text I will replace.
+- Work: 2 or 3 cards from a new "work" array in config.json (title, one sentence,
+  optional link). Mark placeholders clearly as placeholders.
+- Contact and footer: see the next prompt.
+
+Rules: plain HTML, CSS and JavaScript, no framework, no build step. Every piece of
+text comes from config.json. Keep it responsive, with the same light and dark mode
+as the existing pages. Clean typography, generous spacing, subtle hover states on
+cards and buttons. Do not invent claims, numbers, clients or testimonials.</div>
+  <p class="small mute">Check: all five sections render, at phone width too. Commit: feat: landing page structure.</p>
+<div class="aside"><p>Every piece of text comes from config.json. The prompt tells the AI not to invent claims, clients, numbers or testimonials.</p></div>
+</section>
+
+<section class="slide" data-sect="Upgrade">
+
+  <p class="kicker">NexGen kit · Step 2, before the prompt</p>
+  <h2>Get the video file <em>ready first</em></h2>
+  <ul class="pts"><li>Use the sample from class: <code>hero.mp4</code> and <code>hero-poster.jpg</code>. Abstract, 8 seconds, under 300 KB, no logo.</li>
+  <li>Or your own: five to ten seconds, under 5 MB, slow motion, footage you have the right to use.</li>
+  <li>Put them at <code>assets/hero.mp4</code> and <code>assets/hero-poster.jpg</code>.</li></ul>
+  <p class="small mute">Pages caps a single file at 25 MiB, and a phone on mobile data will not wait for more than a few.</p>
+<div class="aside"><p>Video tools queue and change their free limits. Step 2 is about placing and checking a video.</p></div>
+</section>
+
+<section class="slide" data-sect="Upgrade">
+
+  <p class="kicker">NexGen kit · Step 2</p>
+  <h2>A hero video that <em>does not look broken</em></h2>
+  <div class="cmd tall" style="font-size:.58em"><button class="copy">copy</button>Use assets/hero.mp4 as the background of the hero section, with
+assets/hero-poster.jpg as its poster image.
+
+- video attributes: autoplay, muted, loop, playsinline, preload="metadata".
+- Cover the hero with object-fit: cover. Do not stretch or distort the video, and
+  do not scale it above its native resolution.
+- Put a dark gradient overlay between the video and the text, strong enough that
+  the headline passes WCAG AA contrast (4.5:1) on top of the brightest frame.
+- If the user has prefers-reduced-motion set, do not play the video: show the
+  poster image only.
+- If the video fails to load, the poster and the text must still look right.</div>
+  <p class="small mute">Check: zoom to 200% and phone width for pixel breaks. Network tab: hero.mp4 under 5 MB. Turn on reduce motion: the video should stop. Commit: feat: hero video.</p>
+
+</section>
+
+<section class="slide" data-sect="Upgrade">
+
+  <p class="kicker">NexGen kit · Step 2, if it looks flat or muddy</p>
+  <h2>Say what you see, <em>not what you want</em></h2>
+  <div class="cmd" style="font-size:.7em"><button class="copy">copy</button>The hero text is hard to read over the bright part of the video. Increase the
+overlay contrast until the headline is clearly readable, without making the video
+look dead. Show me the CSS values you changed.</div>
+
+</section>
+
+<section class="slide" data-sect="Upgrade">
+
+  <p class="kicker">NexGen kit · Step 3</p>
+  <h2>Contact form: <em>one that actually delivers</em></h2>
+  <div class="cmd tall" style="font-size:.58em"><button class="copy">copy</button>Add a contact form to the contact section: name, email, message.
+
+- Labels on every field, visible validation messages, and aria-live on the
+  status text.
+- Post to /api/contact, written as a Cloudflare Pages Function in
+  functions/api/contact.js.
+- The function validates: name up to 100 characters, email shape, message up to
+  1000 characters. Reject anything else with a clear 400 message.
+- Add a hidden honeypot field that real people never fill in; drop those
+  submissions quietly.
+- Send the email with the mail service I name, using a secret in
+  env.CONTACT_API_KEY. Never put the key in the browser code or in git. Add the
+  name of the variable to .dev.vars.example with no value.
+- On success show a thank-you message. On failure show the mailto link as a fallback.</div>
+  <p class="small mute">Option A (today): a mailto button plus your booking link. Option B is this prompt. Test with a real message to yourself, then with the key missing: you should see the fallback, not a blank page.</p>
+
+</section>
+
+<section class="slide" data-sect="Upgrade">
+
+  <p class="kicker">NexGen kit · Step 4</p>
+  <h2>Speed and polish</h2>
+  <div class="cmd tall" style="font-size:.58em"><button class="copy">copy</button>Audit index.html for load speed and fix what you find:
+
+- Images: set width and height, use loading="lazy" below the hero, convert large
+  images to WebP.
+- Load nothing render-blocking that the hero does not need.
+- Add a scroll-triggered fade-in for the services and work cards using
+  IntersectionObserver, disabled under prefers-reduced-motion.
+- Add hover states to cards and buttons that are visible but quiet.
+List every change you made and why.</div>
+  <p class="small mute">Run Lighthouse (mobile) before and after. Write down Performance and Accessibility both times. Commit: perf: lazy images, scroll transitions.</p>
+
+</section>
+
+<section class="slide" data-sect="Upgrade">
+
+  <p class="kicker">NexGen kit · Step 5</p>
+  <h2>Accessibility pass</h2>
+  <div class="cmd tall" style="font-size:.58em"><button class="copy">copy</button>Check the whole site for accessibility and fix it:
+
+- Every interactive element reachable and usable by keyboard, with a visible focus ring.
+- Skip link to main content.
+- One h1 per page, headings in order.
+- Alt text on every meaningful image, empty alt on decorative ones.
+- Form errors announced to screen readers.
+- Color contrast AA for all text, in light and dark mode.
+List what you changed.</div>
+  <p class="small mute">Test it yourself: mouse aside, only Tab, Shift+Tab, Enter and Space across the whole page. Commit, tag v0.3.0, deploy.</p>
 
 </section>
 
