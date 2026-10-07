@@ -1,0 +1,30 @@
+{
+  "name": "Sample Studio",
+  "tagline": "Small business help, answered in seconds.",
+  "logo": "assets/logo.svg",
+  "accent": "#6d5efc",
+  "about": {
+    "title": "About Sample Studio",
+    "text": "We help local businesses get more done with less busywork. Replace this paragraph with your own story: who you are, who you help, and why you do it.",
+    "facts": [
+      "Founded in 2024",
+      "Based in Your City",
+      "Replace these facts with your own"
+    ]
+  },
+  "links": [
+    { "label": "Email me", "url": "mailto:you@example.com" },
+    { "label": "Website", "url": "https://example.com" }
+  ],
+  "bot": {
+    "name": "Sam",
+    "greeting": "Hi! I'm Sam, the AI assistant for Sample Studio. Ask me about our services, prices or hours.",
+    "personality": "Friendly, brief, and practical. Plain language, no jargon.",
+    "knowledge": [
+      "Services: website setup ($300), logo design ($150), monthly support ($50/month).",
+      "Hours: Monday to Friday, 9am to 5pm.",
+      "Contact: you@example.com. Replies within one business day.",
+      "Replace these lines with real facts about YOUR business. The bot only knows what is written here."
+    ]
+  }
+}

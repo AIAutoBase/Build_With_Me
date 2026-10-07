@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Class 9 — Build It Live · Student Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141c24; --ink-2:#1c2733; --ink-3:#26343f;
+  --paper:#f4eee2; --paper-dim:#c8bfae; --paper-mute:#8e8676;
+  --rust:#d3552b; --rust-soft:#f2a37f; --moss:#4fb38a; --amber:#e8b64a; --sky:#6fb2e0;
+  --mono:"JetBrains Mono",Consolas,"Cascadia Mono",monospace;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--ink);color:var(--paper);font:400 clamp(16px,1.35vw,22px)/1.5 var(--serif);overflow:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 8% 0%,rgba(211,85,43,.10),transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 100%,rgba(111,178,224,.07),transparent 60%);
+}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+
+/* ---------- deck ---------- */
+#deck{position:fixed;inset:0}
+.slide{position:absolute;inset:0;padding:clamp(28px,4.5vh,64px) clamp(28px,6vw,110px) clamp(70px,9vh,96px);
+  display:none;flex-direction:column;opacity:0;transform:translateX(24px)}
+.slide.on{display:flex;animation:in .42s cubic-bezier(.2,.7,.2,1) forwards}
+.slide.back{transform:translateX(-24px)}
+@keyframes in{to{opacity:1;transform:none}}
+.slide>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+.slide>*:nth-child(2){animation-delay:.06s}.slide>*:nth-child(3){animation-delay:.12s}.slide>*:nth-child(4){animation-delay:.18s}.slide>*:nth-child(5){animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.kicker{font:600 .62em/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--rust);margin:0 0 .9em;display:flex;gap:1.2em;align-items:center}
+.kicker b{color:var(--paper-mute);font-weight:400}
+h1{font-weight:800;font-size:clamp(34px,4.6vw,78px);line-height:1.02;margin:0 0 .35em;letter-spacing:-.02em;font-variation-settings:"opsz" 144}
+h2{font-weight:600;font-size:clamp(26px,3vw,50px);line-height:1.08;margin:0 0 .5em;letter-spacing:-.015em;font-variation-settings:"opsz" 96}
+h2 em,h1 em{font-style:italic;font-weight:300;color:var(--rust-soft)}
+p{margin:.35em 0}
+.lede{font-size:1.18em;max-width:30em;color:var(--paper-dim);font-weight:300}
+.cols{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(20px,3vw,48px);flex:1;min-height:0;align-items:start}
+.cols.eq{grid-template-columns:1fr 1fr}
+.cols.wide{grid-template-columns:1.5fr 1fr;align-items:stretch;grid-template-rows:minmax(0,1fr)}
+.cols.wide .stack{overflow:auto;min-height:0}
+.stack{display:flex;flex-direction:column;gap:.6em;min-height:0}
+.fill{flex:1;min-height:0;height:100%;display:flex;flex-direction:column}
+.small{font-size:.86em;color:var(--paper-dim)}
+.mute{color:var(--paper-mute)}
+ul.pts{list-style:none;padding:0;margin:.3em 0}
+ul.pts li{position:relative;padding-left:1.35em;margin:.42em 0;color:var(--paper-dim)}
+ul.pts li::before{content:"";position:absolute;left:0;top:.62em;width:.55em;height:.55em;background:var(--rust);transform:rotate(45deg)}
+ul.pts li strong{color:var(--paper);font-weight:600}
+ul.pts.moss li::before{background:var(--moss)}
+.rule{border:0;border-top:1px solid rgba(244,238,226,.16);margin:.8em 0}
+
+/* ---------- code / commands ---------- */
+.cmd{position:relative;background:var(--ink-2);border:1px solid rgba(244,238,226,.13);border-left:4px solid var(--rust);
+  font:400 .78em/1.5 var(--mono);color:#eae4d6;padding:.9em 1em .9em 1.1em;margin:.35em 0;white-space:pre-wrap;word-break:break-word;
+  overflow:auto;max-height:100%}
+.cmd.big{font-size:.95em}
+.cmd.tall{max-height:none;flex:1;min-height:0}
+.cmd .c{color:var(--paper-mute)}
+.cmd .k{color:var(--amber)}
+.cmd .s{color:var(--moss)}
+.cmd .u{color:var(--sky);text-decoration:underline dotted}
+.cmd .x{color:var(--rust-soft)}
+.cmd .label{position:absolute;top:0;right:0;font-size:.72em;letter-spacing:.14em;text-transform:uppercase;color:var(--paper-mute);padding:.35em .8em;background:rgba(0,0,0,.25)}
+.copy{position:absolute;right:.5em;bottom:.5em;font:600 .72em var(--mono);letter-spacing:.08em;background:var(--paper);color:var(--ink);border:0;padding:.42em .7em;cursor:pointer;opacity:.75;transition:.15s}
+.copy:hover{opacity:1}.copy.ok{background:var(--moss);color:#fff}
+.cmd.has-label{padding-top:1.6em}
+.tabs{display:flex;gap:.4em;margin:.4em 0 0}
+.tabs button{font:600 .7em var(--mono);letter-spacing:.1em;text-transform:uppercase;background:transparent;color:var(--paper-mute);border:1px solid rgba(244,238,226,.18);padding:.45em .9em;cursor:pointer}
+.tabs button.on{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.pane{display:none}.pane.on{display:block}
+.prompt{font-size:.7em;flex:1;min-height:0;max-height:none;overflow:auto}
+.prompt.has-label{padding-top:2em}
+
+/* ---------- callouts ---------- */
+.call{border:1px solid rgba(244,238,226,.16);padding:.9em 1.1em;margin:.5em 0;background:rgba(0,0,0,.18);border-radius:2px}
+.call.warn{border-color:var(--amber);background:rgba(232,182,74,.07)}
+.call.bad{border-color:var(--rust);background:rgba(211,85,43,.09)}
+.call.good{border-color:var(--moss);background:rgba(79,179,138,.08)}
+.call .t{font:600 .66em var(--mono);letter-spacing:.16em;text-transform:uppercase;display:block;margin-bottom:.4em}
+.call.warn .t{color:var(--amber)}.call.bad .t{color:var(--rust-soft)}.call.good .t{color:var(--moss)}
+.quote{font-size:1.25em;font-weight:300;font-style:italic;line-height:1.35;max-width:26em;color:var(--paper);border-left:3px solid var(--rust);padding-left:.8em;margin:.6em 0}
+.big-quote{font-size:clamp(28px,3.4vw,58px);font-weight:300;font-style:italic;line-height:1.15;letter-spacing:-.01em;max-width:18em}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%;font-size:.82em}
+th,td{text-align:left;padding:.5em .7em;border-bottom:1px solid rgba(244,238,226,.12);vertical-align:top}
+th{font:600 .8em var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--paper-mute)}
+td code{font:inherit;font-family:var(--mono);font-size:.9em;color:var(--amber)}
+td.now{color:var(--rust-soft);font-weight:600}
+tr.today td{background:rgba(211,85,43,.12)}
+
+/* ---------- diagram ---------- */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:.6em;margin:.6em 0}
+.flow .n{border:1px solid rgba(244,238,226,.2);padding:.7em .8em;font:600 .72em var(--mono);letter-spacing:.06em;position:relative;background:var(--ink-2)}
+.flow .n small{display:block;font-weight:400;color:var(--paper-mute);margin-top:.35em;letter-spacing:0}
+.flow .n.c3{border-color:var(--sky);color:var(--sky)}
+.flow .n.new{border-color:var(--rust);border-width:2px}
+.flow .n::after{content:"→";position:absolute;right:-.85em;top:38%;color:var(--paper-mute);font-family:var(--serif);font-size:1.3em}
+.flow .n:last-child::after,.flow .n.stop::after{content:""}
+.arrow-back{grid-column:1/-1;text-align:center;color:var(--paper-mute);font:400 .7em var(--mono);letter-spacing:.2em}
+
+/* ---------- step number ---------- */
+.step-n{font:800 clamp(80px,12vw,200px)/0.8 var(--serif);font-variation-settings:"opsz" 144;color:transparent;-webkit-text-stroke:1.5px rgba(244,238,226,.25);position:absolute;right:clamp(28px,6vw,110px);top:clamp(20px,4vh,50px);pointer-events:none;letter-spacing:-.05em}
+.milestone{display:inline-flex;align-items:center;gap:.6em;font:600 .7em var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--moss);border:1px solid var(--moss);padding:.5em .9em;margin-top:.5em}
+
+/* ---------- chrome ---------- */
+#bar{position:fixed;left:0;bottom:0;height:4px;background:var(--rust);width:0;transition:width .35s;z-index:5}
+#hud{position:fixed;left:0;right:0;bottom:0;padding:14px clamp(28px,6vw,110px) 16px;display:flex;justify-content:space-between;align-items:center;font:400 .62em var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--paper-mute);z-index:4}
+#hud .sect{color:var(--paper-dim)}
+#hud button{font:inherit;background:transparent;color:var(--paper-mute);border:1px solid rgba(244,238,226,.18);padding:.45em .9em;cursor:pointer;margin-left:.5em}
+#hud button:hover{color:var(--paper);border-color:var(--paper)}
+.hit{position:fixed;top:0;bottom:60px;width:clamp(24px,4.5vw,80px);z-index:3;cursor:pointer}
+.hit.l{left:0}.hit.r{right:0}
+#notes{position:fixed;left:0;right:0;bottom:0;transform:translateY(100%);transition:.25s;background:var(--paper);color:var(--ink);padding:18px clamp(28px,6vw,110px) 22px;font-size:.92em;max-height:42vh;overflow:auto;z-index:6;border-top:4px solid var(--rust);box-shadow:0 -20px 60px rgba(0,0,0,.5)}
+#notes.on{transform:none}
+#notes .t{font:600 .66em var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--rust);margin-bottom:.4em}
+#notes p{margin:.3em 0}
+#help{position:fixed;inset:0;background:rgba(20,28,36,.92);display:none;place-items:center;z-index:7}
+#help.on{display:grid}
+#help div{background:var(--ink-2);border:1px solid rgba(244,238,226,.2);padding:28px 36px;font:400 .85em/1.8 var(--mono)}
+#help kbd{background:var(--paper);color:var(--ink);padding:.05em .5em;font-weight:600;margin-right:.6em}
+#grid{position:fixed;inset:0;background:var(--ink);display:none;overflow:auto;padding:40px clamp(28px,6vw,110px);z-index:7;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;align-content:start}
+#grid.on{display:grid}
+#grid a{display:block;border:1px solid rgba(244,238,226,.16);padding:12px 14px;color:var(--paper-dim);text-decoration:none;font-size:.8em;min-height:90px}
+#grid a:hover,#grid a.cur{border-color:var(--rust);color:var(--paper)}
+#grid a b{display:block;font:600 .7em var(--mono);letter-spacing:.14em;color:var(--rust);margin-bottom:.3em}
+.aside{display:none}
+
+/* section divider slides */
+.divider{justify-content:center}
+.divider h1{font-size:clamp(48px,7vw,120px);font-weight:300;font-style:italic}
+.divider .kicker{font-size:.8em}
+.divider .num{font:800 clamp(120px,22vw,360px)/0.8 var(--serif);color:transparent;-webkit-text-stroke:2px rgba(211,85,43,.5);position:absolute;right:6vw;bottom:10vh;letter-spacing:-.06em;pointer-events:none}
+
+@media (max-width:900px){.cols,.cols.eq,.cols.wide{grid-template-columns:1fr}.step-n{display:none}body{overflow:auto}.slide{position:relative;padding-bottom:90px}}
+@media print{body{overflow:visible;background:#fff;color:#000}.slide{display:flex!important;position:relative;opacity:1!important;transform:none!important;page-break-after:always;animation:none!important;color:#000}.slide>*{animation:none!important}#hud,#bar,.hit,#notes,#help,.copy,.tabs{display:none!important}.cmd{background:#f2f2f2;color:#000;border-color:#999}.pane{display:block!important}.aside{display:block;border-top:1px dashed #999;margin-top:1em;padding-top:.5em;font-size:.8em}}
+</style>
+</head>
+<body>
+<div id="deck">
+<section class="slide divider" data-sect="Open">
+
+  <p class="kicker">AI Automations by Hector <b>· Class 9 · Wednesday 7 October 2026 · 11:00 AM ET</b></p>
+  <h1>Build it <em>live</em></h1>
+  <p class="lede">One hour, five parts, one real build. You leave with a website of your own on a live address, a chatbot that knows your business, and a list of prompts to make it better.</p>
+  <div class="num">9</div>
+<div class="aside"><p>Follow along with this open, or read it after. Press <strong>N</strong> on any slide for the fuller reasoning behind it.</p></div>
+</section>
+
+<section class="slide" data-sect="Open">
+
+  <p class="kicker">The hour</p>
+  <h2>Five parts. <em>Sixty minutes.</em></h2>
+  <table>
+    <tr><th>Min</th><th>Part</th></tr>
+    <tr><td>5</td><td>What is new on aiautobase.com</td></tr>
+    <tr><td>2</td><td>Free books for members, at Mi Rincón Digital</td></tr>
+    <tr><td>10</td><td>The Business Brain: what comes next</td></tr>
+    <tr class="today"><td>30</td><td>Build the AI Business Card, live</td></tr>
+    <tr><td>13</td><td>Upgrade it with the NexGen kit</td></tr>
+  </table>
+<div class="aside"><p>Bring a laptop. This is a follow-along, not a webinar.</p></div>
+</section>
+
+<section class="slide" data-sect="What is new">
+
+  <p class="kicker">aiautobase.com <b>· 5 min</b></p>
+  <h2>Build Packs: <em>prompts that build the tool on your machine</em></h2>
+  <div class="cols">
+    <ul class="pts">
+      <li><strong>Prompt Pack Studio</strong> - describe a niche, get a pack of prompts and artwork.</li>
+      <li><strong>eBook Studio</strong> - sixteen prompts that build an ebook workshop.</li>
+      <li><strong>Business Launch Folder</strong> - sixteen prompts, from an idea to a registered business.</li>
+      <li>Earlier: Life OS, CreatorGrowth, Print-on-Demand OS, Voice Desk OS.</li>
+    </ul>
+    <div class="stack"><div class="call"><span class="t">Where</span>aiautobase.com/packs - sign in first. Open to members of the AI Auto Base community and/or site subscribers.</div>
+    <div class="call"><span class="t">Also</span>aiautobase.com/community-resources - the Skool Community Resource posts, by month. Bodies and attachments stay inside the community.</div></div>
+  </div>
+<div class="aside"><p>A pack is a folder of prompts you paste into Claude Code. You own what it builds.</p></div>
+</section>
+
+<section class="slide" data-sect="Free books">
+
+  <p class="kicker">Mi Rincón Digital <b>· 2 min</b></p>
+  <h2>Free digital books for <em>community members</em></h2>
+  <ol class="pts">
+    <li>Go to <strong>mirincondigital.com</strong>, open <strong>Account</strong>.</li>
+    <li>Enter the email you use on Skool.</li>
+    <li>Open the sign-in link from your email (no password, good for 15 minutes) and click the button inside.</li>
+    <li>The site shows you the list of titles you can download. Pick one.</li>
+  </ol>
+  <p class="small mute">Access follows your membership: leave the community and the next download stops. Some books are still being re-uploaded; tell me which one you are missing.</p>
+<div class="aside"><p>The sign-in link is spent by a button press inside the page, not by opening it, so email scanners do not burn it.</p></div>
+</section>
+
+<section class="slide" data-sect="Business Brain">
+
+  <p class="kicker">The Business Brain <b>· 10 min</b></p>
+  <h2>Eight weeks of organs. <em>Three builds next.</em></h2>
+  <table>
+    <tr><th>Build</th><th>Adds to the brain</th><th>Status</th></tr>
+    <tr><td>The Cockpit</td><td>A guarded terminal in the dashboard</td><td class="now">Pack built. Never run in a live dashboard</td></tr>
+    <tr><td>File Ingress Manager</td><td>Files in, four spaces, readable by the AI</td><td class="now">Designed. Not built</td></tr>
+    <tr><td>Clara on the phone</td><td>A phone number: calls, texts</td><td class="now">Designed. Not built, not tested</td></tr>
+  </table>
+<div class="aside"><p>Status is said out loud every time: built, designed, or not tested.</p></div>
+</section>
+
+<section class="slide" data-sect="Business Brain">
+
+  <p class="kicker">Next build 1</p>
+  <h2>The Cockpit: <em>useful and dangerous in the same sentence</em></h2>
+  <div class="cols">
+    <ul class="pts">
+      <li>Boots <strong>read-only</strong>. Write mode is one click, and the header turns red.</li>
+      <li>An <strong>allowlist</strong>, not a denylist. A refused command is the worst case.</li>
+      <li>Pinned to the brain folder. Anything that resolves outside it is refused.</li>
+      <li>Never reads <code>.env</code>. Every command is logged before it runs.</li>
+    </ul>
+    <div class="stack"><div class="call warn"><span class="t">Honest limit</span>A speed bump, not a wall. Git is why Class 8 came first.</div></div>
+  </div>
+<div class="aside"><p>The offline checker passes forty-five refusals and twenty allowed commands. It has not run inside a live dashboard.</p></div>
+</section>
+
+<section class="slide" data-sect="Business Brain">
+
+  <p class="kicker">Next build 2</p>
+  <h2>File Ingress Manager: <em>the brain reads what the business has</em></h2>
+  <div class="flow">
+    <div class="n">Personal<small>for you only</small></div>
+    <div class="n">Business<small>about the business</small></div>
+    <div class="n">Clients<small>belong to clients</small></div>
+    <div class="n stop">General<small>shared with everyone</small></div>
+  </div>
+  <ul class="pts"><li>The original file stays as it is, in the database.</li><li>A Markdown copy is made beside it so the AI can read it.</li></ul>
+  <p class="small mute">Not designed yet: who can see which space. Personal and client files in one system is a decision to make with you.</p>
+<div class="aside"><p>Do not call this secure. The access rules do not exist yet.</p></div>
+</section>
+
+<section class="slide" data-sect="Business Brain">
+
+  <p class="kicker">Next build 3</p>
+  <h2>Clara on the phone: <em>and she says she is an AI first</em></h2>
+  <ul class="pts">
+    <li>Clara Moretti, my personal assistant. People call her Jarvis.</li>
+    <li>A phone number through Retell: answer calls, make calls, send texts.</li>
+    <li>First sentence of every call: she is an AI. Always.</li>
+  </ul>
+  <div class="call"><span class="t">Your vote, in the chat</span>Which dashboard feature first: a CRM, an ERP-style module, or something else?</div>
+<div class="aside"><p>Designed, not built, not tested. No number exists yet.</p></div>
+</section>
+
+<section class="slide" data-sect="Build">
+
+  <p class="kicker">Build the AI Business Card <b>· 30 min</b></p>
+  <h2>Think. Prompt. Build. Git. Version. Deploy. <em>Execute.</em></h2>
+  <table>
+    <tr><th>Min</th><th>Step</th><th>What happens</th></tr>
+    <tr><td>0-5</td><td>Think</td><td>Who visits, what they need. No keyboard</td></tr>
+    <tr><td>5-12</td><td>Prompt</td><td>One clear prompt into Claude Code</td></tr>
+    <tr><td>12-17</td><td>Build</td><td>Edit <code>config.json</code> only</td></tr>
+    <tr><td>17-22</td><td>Git + Version</td><td>First commit, tag <code>v0.1.0</code></td></tr>
+    <tr><td>22-27</td><td>Deploy</td><td>Cloudflare Pages</td></tr>
+    <tr><td>27-30</td><td>Execute</td><td>Open it on your phone</td></tr>
+  </table>
+<div class="aside"><p>Say the word out loud at each step.</p></div>
+</section>
+
+<section class="slide" data-sect="Build">
+
+  <p class="kicker">Step 1 · Think</p>
+  <p class="big-quote">The best prompt is a decision you made before you opened the AI.</p>
+  <ol class="pts"><li>Who visits? A customer with a quick question.</li><li>What do they need? Hours, prices, how to reach me.</li><li>What is the smallest thing that solves it? Three pages and a bot that answers from facts I wrote.</li></ol>
+  <p class="small mute">Scope: Home, Chat, About. One config file. No database.</p>
+
+</section>
+
+<section class="slide" data-sect="Build">
+
+  <p class="kicker">Step 2 · Prompt</p>
+  <h2>The master prompt, <em>and read what it writes</em></h2>
+  <p class="small mute">Paste into Claude Code in an empty folder. The full text is in 03-MASTER-PROMPT.txt in the kit.</p>
+  <ul class="pts"><li>Plain HTML, CSS and JavaScript. No framework.</li><li>Everything personal lives in <code>config.json</code>.</li><li>The chatbot runs as a Cloudflare Pages Function. The key never reaches the browser.</li><li>The bot answers only from your list, under 60 words, and says it is an AI.</li></ul>
+<div class="aside"><p>Reviewing the AI's code is the skill. Ask: what would you change before running this?</p></div>
+</section>
+
+<section class="slide" data-sect="Build">
+
+  <p class="kicker">Steps 3 to 5</p>
+  <h2>Make it yours, <em>save it, name it</em></h2>
+  <div class="cols">
+    <ul class="pts"><li>Edit only <code>config.json</code>: name, tagline, about, five to eight real facts.</li><li>Ask the bot something it knows, then something it does not. It should say it does not know.</li></ul>
+    <div class="stack"><div class="cmd"><button class="copy">copy</button>git init -b main
+git add .
+git status          # .dev.vars is NOT listed
+git commit -m "feat: first version of my business card"
+git tag v0.1.0</div></div>
+  </div>
+<div class="aside"><p>A commit is a save point. A tag is a name for a release. Secrets never go in git.</p></div>
+</section>
+
+<section class="slide" data-sect="Build">
+
+  <p class="kicker">Steps 6 and 7</p>
+  <h2>Deploy, <em>then try to break it</em></h2>
+  <div class="cols">
+    <div class="stack"><div class="cmd"><button class="copy">copy</button>npx wrangler login
+npx wrangler pages deploy . --project-name my-business-card
+npx wrangler pages secret put GEMINI_API_KEY --project-name my-business-card</div></div>
+    <ul class="pts"><li>The key lives in Cloudflare, not in your code and not in git.</li><li>Open your <code>pages.dev</code> address on your phone.</li><li>Pair up. Try to break your partner's bot.</li></ul>
+  </div>
+<div class="aside"><p>Free Gemini quota is small. If you see 429, it is the free tier doing what it said.</p></div>
+</section>
+
+<section class="slide" data-sect="Upgrade">
+
+  <p class="kicker">Upgrade it with the NexGen kit <b>· 13 min</b></p>
+  <h2>Five parts, <em>one page, one action</em></h2>
+  <div class="flow">
+    <div class="n">Hero<small>promise, video, one button</small></div>
+    <div class="n">Services<small>3 or 4 cards</small></div>
+    <div class="n">Work<small>real examples</small></div>
+    <div class="n stop">Contact<small>a form that delivers</small></div>
+  </div>
+  <p class="small mute">Run one prompt. Look. Commit. Then the next.</p>
+<div class="aside"><p>Every word comes from config.json. Do not let the AI invent clients, numbers or testimonials.</p></div>
+</section>
+
+<section class="slide" data-sect="Upgrade">
+
+  <p class="kicker">Step 2 of the kit</p>
+  <h2>A hero video that does <em>not look broken</em></h2>
+  <div class="cols">
+    <ul class="pts"><li>Short: five to ten seconds, looped.</li><li>Small: under 5 MB.</li><li>Autoplay, muted, loop, playsinline, with a poster image.</li><li>A dark layer so the headline passes contrast.</li><li>Reduced-motion setting: poster only.</li></ul>
+    <div class="stack"><div class="call warn"><span class="t">Check it</span>Zoom in. Edges breaking up means the video is smaller than the space it fills. Fix the file, not the prompt.</div></div>
+  </div>
+
+</section>
+
+<section class="slide divider" data-sect="Close">
+
+  <p class="kicker">Homework</p>
+  <h2>Post your link. <em>Say what broke.</em></h2>
+  <ol class="pts"><li>Tag <code>v1.0.0</code> when you are happy with the card.</li><li>Run steps 3 to 5 of the NexGen kit: contact form, speed, accessibility.</li><li>Run Lighthouse before and after. Your two numbers are the proof.</li><li>Post your live link in the community.</li></ol>
+  <p class="small mute">Created by Hector Diaz, founder of Orbix Automation Solutions.</p>
+
+</section>
+
+
+
+</div>
+
+<div id="bar"></div>
+<div class="hit l" title="previous"></div><div class="hit r" title="next"></div>
+<div id="hud"><span><span class="sect" id="sect"></span> &nbsp;·&nbsp; <span id="count"></span></span><span>Class 9 · Build It Live · Student Guide <button id="bNotes" title="N">why this matters</button><button id="bGrid" title="O">overview</button><button id="bFull" title="F">fullscreen</button><button id="bHelp" title="?">?</button></span></div>
+<div id="notes"><div class="t">Why this matters</div><div id="notesBody"></div></div>
+<div id="grid"></div>
+<div id="help"><div>
+<kbd>→</kbd><kbd>space</kbd> next &nbsp;&nbsp; <kbd>←</kbd> previous &nbsp;&nbsp; <kbd>Home</kbd><kbd>End</kbd> first / last<br>
+<kbd>N</kbd> why this matters &nbsp;&nbsp; <kbd>O</kbd> overview &nbsp;&nbsp; <kbd>F</kbd> fullscreen &nbsp;&nbsp; <kbd>1</kbd><kbd>2</kbd> tabs on a slide<br>
+<kbd>Esc</kbd> close &nbsp;&nbsp; URL <span style="color:var(--amber)">#12</span> jumps to a slide &nbsp;&nbsp; <kbd>Ctrl+P</kbd> prints every slide, "why this matters" included
+</div></div>
+
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const bar=document.getElementById('bar'),count=document.getElementById('count'),sect=document.getElementById('sect');
+  const notes=document.getElementById('notes'),notesBody=document.getElementById('notesBody'),grid=document.getElementById('grid'),help=document.getElementById('help');
+  let i=0,dir=1;
+  function go(n,d){
+    n=Math.max(0,Math.min(slides.length-1,n)); if(d===undefined)d=n>=i?1:-1; dir=d;
+    slides.forEach(s=>{s.classList.remove('on','back')});
+    const s=slides[n]; if(dir<0)s.classList.add('back'); void s.offsetWidth; s.classList.add('on');
+    i=n; bar.style.width=((i+1)/slides.length*100)+'%'; count.textContent=(i+1)+' / '+slides.length; sect.textContent=s.dataset.sect||'';
+    const a=s.querySelector('.aside'); notesBody.innerHTML=a?a.innerHTML:'<p class="mute">Nothing extra for this slide — it already says what it needs to.</p>';
+    history.replaceState(null,'','#'+(i+1)); document.querySelectorAll('#grid a').forEach((g,k)=>g.classList.toggle('cur',k===i));
+  }
+  // overview grid
+  slides.forEach((s,k)=>{const a=document.createElement('a');a.href='#'+(k+1);const h=s.querySelector('h1,h2,.big-quote');a.innerHTML='<b>'+(k+1)+' · '+(s.dataset.sect||'')+'</b>'+(h?h.textContent.slice(0,90):'');a.onclick=e=>{e.preventDefault();grid.classList.remove('on');go(k)};grid.appendChild(a)});
+  // tabs
+  document.querySelectorAll('.tabs').forEach(t=>{const sl=t.closest('.slide');t.querySelectorAll('button').forEach(b=>b.onclick=()=>{t.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));sl.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.dataset.pane===b.dataset.pane))})});
+  // copy — file:// rejects navigator.clipboard, execCommand works
+  function copyText(t){return new Promise(res=>{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity=0;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);if(ok)return res(true);if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>res(true),()=>res(false));else res(false)})}
+  document.querySelectorAll('.copy').forEach(b=>b.onclick=e=>{e.stopPropagation();const box=b.closest('.cmd').cloneNode(true);box.querySelectorAll('.copy,.label').forEach(x=>x.remove());const t=box.textContent.replace(/^\n+|\n+$/g,'');copyText(t).then(ok=>{b.textContent=ok?'copied':'select + ctrl+c';b.classList.toggle('ok',ok);setTimeout(()=>{b.textContent=b.textContent.startsWith('copied')&&b.dataset.l||b.dataset.l||'copy';b.classList.remove('ok')},1400)});});
+  document.querySelectorAll('.copy').forEach(b=>b.dataset.l=b.textContent);
+  // keys
+  document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')return;
+    if(e.key==='Escape'){grid.classList.remove('on');help.classList.remove('on');notes.classList.remove('on');return}
+    if(help.classList.contains('on')||grid.classList.contains('on')){if(e.key==='o'||e.key==='O'||e.key==='?')toggle(e.key);return}
+    switch(e.key){
+      case 'ArrowRight':case ' ':case 'PageDown':case 'Enter':e.preventDefault();go(i+1,1);break;
+      case 'ArrowLeft':case 'PageUp':case 'Backspace':e.preventDefault();go(i-1,-1);break;
+      case 'Home':go(0,-1);break;case 'End':go(slides.length-1,1);break;
+      case 'n':case 'N':notes.classList.toggle('on');break;
+      case 'o':case 'O':grid.classList.toggle('on');break;
+      case 'f':case 'F':full();break;
+      case '?':help.classList.toggle('on');break;
+      case '1':case '2':case '3':{const t=slides[i].querySelectorAll('.tabs button')[+e.key-1];if(t)t.click();break}
+    }
+  });
+  function toggle(k){if(k==='?')help.classList.toggle('on');else grid.classList.toggle('on')}
+  function full(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
+  document.querySelector('.hit.l').onclick=()=>go(i-1,-1);document.querySelector('.hit.r').onclick=()=>go(i+1,1);
+  document.getElementById('bNotes').onclick=()=>notes.classList.toggle('on');document.getElementById('bGrid').onclick=()=>grid.classList.toggle('on');
+  document.getElementById('bFull').onclick=full;document.getElementById('bHelp').onclick=()=>help.classList.toggle('on');
+  help.onclick=e=>{if(e.target===help)help.classList.remove('on')};
+  // touch
+  let tx=null;document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});document.addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>60)go(i+(dx<0?1:-1));tx=null});
+  window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1))-1;if(!isNaN(n)&&n!==i)go(n)});
+  const start=parseInt(location.hash.slice(1))-1;go(isNaN(start)?0:start,1);
+})();
+</script>
+</body>
+</html>

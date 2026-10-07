@@ -1,0 +1,15 @@
+Build a 3-page static website: Home (index.html), Chat (chat.html), About (about.html).
+
+Rules:
+- Plain HTML/CSS/JS only. No framework, no build step.
+- Everything personal lives in config.json: name, tagline, logo path, accent color,
+  about text + facts, contact links, and the chatbot (name, greeting, personality,
+  knowledge list). Pages read config.json at load time.
+- Chatbot: chat.html posts to /api/chat. Write it as a Cloudflare Pages Function
+  (functions/api/chat.js) that calls Google Gemini (gemini-2.5-flash) using
+  env.GEMINI_API_KEY. The server builds the system prompt from config.json: answer only
+  from the knowledge list, under 60 words, say it is an AI. Never expose the key to the browser.
+- Validate input in the function: last 10 messages, 500 chars each.
+- Mobile friendly, light/dark mode, accessible (labels, aria-live on the chat log).
+- Add a .gitignore that ignores .dev.vars, and a .dev.vars.example.
+Keep it as small as possible.
