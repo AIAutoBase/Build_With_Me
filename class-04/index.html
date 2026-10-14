@@ -294,6 +294,12 @@
       <p>The pre-class pack includes the generated 23-node workflow for study and inactive import. It has structural tests but has not passed the live Telegram release gate. Keep it inactive until the owner, voice, webhook and second-account tests pass.</p>
       <p><code>CLAIMS-AUDIT.md</code> states exactly what was verified and what remains open.</p>
     </div>
+
+    <div class="warn" id="telegram-drops">
+      <div class="warn-t">Telegram keeps disconnecting? Fix it first, or move to WhatsApp</div>
+      <p>Older installs set only <code>N8N_WEBHOOK_URL</code>. n8n 2.9.x reads only <code>WEBHOOK_URL</code>, so it never learned your public address. Paste this prompt into Claude Code inside <code>~/brain</code>. It diagnoses without showing your token and asks before it changes anything: <a href="pack/docs/PROMPT-fix-telegram.txt">PROMPT-fix-telegram.txt</a> · <a href="pack/docs/PROMPT-arreglar-telegram.txt">en español</a>.</p>
+      <p>Still dropping, or on a quick tunnel that changes address on every restart? Swap Telegram for WhatsApp (Evolution API). It talks to n8n inside Docker and needs no public URL. Step-by-step kit: <a href="downloads/replace-telegram-with-whatsapp-EN.zip">English</a> · <a href="downloads/cambiar-telegram-por-whatsapp.zip">español</a>. A Slack option is inside.</p>
+    </div>
   </section>
 
   <!-- ═══════════════════ THE STORY ═══════════════════ -->

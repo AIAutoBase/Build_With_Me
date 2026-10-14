@@ -148,6 +148,8 @@ services:
       - .class-04-private.env
     environment:
       N8N_WEBHOOK_URL: ${CLASS04_PUBLIC_URL}
+      # n8n 2.9.x reads only WEBHOOK_URL; 2.36.x reads N8N_WEBHOOK_URL. Set both.
+      WEBHOOK_URL: ${CLASS04_PUBLIC_URL}
       N8N_PROXY_HOPS: "1"
 YAML
 chmod 600 "$OVERRIDE_FILE" 2>/dev/null || true
@@ -195,7 +197,7 @@ command -v docker >/dev/null 2>&1 || { printf 'Docker is not installed or not on
 docker compose config --quiet
 docker compose up -d --force-recreate n8n
 docker compose exec -T n8n node -e '
-for (const key of ["BRAIN_BOT_TOKEN", "BRAIN_OWNER_ID", "N8N_WEBHOOK_URL"]) {
+for (const key of ["BRAIN_BOT_TOKEN", "BRAIN_OWNER_ID", "N8N_WEBHOOK_URL", "WEBHOOK_URL"]) {
   const value = process.env[key] || "";
   console.log(`${key}: ${value ? `set (${value.length} chars)` : "MISSING"}`);
 }

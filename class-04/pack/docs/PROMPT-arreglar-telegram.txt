@@ -1,0 +1,70 @@
+Mi bot de Telegram de la Clase 4 (workflow `09 - Voice ask`) se desconecta o no contesta.
+Quiero que lo diagnostiques y lo arregles en mi stack del cerebro (~/brain). Explícame
+cada paso con palabras simples, como a un niño de 10 años.
+
+REGLAS DE SEGURIDAD (no las rompas):
+- NUNCA muestres en pantalla el token del bot, mi owner id ni el contenido de
+  .class-04-private.env. Cuando necesites el token, úsalo DENTRO del contenedor de n8n
+  (process.env.BRAIN_BOT_TOKEN), nunca en un comando que se vea.
+- De las URLs, enséñame solo el principio (https://) y el final del dominio, por ejemplo
+  https://****.trycloudflare.com/
+- No borres nada. No toques .env salvo lo que te digo abajo. No cambies la clave de
+  encriptación de n8n.
+- Antes de cambiar cualquier archivo, enséñame el cambio y espera mi "sí".
+
+PASO 1: Diagnóstico (solo mirar, no cambiar nada)
+a) Encuentra el stack: la carpeta con docker-compose.yml y el servicio n8n (normalmente
+   ~/brain). Dime qué versión de n8n corre:
+     docker compose exec -T n8n n8n --version
+b) Dime si estas variables están puestas DENTRO del contenedor de n8n, si son iguales
+   entre sí y si empiezan con https:// (sin enseñarme el dominio completo):
+     WEBHOOK_URL  y  N8N_WEBHOOK_URL
+   Por qué importa: n8n 2.9.x solo lee WEBHOOK_URL y n8n 2.36.x lee N8N_WEBHOOK_URL. El
+   instalador de la clase solo ponía N8N_WEBHOOK_URL. Si tu n8n es viejo, n8n no se entera
+   de tu dirección pública y le da a Telegram una dirección equivocada.
+c) Pregúntale a Telegram dónde cree que vive mi bot, sin mostrar el token:
+     docker compose exec -T n8n node -e "fetch('https://api.telegram.org/bot'+process.env.BRAIN_BOT_TOKEN+'/getWebhookInfo').then(r=>r.json()).then(j=>{const r=j.result||{};const host=(r.url||'').replace(/^(https?:\/\/)([^/]+)(.*)$/,(m,a,h,p)=>a+'****'+h.slice(h.indexOf('.'))+p.replace(/[0-9a-f-]{20,}/g,'<id>'));console.log({ok:j.ok,url:host,pending:r.pending_update_count,last_error:r.last_error_message||'none',last_error_at:r.last_error_date?new Date(r.last_error_date*1000).toISOString():'none'})})"
+   Si dice ok:false o 401, el token está mal o fue revocado: dímelo y PARA.
+d) Compara la dirección que tiene Telegram con WEBHOOK_URL / N8N_WEBHOOK_URL. ¿Es el mismo
+   dominio?
+e) Mira si mi dirección pública es un túnel rápido de Cloudflare (termina en
+   trycloudflare.com) o algo parecido que cambia cada vez que se reinicia.
+
+Dame el diagnóstico en una tabla: qué revisaste | qué encontraste | ¿está bien?
+Después dime cuál de estas causas es la mía (puede ser más de una):
+  A) Falta WEBHOOK_URL (o es distinta de N8N_WEBHOOK_URL)        → lo arreglas en el paso 2
+  B) Telegram tiene una dirección vieja o distinta               → lo arreglas en el paso 3
+  C) El túnel cambia de dirección en cada reinicio                → paso 4, solo explicar
+  D) last_error dice timeout / 502 / connection refused           → el túnel o n8n está caído
+  E) Todo está bien                                               → dímelo y no cambies nada
+
+PASO 2: Arreglar la causa A (solo si aplica)
+- Busca dónde se pone N8N_WEBHOOK_URL para el servicio n8n. Normalmente es
+  docker-compose.class-04.yml, y si no, docker-compose.yml.
+- Justo debajo, agrega WEBHOOK_URL con EXACTAMENTE el mismo valor (la misma variable de
+  ${...}), con este comentario:
+    # n8n 2.9.x reads only WEBHOOK_URL; 2.36.x reads N8N_WEBHOOK_URL. Set both.
+- Comprueba con: docker compose config --quiet
+- Reinicia solo n8n: docker compose up -d --force-recreate n8n
+- Espera a que n8n conteste en /healthz y vuelve a hacer el paso 1b.
+
+PASO 3: Que Telegram aprenda la dirección nueva (si hiciste el paso 2 o si aplica B)
+Telegram solo aprende la dirección cuando el workflow se ACTIVA. Pídeme que haga esto en
+n8n y espera a que te diga "listo":
+  1. Abre `09 - Voice ask`.
+  2. Cambia el interruptor de arriba a la derecha a Inactive.
+  3. Espera 5 segundos y vuelve a ponerlo en Active.
+Después repite el paso 1c. Tiene que salir: la url con el MISMO dominio que WEBHOOK_URL,
+pending 0 (o bajando) y last_error none (o con una hora de ANTES del arreglo).
+
+PASO 4: Si aplica C (túnel que cambia)
+No lo cambies tú. Explícame con palabras simples que cada vez que el túnel se reinicia
+cambia la dirección, y Telegram sigue mandando los mensajes a la dirección vieja. Por eso
+"se desconecta". Dime mis dos opciones:
+  - Un túnel con nombre (Cloudflare Tunnel con un dominio mío), que nunca cambia.
+  - O usar la guía de WhatsApp de la clase, que no necesita dirección pública.
+
+PASO 5: Prueba final
+Pídeme que le mande una nota de voz al bot. Revisa que se cree una ejecución nueva en n8n y
+que me llegue la respuesta. Termina con una tabla: qué estaba mal | qué cambiaste | cómo
+comprobamos que ya funciona.

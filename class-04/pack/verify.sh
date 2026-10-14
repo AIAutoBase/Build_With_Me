@@ -127,7 +127,12 @@ if [ -n "$N8N" ]; then
     *)        bad "env access in nodes" "N8N_BLOCK_ENV_ACCESS_IN_NODE=$BLOCK - sendVoice cannot read the token" ;;
   esac
 
-  WEBHOOK_URL="$(docker exec "$N8N" printenv N8N_WEBHOOK_URL 2>/dev/null | tr -d '\r\n')"
+  # n8n 2.9.x reads only WEBHOOK_URL; 2.36.x reads N8N_WEBHOOK_URL. Both must be set.
+  WEBHOOK_URL="$(docker exec "$N8N" printenv WEBHOOK_URL 2>/dev/null | tr -d '\r\n')"
+  NEW_WEBHOOK_URL="$(docker exec "$N8N" printenv N8N_WEBHOOK_URL 2>/dev/null | tr -d '\r\n')"
+  if [ "$WEBHOOK_URL" != "$NEW_WEBHOOK_URL" ]; then
+    bad "webhook URL names" "WEBHOOK_URL and N8N_WEBHOOK_URL differ or one is missing - rerun setup-telegram-private.sh"
+  fi
   case "$WEBHOOK_URL" in
     https://localhost/*|https://127.*|http://*|"")
       bad "public webhook URL" "missing or not public HTTPS - Telegram cannot reach localhost"

@@ -165,7 +165,7 @@ cd downloads && sha256sum -c SHA256SUMS
 
 | File | SHA-256 |
 |---|---|
-| `class-04-voice-PRECLASS.zip` | `970f3b08d3bb758a7c4ea2f8971410059dbbcb1c59338dd92c5d3b4e4e45fd10` |
+| `class-04-voice-PRECLASS.zip` | `a63f9520912f0967f26bcdbf6c97da75638aa850d74c4ef84c7c432d294f6e7e` |
 | `class-04-telegram-integration.pptx` | `2d48071b2f03aa9cbc0743fdcd859bab564991bb6a78f42239bb7f5f84fee9da` |
 | `class-04-telegram-integration.pdf` | `ac0652098d8dfed1ffb10d386671f67d759c95ed98fe084b9a8521bb6d12292e` |
 
