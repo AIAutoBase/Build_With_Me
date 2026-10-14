@@ -1,0 +1,59 @@
+Build a small local web app called Site Studio, in this folder. It turns a theme, a niche and a description into a one-page website. Every other field can be filled by AI.
+
+STEP 0 - DESIGN SKILL (do this first)
+- Check whether Anthropic's frontend-design plugin is installed: run `claude plugin list` and look for frontend-design@claude-plugins-official.
+- If it is missing, install it:
+    claude plugin marketplace add anthropics/claude-plugins-official   (skip if that marketplace is already added)
+    claude plugin install frontend-design@claude-plugins-official --scope user
+- A plugin installed now only loads in the next session. So if the frontend-design skill is not already available to you, read its SKILL.md directly: the installPath is in ~/.claude/plugins/installed_plugins.json, the file is <installPath>/skills/frontend-design/SKILL.md. Follow it for all the UI work in this build.
+- Tell me in one line: already installed, or installed now.
+
+STACK
+- Zero npm dependencies. One server.mjs for Node 20+, run with `node server.mjs`, port 8787. It serves index.html, app.js, style.css and anything under output/.
+- Read GEMINI_API_KEY from the environment or from a .env file next to server.mjs. Add .env.example (empty key) and a .gitignore with .env and output/.
+- Call the Gemini REST API generateContent with built-in fetch and the x-goog-api-key header. No SDK. Text model: gemini-2.5-flash. Image model: gemini-2.5-flash-image.
+- Keep the code short. Students will read it.
+
+FORM (index.html)
+- Required: Theme, Niche, Description.
+- Optional: Site name, Domain, Target audience, Tone, Color palette, Sections (checkboxes: hero, about, fun facts, products, social, community, contact, FAQ), Call to action, Amazon affiliate tag, Affiliate categories, Social platforms, Hero video prompt, Image prompts (textarea, one per line), Existing site URL.
+- Right side: a status line and an iframe preview.
+- Clean, large text, readable on a 1080p stream, works on a phone. Light and dark mode.
+
+AI FILL
+- POST /api/suggest {field, label, form}: ask Gemini for a value for that one field, using the rest of the form as context. Return {value}, only the value.
+- POST /api/fill {form, fields}: fill ALL empty fields in one call with responseMimeType "application/json". Return {values}.
+- UI: a "Suggest" button next to every optional field (not the affiliate tag or the URL) and a "Fill everything" button that fills only empty fields. Section suggestions tick the matching checkboxes.
+
+GENERATE SITE
+- POST /api/generate {form}: ask gemini-2.5-flash for ONE complete HTML file. Inline CSS, no external JavaScript, no frameworks. Strip code fences before saving. Save to output/<slug>/index.html (slug = domain without TLD, else name, else niche).
+- Affiliate links are built by the SERVER, never the model: one per category, https://www.amazon.com/s?k=<niche + category>&tag=<amazon tag>. Give the model those exact URLs; afterwards replace any other amazon.com product URL with a search link. The page must include "As an Amazon Associate I earn from qualifying purchases." Links use rel="sponsored noopener" target="_blank".
+- Facts sections only state well-established facts. Health or medicine content says to ask a veterinarian (or the right professional) first. No fake reviews, no invented prices.
+- Hero: if output/<slug>/hero.mp4 exists, use <video autoplay muted loop playsinline> with hero-poster.jpg as poster. Otherwise a CSS gradient from the palette.
+- If Existing site URL is filled, fetch it on the server, strip tags, keep the first 6000 characters, and tell the model to keep its real facts and improve the rest.
+- UI: show the result in the iframe, plus "Open in new tab" and "Download HTML". Generation can take 30-90 seconds; show a working state.
+
+IMAGES
+- POST /api/images {form}: for each Image prompt line (max 4), try these providers in order and keep the first that returns an image:
+    1. Gemini gemini-2.5-flash-image (generateContent, image in inlineData base64). Free keys usually get 429 here; that is expected.
+    2. Cloudflare Workers AI, only if CF_ACCOUNT_ID and CF_AI_TOKEN are set: POST https://api.cloudflare.com/client/v4/accounts/<id>/ai/run/@cf/black-forest-labs/flux-1-schnell with Bearer token, body {prompt, steps: 8}; image is base64 in result.image (jpg).
+    3. Pollinations (free, no key): GET https://image.pollinations.ai/prompt/<url-encoded prompt>?nologo=true&seed=<n>&width=1280&height=720. If POLLINATIONS_TOKEN is set, send it as a Bearer token. Anonymous use answers 402 or 429 when you go too fast: wait 16 seconds and retry at width=768&height=432, up to 3 tries.
+  Save as output/<slug>/img-N.png or .jpg (delete an older img-N with the other extension). Report which provider made each image.
+- If every provider fails for an image, do not crash. Say how many were made and tell the user to click "Copy prompt for ChatGPT / Gemini" for the rest. More routes are in IMAGES.md.
+- Button "Use Pexels photos" -> POST /api/photos {form}: GET https://api.pexels.com/v1/search?query=<niche>&orientation=landscape&per_page=<number of image prompts, max 6> with header Authorization: <PEXELS_API_KEY>. Save each photo's src.landscape as img-N.jpg and [{author, url}] as photo-credits.json. In /api/generate, put "Photos by <authors, linked> on Pexels" in the footer.
+- Button "Copy prompt for ChatGPT / Gemini" (browser only, no server call): copy to the clipboard one prompt that says "Make ONE image per message, in order. After each image, wait for me to type next", then the website name and description, one style line from Tone and Color palette ending "No people's faces, no brand logos, no text, no watermark", then the image prompts numbered, then "Start with image 1 now." Status line: paste it into chatgpt.com or gemini.google.com and save the results as img-1.png, img-2.png... in output/<slug>/.
+- Add CF_ACCOUNT_ID, CF_AI_TOKEN and POLLINATIONS_TOKEN (all optional) to .env.example.
+- Read PORT from the environment, default 8787.
+- Port 8787 may already be taken by a placeholder page. Before starting the server, stop whatever is listening on 8787 (on Windows: Stop-Process -Id (Get-NetTCPConnection -LocalPort 8787 -State Listen).OwningProcess).
+- In /api/generate, use existing img-N files (.png, .jpg or .webp) with relative paths. If none exist, no <img> tags.
+
+HERO VIDEO (Pexels)
+- Read PEXELS_API_KEY like GEMINI_API_KEY (add it to .env.example). If missing, the error says: "Free key at https://www.pexels.com/api/ , click Your API key, put PEXELS_API_KEY in .env and restart."
+- Button "Find hero video (Pexels)" -> POST /api/video {form, pick}: GET https://api.pexels.com/videos/search?query=<niche>&orientation=landscape with header Authorization: <key>. Keep clips of 30 s or less with a 1280-1920 px wide file (smallest one). Use result number `pick`; each click asks for the next.
+- Save the file as output/<slug>/hero.mp4, the video's `image` as hero-poster.jpg, and {author, url} as hero-credit.json.
+- In /api/generate, use hero-poster.jpg as the poster and put "Video by <author> on Pexels" (linked) in the footer.
+
+ERRORS
+- No key: "Get a free key at https://aistudio.google.com/apikey and put GEMINI_API_KEY in .env, then restart." Show every API error in the status line in plain words.
+
+When done, free port 8787 if something is on it, start the server and give me the URL. Then test /api/suggest and /api/fill with curl using: theme "cats", niche "black cats", description "blackcatmom.com — a home for black cat lovers: fun facts, toys, food and health picks, and a community".

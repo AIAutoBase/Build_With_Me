@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Site Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Site Studio</h1>
+    <p>Theme, niche, description. AI fills the rest. One page out.</p>
+  </header>
+
+  <main>
+    <form id="form">
+      <section class="required">
+        <label>Theme <input name="theme" required placeholder="cats"></label>
+        <label>Niche <input name="niche" required placeholder="black cats"></label>
+        <label>Description <textarea name="description" required rows="3" placeholder="What the site is and who it is for"></textarea></label>
+      </section>
+
+      <div class="bar">
+        <button type="button" id="fill">Fill everything</button>
+        <button type="button" id="generate" class="primary">Generate site</button>
+        <button type="button" id="images">Generate images</button>
+        <button type="button" id="photos">Use Pexels photos</button>
+        <button type="button" id="copyPrompt">Copy prompt for ChatGPT / Gemini</button>
+        <button type="button" id="video">Find hero video (Pexels)</button>
+      </div>
+
+      <section id="optional"></section>
+    </form>
+
+    <aside>
+      <p id="status" role="status" aria-live="polite">Fill the three required fields to start.</p>
+      <div class="preview-bar" hidden id="previewBar">
+        <a id="open" target="_blank">Open in new tab</a>
+        <a id="download" download="index.html">Download HTML</a>
+      </div>
+      <iframe id="preview" title="Site preview"></iframe>
+    </aside>
+  </main>
+
+  <footer>Created by Hector Diaz, founder of Orbix Automation Solutions.</footer>
+  <script src="app.js"></script>
+</body>
+</html>

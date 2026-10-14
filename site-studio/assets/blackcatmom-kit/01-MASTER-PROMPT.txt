@@ -1,0 +1,137 @@
+Build a one-page website for blackcatmom.com in a new folder named blackcatmom-site/ inside the current directory.
+
+GOAL
+A fast, elegant, accessible one-page site about cats, with the emphasis on BLACK cats. It has a hero video, black cat fun facts, three Amazon affiliate shop sections, a follow-us section, a community signup placeholder and a footer. This is a STAGING build. Do not deploy anything. Do not run git commands.
+
+STACK RULES
+- Plain HTML, CSS and a tiny vanilla JS file only if needed. No framework. No build step. No npm. No CDN scripts.
+- Files: blackcatmom-site/index.html, blackcatmom-site/style.css, blackcatmom-site/script.js (keep under ~60 lines), blackcatmom-site/assets/ for media.
+- Mobile-first CSS. Use CSS custom properties for colors. System font stack, or one Google Font loaded with display=swap (optional, max one family).
+- The page must open correctly by double-clicking index.html (relative paths only).
+
+FILES THE PAGE REFERENCES (they may not exist yet - they are made separately)
+- assets/hero.mp4 and assets/hero-poster.jpg (hero video and its still frame)
+- assets/img/facts.jpg, assets/img/toys.jpg, assets/img/food.jpg, assets/img/health.jpg, assets/img/community.jpg
+- assets/og-image.jpg (1200x630, for social previews)
+- assets/favicon.svg (YOU create this: a simple, clean black cat silhouette with two gold eyes, SVG, readable at 16px)
+Placeholders: create assets/ and assets/img/ folders. Do NOT create fake binary files. Instead, style every image container with a background color and gradient in the night palette so the layout still looks finished when an image file is missing. Give every <img> width and height attributes and loading="lazy" (except the hero poster). Keep the hero readable with no video and no poster: dark gradient background behind the headline.
+
+VISUAL DIRECTION
+- Elegant, warm, night palette. Not spooky, not cartoon Halloween.
+- Colors: deep charcoal background (around #141317), soft off-black panels (around #1e1c22), warm cream text (around #f3ede2), gold accent like a cat's eyes (around #d9a441), muted amber for hover. Check every text/background pair meets WCAG AA contrast (4.5:1 body, 3:1 large text). Adjust shades if they fail.
+- Generous spacing, rounded corners (8-12px), subtle shadows, one small inline SVG cat icon used as the logo mark and as section dividers. No emoji anywhere on the page.
+- Gold focus rings that are clearly visible.
+
+SECTIONS (in this order, each a <section> with an id and an <h2>)
+
+1. Header: SVG cat logo mark + "Black Cat Mom" wordmark. Small nav with anchor links: Facts, Shop, Follow, Community. On mobile the nav can wrap or scroll horizontally; no hamburger JS needed.
+
+2. Hero (id="top")
+- Full-width background video: <video autoplay muted loop playsinline preload="metadata" poster="assets/hero-poster.jpg"> with <source src="assets/hero.mp4" type="video/mp4">. The video is decorative: aria-hidden="true", no controls attribute.
+- Dark overlay gradient so the headline always passes contrast.
+- Headline: "For the love of black cats"
+- Subline: "Fun facts, good toys, and care tips for the house panther in your life."
+- CTA button: "Shop cat favorites" linking to #shop. Second, quieter link: "Read the fun facts" to #facts.
+- A visible pause/play button for the video (WCAG 2.2.2: moving content longer than 5 seconds needs a pause control). Label it with aria-label and aria-pressed. This is the only reason script.js exists.
+- prefers-reduced-motion: reduce -> in script.js, pause the video and do not autoplay; in CSS, hide the video and show the poster image as the background. Also turn off any CSS transitions/animations under reduced motion.
+
+3. Black cat fun facts (id="facts")
+- Intro line: "A few true things about black cats, plus some famous folklore. Folklore is labeled."
+- Render each fact as a card. Folklore cards get a small visible tag that says "Folklore". Use these facts word for word (light edits for flow only, do not add new facts, do not add numbers):
+  a) The Bombay breed is always black. Breeders developed it in the United States in the 1950s.
+  b) Black is not a breed. Many different cat breeds can have a solid black coat, and so can mixed-breed cats.
+  c) A black cat's color comes from a dark pigment called eumelanin.
+  d) Strong sun can fade a black coat to a rusty or brownish shade.
+  e) In bright light, some black cats show faint "ghost" tabby stripes under the black.
+  f) Many black cats have gold, copper or green eyes. Against black fur, they really stand out.
+  g) Black Cat Appreciation Day is celebrated in the United States on August 17.
+  h) National Black Cat Day is held in the UK on October 27. The charity Cats Protection started it.
+  i) [Folklore] In the UK and Ireland, a black cat crossing your path is often said to bring good luck.
+  j) [Folklore] In Japan, black cats are traditionally seen as a sign of good fortune.
+  k) [Folklore] Sailors once kept black cats on ships for luck, and they were good at catching mice on board.
+  l) [Folklore] Old European superstitions linked black cats with witches. That is part of why they became a Halloween symbol. Many shelters now run black cat adoption events to show how sweet they are.
+- No medical claims anywhere in this section.
+- Optional decorative image: assets/img/facts.jpg with alt="A black cat with gold eyes resting on a windowsill at dusk".
+
+4. Shop (id="shop")
+- Section intro: "Things black cat families ask about most. Links go to Amazon search results so you can compare options."
+- Directly under the intro, visible (not tiny, not low contrast): "As an Amazon Associate I earn from qualifying purchases."
+- Three subsections, each an <h3> with an image and a responsive card grid (1 column on phone, 2 on tablet, 3 on desktop). Each card: short title, one plain sentence, and a button "See options on Amazon".
+- Every affiliate link: target="_blank" rel="sponsored noopener noreferrer". In HTML write the ampersand as &amp; in the href.
+- Use EXACTLY these URLs (Amazon search links with the associate tag; do not invent product URLs or ASINs, do not add prices, do not add star ratings):
+
+  Toys (image assets/img/toys.jpg, alt="A black cat batting at a feather wand toy")
+  - Feather wand toys -> https://www.amazon.com/s?k=feather+wand+cat+toy&tag=YOURTAG-20
+  - Catnip kicker toys -> https://www.amazon.com/s?k=catnip+kicker+toy&tag=YOURTAG-20
+  - Puzzle feeders -> https://www.amazon.com/s?k=cat+puzzle+feeder&tag=YOURTAG-20
+  - Cat tunnels -> https://www.amazon.com/s?k=collapsible+cat+tunnel&tag=YOURTAG-20
+  - Ball track towers -> https://www.amazon.com/s?k=cat+ball+track+tower+toy&tag=YOURTAG-20
+  - Tall scratching posts -> https://www.amazon.com/s?k=tall+cat+scratching+post&tag=YOURTAG-20
+
+  Food and feeding (image assets/img/food.jpg, alt="A black cat eating from a ceramic bowl in a warm kitchen")
+  - Wet food variety packs -> https://www.amazon.com/s?k=wet+cat+food+variety+pack&tag=YOURTAG-20
+  - Kitten food -> https://www.amazon.com/s?k=kitten+food&tag=YOURTAG-20
+  - Freeze-dried treats -> https://www.amazon.com/s?k=freeze+dried+cat+treats&tag=YOURTAG-20
+  - Water fountains -> https://www.amazon.com/s?k=cat+water+fountain&tag=YOURTAG-20
+  - Slow feeder bowls -> https://www.amazon.com/s?k=slow+feeder+cat+bowl&tag=YOURTAG-20
+
+  Health and care (image assets/img/health.jpg, alt="A black cat being gently brushed on a soft blanket")
+  - Above the cards, in a bordered notice box: "Ask your vet before giving any medicine or supplement. Flea and tick products made for dogs can be dangerous for cats. Use products labeled for cats only."
+  - Flea and tick care for cats -> https://www.amazon.com/s?k=flea+and+tick+prevention+for+cats&tag=YOURTAG-20
+  - Dental treats -> https://www.amazon.com/s?k=cat+dental+treats&tag=YOURTAG-20
+  - Hairball care -> https://www.amazon.com/s?k=cat+hairball+control&tag=YOURTAG-20
+  - Supplements (ask your vet) -> https://www.amazon.com/s?k=cat+supplements&tag=YOURTAG-20
+  - Grooming brushes -> https://www.amazon.com/s?k=cat+grooming+brush&tag=YOURTAG-20
+  - Nail clippers -> https://www.amazon.com/s?k=cat+nail+clippers&tag=YOURTAG-20
+- Card copy rules: describe what the category is for. No health promises, no "best", no "cures", no "vet recommended", no earnings talk.
+
+5. Follow us (id="follow")
+- Heading "Follow Black Cat Mom". One line: "Daily black cat photos, fun facts and gear notes."
+- Icon links (inline SVG icons, simple and monochrome, gold on hover) for: Instagram, TikTok, Facebook, YouTube, Pinterest, Threads, X.
+- Each link uses href="#" for now with a data-handle="TODO" attribute and an HTML comment "<!-- TODO: real profile URL -->". Each has an accessible name, e.g. aria-label="Black Cat Mom on Instagram". Do not open href="#" in a new tab.
+
+6. Community (id="community")
+- Image assets/img/community.jpg, alt="Two black kittens curled up together on a cozy blanket".
+- Heading "Join the Black Cat Mom circle". Line: "One friendly email a week. Photos, facts, and the occasional deal. Coming soon."
+- A placeholder form: email input with a visible <label>, and a button. The form must NOT send data anywhere: no action URL, and script.js prevents submit and shows a polite inline message: "Thanks! Signups open soon." Mark the spot with "<!-- TODO: connect newsletter provider -->".
+
+7. Footer
+- Small cat mark, "Black Cat Mom", current year via plain text 2026.
+- Repeat the disclosure: "As an Amazon Associate I earn from qualifying purchases."
+- Line: "Content is for general information. It is not veterinary advice."
+- Links back to #top.
+
+SEO AND HEAD
+- <html lang="en">, meta charset, meta viewport.
+- <title>Black Cat Mom - Fun Facts, Toys and Care for Black Cats</title>
+- <meta name="description" content="Fun facts about black cats, plus toys, food and care picks for black cat families. Folklore labeled, vet questions sent to your vet.">
+- <link rel="canonical" href="https://blackcatmom.com/">
+- Open Graph: og:type website, og:title, og:description, og:url https://blackcatmom.com/, og:image https://blackcatmom.com/assets/og-image.jpg, og:image:width 1200, og:image:height 630, og:image:alt. Twitter card summary_large_image.
+- <meta name="theme-color" content="#141317">
+- <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+- JSON-LD WebSite: {"@context":"https://schema.org","@type":"WebSite","name":"Black Cat Mom","url":"https://blackcatmom.com/"}
+- STAGING: add <meta name="robots" content="noindex, nofollow"> with an HTML comment right above it: "<!-- STAGING ONLY: remove this line before going live -->".
+- Preload nothing except, optionally, the hero poster.
+
+ACCESSIBILITY CHECKLIST (build it in, then verify)
+- One <h1> (the hero headline), then <h2> per section, <h3> per shop category.
+- Skip link "Skip to content" as the first focusable element.
+- Landmarks: header, nav, main, footer.
+- All meaningful images have the alt text given above; decorative SVGs have aria-hidden="true".
+- Visible focus styles on every link, button and input.
+- Links that open a new tab: add visually hidden text " (opens in a new tab)".
+- Touch targets at least 44x44px.
+- prefers-reduced-motion respected as described in the hero.
+
+PERFORMANCE
+- No JS on the critical path: script.js loaded with defer.
+- CSS in one file, no unused libraries.
+- Images lazy-loaded below the fold, width/height set to avoid layout shift.
+- Video uses preload="metadata" and the poster.
+
+WHEN DONE
+1. Print the file tree of blackcatmom-site/.
+2. Count the affiliate links in index.html and confirm every one contains tag=YOURTAG-20 and rel="sponsored noopener noreferrer". Show the count.
+3. Confirm the disclosure sentence appears twice (shop section and footer).
+4. List every TODO left in the files (social handles, newsletter, missing media files).
+5. Do not deploy, do not upload, do not run git. Tell me how to open the page locally.

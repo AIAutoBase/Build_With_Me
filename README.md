@@ -19,6 +19,7 @@ Served with GitHub Pages at **https://aiautobase.github.io/Build_With_Me/**
 | 7 · A Clock It Can Read | Your real calendar, both directions | [class-07/](https://aiautobase.github.io/Build_With_Me/class-07/) | [pack](class-07/pack/) |
 | 8 · Make It a Project | History, versions, and a README | [class-08/](https://aiautobase.github.io/Build_With_Me/class-08/) | [pack](class-08/pack/) |
 | — · AI Business Card | Class 9 live format: a site with a chatbot in 30 minutes, plus an upgrade kit | [ai-business-card/](https://aiautobase.github.io/Build_With_Me/ai-business-card/) | [kit zip](ai-business-card/downloads/AI-Business-Card-Student-Kit.zip) · [upgrade kit](ai-business-card/downloads/NexGen-Upgrade-Kit.md) |
+| — · Site Studio | Class 10 live format: theme + niche + description in, AI fills the rest, a site out. Plus the blackcatmom.com kit | [site-studio/](https://aiautobase.github.io/Build_With_Me/site-studio/) | [prompts](site-studio/assets/site-studio-kit/PROMPTS.md) · [images guide](site-studio/assets/site-studio-kit/IMAGES.md) |
 | — · Content Mate | The public voice — optional, classroom section | [content-mate/](https://aiautobase.github.io/Build_With_Me/content-mate/) | [pack](content-mate/pack/) |
 | — · Codex Masterclass | Materials for the ten Codex / GPT-6 Astra video lessons | [codex-masterclass/](https://aiautobase.github.io/Build_With_Me/codex-masterclass/) | [practice files](codex-masterclass/practice-files/) |
 
